@@ -180,7 +180,13 @@ Sección "Juegos": pegar el NPSSO (guardado en el Administrador de credenciales 
 #### ⬜ G3 · Ruta al platino por fases
 Agrupar los trofeos por fase o capítulo (propuesta inicial escrita para Wukong, editable), perdibles, notas por trofeo y "qué hacer ahora".
 
-#### ⬜ G4 · Objetivos de juego y enlace con vídeos
+#### ⬜ G4 · Guía del juego (pedido del usuario: "lo más completa posible")
+Entradas por tipo (jefes, builds, atajos/rutas, puntos de farmeo y más), cada una con capítulo/fase, recomendaciones, debilidades, build sugerida, capturas, notas y enlaces (vídeos propios incluidos), y enlazadas a sus trofeos. Borradores originales de Claude para Wukong, **con enlace a la fuente** y marcados "por verificar" cuando haga falta; nunca copiando guías ajenas ni inventando datos. Incluye el punto de farmeo del Estanque del Jade Quebrado (proyecto TrefotWukong).
+
+#### ⬜ G5 · Detección del juego abierto ("modo juego")
+Presencia de PSN (`https://m.np.playstation.com/api/userProfile/v1/internal/users/me/basicPresences?type=primary` → `gameTitleInfoList`, verificado en psn-api): consulta cada ~60 s con la app abierta; si el juego abierto está en la biblioteca, la app abre su ficha (ruta, próximo trofeo y guía). Requiere estado en línea visible en PSN. Más adelante: juegos de PC por proceso en ejecución.
+
+#### ⬜ G6 · Objetivos de juego y enlace con vídeos
 Objetivos con progreso (nivel, XP farmeada…) y proyectos del Creator Studio enlazados al juego.
 
 ## Ideas aparcadas
