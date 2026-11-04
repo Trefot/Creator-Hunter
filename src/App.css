@@ -366,6 +366,57 @@ button.link:hover {
   font-size: 13px;
 }
 
+/* Metas */
+
+.goal-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.goal-card {
+  padding: 16px;
+}
+
+.goal-abandoned {
+  opacity: 0.55;
+}
+
+.goal-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.progress {
+  height: 10px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.progress-bar {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 999px;
+}
+
+.progress-done {
+  background: var(--success);
+}
+
+.goal-foot {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+}
+
 .profile-main {
   display: flex;
   flex-direction: column;

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { ComingSoon } from "./components/ComingSoon";
 import { Sidebar } from "./components/Sidebar";
+import { GoalsPage } from "./features/goals/GoalsPage";
 import { ProfilesPage } from "./features/profiles/ProfilesPage";
 import { es } from "./i18n/es";
 import { Section } from "./sections";
@@ -14,7 +15,13 @@ function App() {
     <div className="layout">
       <Sidebar current={section} onSelect={setSection} />
       <main className="content">
-        {section === "profiles" ? <ProfilesPage /> : <ComingSoon title={es.sections[section]} />}
+        {section === "profiles" ? (
+          <ProfilesPage />
+        ) : section === "goals" ? (
+          <GoalsPage />
+        ) : (
+          <ComingSoon title={es.sections[section]} />
+        )}
       </main>
     </div>
   );

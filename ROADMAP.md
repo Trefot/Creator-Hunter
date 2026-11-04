@@ -45,12 +45,18 @@ Ritmo: sesiones diarias, cada una con un presupuesto de ~8–9 % del uso semanal
 - [x] Los registros no se editan: si hay un error, se borra y se crea otro.
 - [x] Prueba del usuario superada.
 
-### ⬜ S6 · Metas (siguiente)
-Crear metas por perfil o globales (seguidores, horas, ingresos o vistas) con valor objetivo y fecha límite opcional. Ver su progreso, **calculado** a partir de los registros, con barra y porcentaje.
-**Terminado cuando:** se crea una meta de seguidores para YouTube y su progreso refleja el último registro; las metas de ingresos y vistas muestran "pendiente de datos" hasta que existan esas secciones.
+### ✅ S6 · Metas
+- [x] Nueva sección "Metas" en el menú: por red o global (suma de todas), con objetivo y fecha límite opcional.
+- [x] Progreso calculado desde el último registro de cada perfil, con barra, porcentaje, "¡Conseguida!" y cuenta atrás.
+- [x] Editar, abandonar o reactivar, y eliminar con confirmación.
+- [x] Ingresos y vistas muestran "Pendiente de datos" hasta tener sus secciones.
+- [x] Prueba del usuario superada.
+
+### ⬜ S7 · Ingresos (siguiente)
+Sección Ingresos: registrar cantidad (en centavos internamente), moneda (USD por defecto), tipo, fecha, perfil opcional y nota. Mostrar el total del mes y del año, y conectar las metas de ingresos.
+**Terminado cuando:** se registran ingresos de varios tipos, los totales cuadran y una meta de ingresos muestra su progreso.
 
 ### ⬜ Siguientes
-- Ingresos manuales.
 - Banco de ideas → aprobación → proyecto.
 - Proyectos y adaptaciones con su flujo (pasos opcionales).
 - Script Studio.

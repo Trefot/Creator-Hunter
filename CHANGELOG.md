@@ -2,6 +2,11 @@
 
 ## [Sin publicar]
 
+### 2026-11-03 · S6 Metas
+- Sección "Metas": metas por red o globales de seguidores, horas, ingresos o vistas, con fecha límite opcional.
+- Progreso calculado (nunca guardado) a partir del último registro de cada perfil, con barra, porcentaje y cuenta atrás.
+- Abandonar/reactivar, editar y eliminar metas.
+
 ### 2026-11-03 · S5 Registros de cuenta
 - Registros fechados de seguidores y horas de visualización en cada perfil (`account_snapshot`).
 - Historial con la diferencia respecto al registro anterior, y el último valor visible en la tarjeta del perfil.
