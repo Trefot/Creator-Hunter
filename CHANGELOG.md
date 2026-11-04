@@ -2,6 +2,11 @@
 
 ## [Sin publicar]
 
+### 2026-11-03 · S5 Registros de cuenta
+- Registros fechados de seguidores y horas de visualización en cada perfil (`account_snapshot`).
+- Historial con la diferencia respecto al registro anterior, y el último valor visible en la tarjeta del perfil.
+- Formato de números y fechas centralizado (`src/i18n/format.ts`, locale `es-MX`).
+
 ### 2026-11-03 · S4 Estructura de la interfaz
 - Menú lateral (Dashboard, Perfiles, Ideas, Proyectos, Calendario, Ingresos) y tema visual oscuro.
 - Pantalla de Perfiles: crear, editar nombre visible, enlace y estado de monetización, abrir el enlace en el navegador y eliminar con confirmación.

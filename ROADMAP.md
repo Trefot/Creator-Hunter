@@ -39,12 +39,17 @@ Ritmo: sesiones diarias, cada una con un presupuesto de ~8–9 % del uso semanal
 - [x] Pantalla de Perfiles definitiva: crear, editar (nombre visible, enlace, monetizado), abrir el enlace en el navegador y eliminar con confirmación.
 - [x] Prueba del usuario superada, incluida la persistencia.
 
-### ⬜ S5 · Registros de cuenta (siguiente)
-Registrar seguidores y horas de visualización con fecha (`account_snapshot`) desde cada perfil, y ver el último valor y el historial.
-**Terminado cuando:** se puede añadir, ver y borrar registros de un perfil, y el último valor aparece en su tarjeta.
+### ✅ S5 · Registros de cuenta
+- [x] Panel "Registros" en cada perfil: fecha, seguidores y horas (opcionales por separado).
+- [x] Historial con la diferencia respecto al registro anterior; el último valor aparece en la tarjeta.
+- [x] Los registros no se editan: si hay un error, se borra y se crea otro.
+- [x] Prueba del usuario superada.
+
+### ⬜ S6 · Metas (siguiente)
+Crear metas por perfil o globales (seguidores, horas, ingresos o vistas) con valor objetivo y fecha límite opcional. Ver su progreso, **calculado** a partir de los registros, con barra y porcentaje.
+**Terminado cuando:** se crea una meta de seguidores para YouTube y su progreso refleja el último registro; las metas de ingresos y vistas muestran "pendiente de datos" hasta que existan esas secciones.
 
 ### ⬜ Siguientes
-- Metas por perfil (progreso calculado a partir de los registros e ingresos).
 - Ingresos manuales.
 - Banco de ideas → aprobación → proyecto.
 - Proyectos y adaptaciones con su flujo (pasos opcionales).

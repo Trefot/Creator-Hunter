@@ -288,11 +288,82 @@ button.link:hover {
 }
 
 .profile-card {
+  padding: 14px 16px;
+}
+
+.profile-row {
   display: grid;
   grid-template-columns: 110px 1fr auto auto;
   align-items: center;
   gap: 16px;
-  padding: 14px 16px;
+}
+
+/* Registros de cuenta */
+
+.snapshots {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+
+.snapshots h3 {
+  margin: 0;
+  font-size: 15px;
+}
+
+.snapshot-form {
+  display: grid;
+  grid-template-columns: 160px 1fr 1fr auto;
+  align-items: end;
+  gap: 10px;
+  margin: 12px 0;
+}
+
+.snapshot-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.snapshot-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.snapshot-table th {
+  text-align: left;
+  font-weight: 500;
+  font-size: 13px;
+  color: var(--muted);
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+.snapshot-table td {
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+.snapshot-table td:last-child {
+  text-align: right;
+}
+
+.small-button {
+  padding: 3px 10px;
+  font-size: 13px;
+}
+
+.delta-up {
+  color: var(--success);
+  font-size: 13px;
+}
+
+.delta-down {
+  color: var(--danger);
+  font-size: 13px;
 }
 
 .profile-main {
