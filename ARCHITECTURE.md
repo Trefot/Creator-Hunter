@@ -81,6 +81,14 @@ El Core se construye **solo cuando una función real lo necesita**. Orden previs
 - **Los enumerados viven en el código**, no en tablas, mientras no los edite el usuario.
 - Volumen esperado bajo (menos de 20 ideas y 1–3 proyectos activos): sin paginación ni búsqueda avanzada en Alpha.
 
+### D-006 · Plugin oficial `tauri-plugin-sql` para SQLite (2026-11-03)
+**Motivo:** es el plugin oficial de Tauri y trae migraciones integradas. Las consultas se hacen desde TypeScript a través de una única capa (`src/db/`). Las relaciones entre tablas se verifican en la propia base de datos (`PRAGMA foreign_keys` activo, comprobado en la app).
+**Cómo funciona:**
+- Las migraciones viven en `src-tauri/migrations/NNN_*.sql`, se registran en `src-tauri/src/lib.rs` y se aplican solas al abrir la app.
+- Una migración aplicada **nunca se edita**: los cambios van siempre en una migración nueva.
+- El archivo de datos está en `%APPDATA%\com.trefotg.studio\studio.db`.
+**Alternativa descartada:** `rusqlite` con comandos propios en Rust. Da más control, pero obliga a escribir mucho más código para cada consulta.
+
 ## Dependencias
 
 | Dependencia | Para qué |
@@ -88,5 +96,6 @@ El Core se construye **solo cuando una función real lo necesita**. Orden previs
 | Tauri 2 (+ plugin opener de la plantilla) | Aplicación de escritorio |
 | React 19 + Vite | Interfaz |
 | TypeScript | Tipos |
+| `tauri-plugin-sql` (sqlite) + `@tauri-apps/plugin-sql` | Base de datos local y migraciones (D-006) |
 
 Las dependencias nuevas se añaden a esta tabla con su justificación.

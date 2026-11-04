@@ -39,4 +39,9 @@ Requisitos en Windows: Node.js LTS, Rust (rustup, toolchain MSVC estable), Visua
 ## Estructura
 
 - `src/`: interfaz (React + TypeScript).
-- `src-tauri/`: aplicación de escritorio (Rust, Tauri 2). Aquí vivirá el acceso a SQLite.
+  - `src/db/`: la **única** capa que lee y escribe en la base de datos.
+  - `src/i18n/es.ts`: todos los textos visibles.
+- `src-tauri/`: aplicación de escritorio (Rust, Tauri 2).
+  - `src-tauri/migrations/`: migraciones SQL numeradas. **Nunca se edita una ya aplicada**; los cambios van en una nueva, registrada en `src-tauri/src/lib.rs`.
+- Datos del usuario: `%APPDATA%\com.trefotg.studio\studio.db`. Nunca se borra ni se sobrescribe sin una copia de seguridad.
+- `Abrir TrophyHunter.bat`: abre la app con doble clic.

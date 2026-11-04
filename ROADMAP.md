@@ -26,13 +26,18 @@ Ritmo: 2–3 noches por semana, una tarea cerrada y probada por sesión.
 - [x] Respuestas del usuario: todas las métricas (seguidores, vistas por publicación, horas, directos); todos los tipos de ingreso; Script Studio por secciones; volumen bajo.
 - [x] Esquema de 11 tablas aprobado y documentado en ARCHITECTURE.md (D-005).
 
-### ⬜ S3 · SQLite y migraciones (siguiente)
-Crear la base de datos local con la migración 001 (el esquema de ARCHITECTURE.md) y una prueba de guardado y lectura que sobreviva al cierre de la app.
-**Terminado cuando:** se crea un perfil de prueba, se cierra la app, se vuelve a abrir y el perfil sigue ahí.
+### ✅ S3 · SQLite y migraciones
+- [x] Plugin oficial de SQLite y migración 001 con las 11 tablas.
+- [x] Capa de datos (`src/db/`) y textos centralizados (`src/i18n/es.ts`).
+- [x] Prueba del usuario: 5 perfiles creados, app cerrada y reabierta, los perfiles siguen ahí. Duplicados rechazados e integridad de relaciones activa.
+- [x] Acceso directo `Abrir TrophyHunter.bat`.
+
+### ⬜ S4 · Estructura de la interfaz (siguiente)
+Sustituir la pantalla temporal de prueba por la estructura real: navegación lateral (Dashboard, Perfiles, Ideas, Proyectos, Calendario, Ingresos), tema visual y la pantalla de Perfiles conectada a la base de datos.
+**Terminado cuando:** se puede navegar entre secciones y gestionar los perfiles (crear, editar, marcar como monetizado y eliminar) desde su pantalla definitiva.
 
 ### ⬜ Siguientes (el orden se ajusta tras S2)
-- Estructura de la interfaz: navegación, tema y textos centralizados.
-- Perfiles sociales y metas.
+- Metas por perfil.
 - Métricas e ingresos manuales.
 - Banco de ideas → aprobación → proyecto.
 - Proyectos y adaptaciones con su flujo (pasos opcionales).
