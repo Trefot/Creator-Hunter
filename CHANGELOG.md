@@ -2,6 +2,12 @@
 
 ## [Sin publicar]
 
+### 2026-11-03 · S4 Estructura de la interfaz
+- Menú lateral (Dashboard, Perfiles, Ideas, Proyectos, Calendario, Ingresos) y tema visual oscuro.
+- Pantalla de Perfiles: crear, editar nombre visible, enlace y estado de monetización, abrir el enlace en el navegador y eliminar con confirmación.
+- Validaciones: usuario obligatorio, enlace con `http(s)://`, perfiles duplicados y perfiles con publicaciones asociadas.
+- Se elimina la pantalla temporal de prueba de la S3.
+
 ### 2026-11-03 · S3 SQLite y migraciones
 - Base de datos local SQLite (`tauri-plugin-sql`) con la migración 001: las 11 tablas de Alpha 0.1 y el espacio de trabajo TrefotG (USD).
 - Capa de datos `src/db/` (conexión y perfiles) y textos en `src/i18n/es.ts`.

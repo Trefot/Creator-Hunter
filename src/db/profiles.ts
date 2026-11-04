@@ -13,8 +13,23 @@ export interface Profile {
   created_at: string;
 }
 
+/** Campos que el usuario puede editar. */
+export interface ProfileInput {
+  platform: Platform;
+  handle: string;
+  display_name: string;
+  url: string;
+  is_monetized: boolean;
+}
+
 interface ProfileRow extends Omit<Profile, "is_monetized"> {
   is_monetized: 0 | 1;
+}
+
+/** Un texto vacío se guarda como NULL. */
+function optional(value: string): string | null {
+  const trimmed = value.trim();
+  return trimmed === "" ? null : trimmed;
 }
 
 export async function listProfiles(): Promise<Profile[]> {
@@ -27,11 +42,39 @@ export async function listProfiles(): Promise<Profile[]> {
   return rows.map((r) => ({ ...r, is_monetized: r.is_monetized === 1 }));
 }
 
-export async function createProfile(platform: Platform, handle: string): Promise<void> {
+export async function createProfile(input: ProfileInput): Promise<void> {
   const db = await getDb();
   await db.execute(
-    "INSERT INTO profile (id, workspace_id, platform, handle) VALUES ($1, $2, $3, $4)",
-    [newId(), WORKSPACE_ID, platform, handle.trim()],
+    `INSERT INTO profile (id, workspace_id, platform, handle, display_name, url, is_monetized)
+     VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+    [
+      newId(),
+      WORKSPACE_ID,
+      input.platform,
+      input.handle.trim(),
+      optional(input.display_name),
+      optional(input.url),
+      input.is_monetized ? 1 : 0,
+    ],
+  );
+}
+
+export async function updateProfile(id: string, input: ProfileInput): Promise<void> {
+  const db = await getDb();
+  await db.execute(
+    `UPDATE profile
+        SET platform = $1, handle = $2, display_name = $3, url = $4, is_monetized = $5,
+            updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
+      WHERE id = $6 AND workspace_id = $7`,
+    [
+      input.platform,
+      input.handle.trim(),
+      optional(input.display_name),
+      optional(input.url),
+      input.is_monetized ? 1 : 0,
+      id,
+      WORKSPACE_ID,
+    ],
   );
 }
 

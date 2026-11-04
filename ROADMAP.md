@@ -1,6 +1,6 @@
 # ROADMAP.md — Ruta y tareas
 
-Ritmo: 2–3 noches por semana, una tarea cerrada y probada por sesión.
+Ritmo: sesiones diarias, cada una con un presupuesto de ~8–9 % del uso semanal de Claude Code. Una tarea cerrada y probada por sesión.
 
 ## Fases
 
@@ -32,13 +32,19 @@ Ritmo: 2–3 noches por semana, una tarea cerrada y probada por sesión.
 - [x] Prueba del usuario: 5 perfiles creados, app cerrada y reabierta, los perfiles siguen ahí. Duplicados rechazados e integridad de relaciones activa.
 - [x] Acceso directo `Abrir TrophyHunter.bat`.
 
-### ⬜ S4 · Estructura de la interfaz (siguiente)
-Sustituir la pantalla temporal de prueba por la estructura real: navegación lateral (Dashboard, Perfiles, Ideas, Proyectos, Calendario, Ingresos), tema visual y la pantalla de Perfiles conectada a la base de datos.
-**Terminado cuando:** se puede navegar entre secciones y gestionar los perfiles (crear, editar, marcar como monetizado y eliminar) desde su pantalla definitiva.
+### ✅ S4 · Estructura de la interfaz
+- [x] Menú lateral con las seis secciones. Las que no están construidas muestran "Próximamente".
+- [x] Tema oscuro con acento morado y etiquetas de color por red.
+- [x] Pantalla de Perfiles definitiva: crear, editar (nombre visible, enlace, monetizado), abrir el enlace en el navegador y eliminar con confirmación.
+- [x] Prueba del usuario superada, incluida la persistencia.
 
-### ⬜ Siguientes (el orden se ajusta tras S2)
-- Metas por perfil.
-- Métricas e ingresos manuales.
+### ⬜ S5 · Registros de cuenta (siguiente)
+Registrar seguidores y horas de visualización con fecha (`account_snapshot`) desde cada perfil, y ver el último valor y el historial.
+**Terminado cuando:** se puede añadir, ver y borrar registros de un perfil, y el último valor aparece en su tarjeta.
+
+### ⬜ Siguientes
+- Metas por perfil (progreso calculado a partir de los registros e ingresos).
+- Ingresos manuales.
 - Banco de ideas → aprobación → proyecto.
 - Proyectos y adaptaciones con su flujo (pasos opcionales).
 - Script Studio.

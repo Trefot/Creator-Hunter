@@ -40,6 +40,9 @@ Requisitos en Windows: Node.js LTS, Rust (rustup, toolchain MSVC estable), Visua
 
 - `src/`: interfaz (React + TypeScript).
   - `src/db/`: la **única** capa que lee y escribe en la base de datos.
+  - `src/features/<sección>/`: cada sección con sus páginas y formularios (por ejemplo, `profiles/`).
+  - `src/components/`: piezas compartidas (menú lateral, "Próximamente").
+  - `src/sections.ts`: secciones del menú y cuáles están construidas. La navegación es estado de React, sin librería de rutas.
   - `src/i18n/es.ts`: todos los textos visibles.
 - `src-tauri/`: aplicación de escritorio (Rust, Tauri 2).
   - `src-tauri/migrations/`: migraciones SQL numeradas. **Nunca se edita una ya aplicada**; los cambios van en una nueva, registrada en `src-tauri/src/lib.rs`.
