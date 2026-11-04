@@ -1,11 +1,12 @@
 import { blackMythWukongCollections } from "./blackMythWukong";
+import { blackMythWukongCurios } from "./blackMythWukongCurios";
 import { blackMythWukongStory } from "./blackMythWukongStory";
 import type { GameCollections, TrophyCollection } from "./types";
 
 const ALL: GameCollections[] = [
   {
     npCommunicationId: blackMythWukongCollections.npCommunicationId,
-    collections: [...blackMythWukongStory, ...blackMythWukongCollections.collections],
+    collections: [...blackMythWukongStory, blackMythWukongCurios, ...blackMythWukongCollections.collections],
   },
 ];
 

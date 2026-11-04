@@ -2,6 +2,9 @@
 
 ## [Sin publicar]
 
+### 2026-11-04 · Lista de curiosidades de Wukong
+- «Una rara colección»: las 36 curiosidades por capítulo, con dónde están, cuáles son aleatorias (8) o perdibles (2) y la build de botín.
+
 ### 2026-11-04 · G5+ Listas por trofeo y plan de hoy
 - Cada trofeo tiene su ficha (panel lateral): lo siguiente que toca, la lista de lo que hay que conseguir con casillas, fijo o aleatorio, perdibles, build de farmeo, consejos y fuentes.
 - Los puntos se marcan solos cuando ya tienes el trofeo relacionado; en cualquier trofeo puedes añadir puntos propios.

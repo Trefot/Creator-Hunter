@@ -208,7 +208,8 @@ Objetivo: el platino de Black Myth: Wukong (y los siguientes juegos) desde Troph
 - [x] Ficha por trofeo con lista para marcar, siguiente paso, puntos propios y "Ya lo perdí → NG+".
 - [x] Pestaña "Hoy" armada a mano desde los trofeos pendientes, con progreso y siguiente paso por trofeo.
 - [x] Listas de Wukong: final del cap. 6, final secreto, hechizos, reliquias y semillas.
-- [ ] Listas grandes de Wukong (una sesión de investigación cada una): curiosidades, armaduras, armas, espíritus y transformaciones, calabazas e infusiones, fórmulas de medicina y diario.
+- [x] Lista de las 36 curiosidades (8 aleatorias, 2 perdibles).
+- [ ] Listas grandes de Wukong (una sesión de investigación cada una): armaduras, armas, espíritus y transformaciones, calabazas e infusiones, fórmulas de medicina y diario.
 
 #### ⬜ G6 · Objetivos de juego y enlace con vídeos (siguiente)
 Objetivos con progreso (nivel, XP farmeada…) y proyectos del Creator Studio enlazados al juego.
