@@ -145,11 +145,15 @@ Primeras integraciones automáticas. Todo local, con inicio de sesión OAuth des
 - [x] Tests del receptor loopback y de PKCE (5/5).
 - [x] Prueba del usuario: canal conectado.
 
-#### ⬜ S19 · Sincronizar el canal
-Migración 006 (origen `manual`/`api` en los registros). Suscriptores, vistas y vídeos (Data API) y horas y suscriptores ganados/perdidos (Analytics); un registro automático por día; progreso hacia las 4.000 h.
-**Terminado cuando:** al abrir la app aparece el registro del día con origen "YouTube" y coincide con YouTube Studio.
+#### ✅ S19 · Sincronizar el canal
+- [x] Migración 006: origen `manual`/`api` y vistas totales en los registros; como mucho un registro automático por perfil y día.
+- [x] Sincronización al abrir la app (como mucho cada 3 horas) y con el botón "Sincronizar ahora"; aviso al terminar.
+- [x] Suscriptores y vistas totales (Data API); horas de los últimos 365 días sin Shorts ni historias (Analytics por `creatorContentType`).
+- [x] Registros muestran la etiqueta "YouTube" y las vistas totales.
+- [x] Prueba del usuario: los datos cuadran con YouTube Studio.
+- **Pendiente para cuando el canal pase de 1.000 suscriptores:** la Data API los redondea a 3 cifras; habrá que calcularlos con `subscribersGained`/`subscribersLost` de Analytics.
 
-#### ⬜ S20 · Resultados automáticos por vídeo
+#### ⬜ S20 · Resultados automáticos por vídeo (siguiente)
 Las adaptaciones publicadas con enlace de YouTube obtienen sus resultados (vistas, likes, comentarios, compartidos y horas) sin anotarlos.
 **Terminado cuando:** un vídeo publicado muestra resultados de origen "YouTube" que coinciden con Studio.
 

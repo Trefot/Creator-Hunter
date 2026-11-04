@@ -41,6 +41,12 @@ fn migrations() -> Vec<Migration> {
             sql: include_str!("../migrations/005_last_payout.sql"),
             kind: MigrationKind::Up,
         },
+        Migration {
+            version: 6,
+            description: "origen manual/api y vistas totales",
+            sql: include_str!("../migrations/006_api_source.sql"),
+            kind: MigrationKind::Up,
+        },
     ]
 }
 
@@ -61,6 +67,7 @@ pub fn run() {
             youtube::youtube_status,
             youtube::youtube_connect,
             youtube::youtube_channel,
+            youtube::youtube_sync,
             youtube::youtube_disconnect,
         ])
         .run(tauri::generate_context!())

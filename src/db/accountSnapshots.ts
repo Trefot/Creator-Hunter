@@ -7,6 +7,10 @@ export interface AccountSnapshot {
   recorded_on: string;
   followers: number | null;
   watch_hours: number | null;
+  /** Vistas totales del canal (solo en registros sincronizados). */
+  total_views: number | null;
+  /** 'manual' o 'api' (sincronizado; migración 006). */
+  source: "manual" | "api";
 }
 
 export interface AccountSnapshotInput {
@@ -15,7 +19,7 @@ export interface AccountSnapshotInput {
   watch_hours: number | null;
 }
 
-const COLUMNS = "id, profile_id, recorded_on, followers, watch_hours";
+const COLUMNS = "id, profile_id, recorded_on, followers, watch_hours, total_views, source";
 
 /** Historial de un perfil, del más reciente al más antiguo. */
 export async function listSnapshots(profileId: string): Promise<AccountSnapshot[]> {
@@ -57,6 +61,23 @@ export async function createSnapshot(profileId: string, input: AccountSnapshotIn
     `INSERT INTO account_snapshot (id, workspace_id, profile_id, recorded_on, followers, watch_hours)
      VALUES ($1, $2, $3, $4, $5, $6)`,
     [newId(), WORKSPACE_ID, profileId, input.recorded_on, input.followers, input.watch_hours],
+  );
+}
+
+/** Registro automático del día: como mucho uno por perfil y día; una nueva sincronización lo actualiza. */
+export async function upsertApiSnapshot(
+  profileId: string,
+  recordedOn: string,
+  data: { followers: number | null; watch_hours: number | null; total_views: number | null },
+): Promise<void> {
+  const db = await getDb();
+  await db.execute(
+    `INSERT INTO account_snapshot (id, workspace_id, profile_id, recorded_on, followers, watch_hours, total_views, source)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, 'api')
+     ON CONFLICT (profile_id, recorded_on) WHERE source = 'api' DO UPDATE SET
+       followers = excluded.followers, watch_hours = excluded.watch_hours, total_views = excluded.total_views,
+       updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now')`,
+    [newId(), WORKSPACE_ID, profileId, recordedOn, data.followers, data.watch_hours, data.total_views],
   );
 }
 

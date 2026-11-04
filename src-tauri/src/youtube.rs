@@ -24,6 +24,7 @@ const AUTH_URL: &str = "https://accounts.google.com/o/oauth2/v2/auth";
 const TOKEN_URL: &str = "https://oauth2.googleapis.com/token";
 const REVOKE_URL: &str = "https://oauth2.googleapis.com/revoke";
 const CHANNELS_URL: &str = "https://www.googleapis.com/youtube/v3/channels";
+const ANALYTICS_URL: &str = "https://youtubeanalytics.googleapis.com/v2/reports";
 /// Lectura del canal y de Analytics (horas, vistas, suscriptores). Sin permiso monetario (D-015).
 const SCOPES: &str =
     "https://www.googleapis.com/auth/youtube.readonly https://www.googleapis.com/auth/yt-analytics.readonly";
@@ -365,6 +366,96 @@ pub async fn youtube_channel(app: AppHandle, state: State<'_, YouTubeState>) -> 
     Ok(channel)
 }
 
+#[derive(Serialize)]
+pub struct SyncData {
+    profile_id: String,
+    channel: Channel,
+    /// Horas de visualización en el intervalo pedido (YouTube Analytics); None si no se pudo obtener.
+    watch_hours: Option<f64>,
+    /// Aviso si Analytics falló pero los datos del canal sí llegaron.
+    warning: Option<String>,
+}
+
+fn is_iso_date(s: &str) -> bool {
+    s.len() == 10 && s.chars().enumerate().all(|(i, c)| if i == 4 || i == 7 { c == '-' } else { c.is_ascii_digit() })
+}
+
+/// Consulta de Analytics sobre todo el canal en [start, end]; `dimensions` vacío = total.
+async fn analytics_rows(token: &str, start: &str, end: &str, dimensions: &str) -> Result<Vec<Value>, String> {
+    let mut query = vec![
+        ("ids", "channel==MINE"),
+        ("startDate", start),
+        ("endDate", end),
+        ("metrics", "estimatedMinutesWatched"),
+    ];
+    if !dimensions.is_empty() {
+        query.push(("dimensions", dimensions));
+    }
+    let response = reqwest::Client::new()
+        .get(ANALYTICS_URL)
+        .query(&query)
+        .bearer_auth(token)
+        .send()
+        .await
+        .map_err(|e| e.to_string())?;
+    if !response.status().is_success() {
+        let body = response.text().await.unwrap_or_default();
+        return Err(format!("YouTube Analytics rechazó la consulta: {body}"));
+    }
+    let doc: Value = response.json().await.map_err(|e| e.to_string())?;
+    // Sin visualizaciones en el periodo, Analytics no devuelve filas.
+    Ok(doc["rows"].as_array().cloned().unwrap_or_default())
+}
+
+/// Minutos vistos en [start, end] **sin Shorts ni historias**, lo más parecido al contador de horas
+/// de monetización (que tampoco cuenta los Shorts). Si la consulta por tipo de contenido falla,
+/// se usa el total del canal como respaldo.
+async fn fetch_watch_minutes(token: &str, start: &str, end: &str) -> Result<f64, String> {
+    match analytics_rows(token, start, end, "creatorContentType").await {
+        Ok(rows) => Ok(long_form_minutes(&rows)),
+        Err(_) => {
+            let rows = analytics_rows(token, start, end, "").await?;
+            Ok(rows.first().and_then(|r| r[0].as_f64()).unwrap_or(0.0))
+        }
+    }
+}
+
+/// Suma los minutos de las filas [tipo, minutos] excepto Shorts e historias.
+fn long_form_minutes(rows: &[Value]) -> f64 {
+    rows.iter()
+        .filter(|r| !matches!(r[0].as_str(), Some("SHORTS") | Some("STORY")))
+        .filter_map(|r| r[1].as_f64())
+        .sum()
+}
+
+/// Sincroniza el canal: datos públicos (Data API) y horas de los últimos 365 días (Analytics).
+/// La interfaz guarda el resultado como registro del día con origen 'api'.
+#[tauri::command]
+pub async fn youtube_sync(
+    app: AppHandle,
+    state: State<'_, YouTubeState>,
+    start: String,
+    end: String,
+) -> Result<SyncData, String> {
+    if !is_iso_date(&start) || !is_iso_date(&end) {
+        return Err("Fechas no válidas.".into());
+    }
+    let connection: Connection = read_json(data_dir(&app)?.join(CONNECTION_FILE))
+        .ok_or_else(|| "YouTube no está conectado a ningún perfil.".to_string())?;
+    let token = access_token(&app, &state).await?;
+    let channel = fetch_channel(&token).await?;
+    let (watch_hours, warning) = match fetch_watch_minutes(&token, &start, &end).await {
+        Ok(minutes) => (Some((minutes / 60.0 * 10.0).round() / 10.0), None),
+        Err(e) => (None, Some(e)),
+    };
+
+    let updated = Connection { profile_id: connection.profile_id.clone(), channel: channel.clone() };
+    if let Ok(text) = serde_json::to_string_pretty(&updated) {
+        let _ = std::fs::write(data_dir(&app)?.join(CONNECTION_FILE), text);
+    }
+    Ok(SyncData { profile_id: connection.profile_id, channel, watch_hours, warning })
+}
+
 /// Desconecta: revoca el acceso en Google y borra el token de Windows y la conexión guardada.
 #[tauri::command]
 pub async fn youtube_disconnect(app: AppHandle, state: State<'_, YouTubeState>) -> Result<(), String> {
@@ -432,5 +523,36 @@ mod tests {
         let verifier = "dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk";
         let challenge = URL_SAFE_NO_PAD.encode(Sha256::digest(verifier.as_bytes()));
         assert_eq!(challenge, "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM");
+    }
+}
+
+#[cfg(test)]
+mod date_tests {
+    use super::is_iso_date;
+
+    #[test]
+    fn valida_fechas_iso() {
+        assert!(is_iso_date("2026-11-04"));
+        assert!(!is_iso_date("2026-1-04"));
+        assert!(!is_iso_date("2026/11/04"));
+        assert!(!is_iso_date("2026-11-04&x=1"));
+    }
+}
+
+#[cfg(test)]
+mod analytics_tests {
+    use super::long_form_minutes;
+    use serde_json::json;
+
+    #[test]
+    fn excluye_shorts_e_historias() {
+        let rows = vec![
+            json!(["VIDEO_ON_DEMAND", 9000.0]),
+            json!(["SHORTS", 3000.0]),
+            json!(["LIVE_STREAM", 1200.0]),
+            json!(["STORY", 50.0]),
+            json!(["UNSPECIFIED", 30.0]),
+        ];
+        assert_eq!(long_form_minutes(&rows), 10230.0);
     }
 }

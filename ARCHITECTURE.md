@@ -145,6 +145,8 @@ Cuentan lo recibido en USD desde la fecha local de creación de la meta, filtrad
 - **Implementación (S18):** `src-tauri/src/youtube.rs`. Comandos `youtube_import_client`, `youtube_status`, `youtube_connect`, `youtube_channel` y `youtube_disconnect`. Archivos en la carpeta de datos: `google-client.json` (cliente OAuth) y `youtube-connection.json` (perfil enlazado y canal). El access token solo vive en memoria (`YouTubeState`).
 - **Publicar en producción** exige en Google Auth Platform una URL de página principal y otra de política de privacidad, y no tener logotipo subido (con logo hay que pasar la verificación). Hasta tenerlas, la app está en "Prueba" con el usuario como usuario de prueba.
 - `reqwest` usa el TLS nativo de Windows (`native-tls`, SChannel) para no compilar `aws-lc` en C.
+- **Sincronización del canal (S19):** comando `youtube_sync(start, end)`. Suscriptores y vistas totales de la Data API (exactos por debajo de 1.000 suscriptores). Horas = `estimatedMinutesWatched` de los últimos 365 días con `dimensions=creatorContentType`, **excluyendo `SHORTS` y `STORY`**, que es lo más parecido al contador de monetización; si esa consulta falla, se usa el total del canal. Studio también descuenta vídeos ocultos, privados o borrados, y eso Analytics no lo filtra.
+- El registro del día se guarda con `INSERT … ON CONFLICT (profile_id, recorded_on) WHERE source = 'api' DO UPDATE` (índice único parcial de la migración 006). La hora de la última sincronización se guarda en `localStorage` (solo limita la frecuencia; perderla no rompe nada).
 
 ## Dependencias
 

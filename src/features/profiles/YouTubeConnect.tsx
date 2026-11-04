@@ -13,6 +13,7 @@ import {
 } from "../../db/youtube";
 import { es } from "../../i18n/es";
 import { formatNumber } from "../../i18n/format";
+import { lastYouTubeSync, runYouTubeSync } from "./youtubeSync";
 
 const t = es.youtube;
 
@@ -28,6 +29,8 @@ export function YouTubeConnect({ profileId, onChange }: Props) {
   const [channel, setChannel] = useState<YouTubeChannel | null>(null);
   const [busy, setBusy] = useState<null | "connecting" | "refreshing">(null);
   const [confirmingDisconnect, setConfirmingDisconnect] = useState(false);
+  const [lastSync, setLastSync] = useState<Date | null>(lastYouTubeSync());
+  const [warning, setWarning] = useState("");
   const [error, setError] = useState("");
 
   async function load() {
@@ -74,10 +77,29 @@ export function YouTubeConnect({ profileId, onChange }: Props) {
         const blob = await (await fetch(result.avatar)).blob();
         await setProfileAvatar(profileId, await resizeImage(new File([blob], "canal"), AVATAR_SIZE));
       }
-      await onChange();
       await load();
+      // Primera sincronización nada más conectar.
+      await onSync();
     } catch (err) {
       setError(String(err));
+      setBusy(null);
+    }
+  }
+
+  /** Sincroniza el canal y guarda el registro del día (origen YouTube). */
+  async function onSync() {
+    setError("");
+    setWarning("");
+    setBusy("refreshing");
+    try {
+      const data = await runYouTubeSync();
+      setChannel(data.channel);
+      setLastSync(lastYouTubeSync());
+      if (data.warning) setWarning(`${t.analyticsWarning} ${data.warning}`);
+      await onChange();
+    } catch (err) {
+      setError(String(err));
+    } finally {
       setBusy(null);
     }
   }
@@ -135,8 +157,10 @@ export function YouTubeConnect({ profileId, onChange }: Props) {
             )}
           </span>
           <span className="profile-actions">
-            <button className="ghost small-button" onClick={load} disabled={busy !== null} title={t.refresh}>
+            {lastSync && <span className="muted small">{t.lastSync(lastSync.toLocaleString(es.locale, { dateStyle: "short", timeStyle: "short" }))}</span>}
+            <button className="small-button" onClick={onSync} disabled={busy !== null}>
               <RefreshCw size={14} className={busy === "refreshing" ? "spin" : ""} />
+              {t.syncNow}
             </button>
             {confirmingDisconnect ? (
               <>
@@ -156,6 +180,7 @@ export function YouTubeConnect({ profileId, onChange }: Props) {
           </span>
         </>
       )}
+      {warning && <span className="small yt-error yt-warning">{warning}</span>}
       {error && <span className="error small yt-error">{error}</span>}
     </div>
   );

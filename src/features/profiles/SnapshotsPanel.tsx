@@ -114,6 +114,7 @@ export function SnapshotsPanel({ profileId, onChange }: Props) {
               <th>{t.date}</th>
               <th>{t.followers}</th>
               <th>{t.watchHours}</th>
+              <th>{t.totalViews}</th>
               <th />
             </tr>
           </thead>
@@ -124,7 +125,10 @@ export function SnapshotsPanel({ profileId, onChange }: Props) {
               const diff = s.followers !== null && prev ? s.followers - prev.followers! : null;
               return (
                 <tr key={s.id}>
-                  <td>{formatDate(s.recorded_on)}</td>
+                  <td>
+                    {formatDate(s.recorded_on)}
+                    {s.source === "api" && <span className="source-chip">{es.youtube.sourceApi}</span>}
+                  </td>
                   <td>
                     {s.followers !== null ? formatNumber(s.followers) : "—"}
                     {diff !== null && diff !== 0 && (
@@ -136,6 +140,7 @@ export function SnapshotsPanel({ profileId, onChange }: Props) {
                     )}
                   </td>
                   <td>{s.watch_hours !== null ? `${formatNumber(s.watch_hours)} ${t.hoursUnit}` : "—"}</td>
+                  <td>{s.total_views !== null ? formatNumber(s.total_views) : "—"}</td>
                   <td>
                     <button className="ghost small-button" onClick={() => onDelete(s.id)}>
                       {t.remove}

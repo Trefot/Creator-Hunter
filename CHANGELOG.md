@@ -2,6 +2,11 @@
 
 ## [Sin publicar]
 
+### 2026-11-04 · S19 Sincronizar el canal de YouTube
+- Al abrir la app (como mucho cada 3 horas) o con "Sincronizar ahora", se guarda el registro del día con suscriptores, vistas totales y horas de los últimos 365 días sin Shorts.
+- Migración 006: origen manual/YouTube y vistas totales en los registros.
+- Registros: etiqueta "YouTube" y columna de vistas totales.
+
 ### 2026-11-04 · S17–S18 Conectar YouTube (Alpha 0.2)
 - Plan de integración con YouTube verificado en la documentación oficial (D-015).
 - Perfiles → YouTube: importar el cliente OAuth de Google, conectar con el navegador (loopback + PKCE), ver el canal y desconectar.

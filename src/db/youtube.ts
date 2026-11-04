@@ -34,3 +34,13 @@ export const connectYouTube = (profileId: string) =>
 export const fetchYouTubeChannel = () => invoke<YouTubeChannel>("youtube_channel");
 
 export const disconnectYouTube = () => invoke<void>("youtube_disconnect");
+
+export interface YouTubeSyncData {
+  profile_id: string;
+  channel: YouTubeChannel;
+  watch_hours: number | null;
+  warning: string | null;
+}
+
+/** Datos del canal y horas de visualización del intervalo [start, end] (fechas 'AAAA-MM-DD'). */
+export const syncYouTubeData = (start: string, end: string) => invoke<YouTubeSyncData>("youtube_sync", { start, end });
