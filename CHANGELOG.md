@@ -2,6 +2,9 @@
 
 ## [Sin publicar]
 
+### 2026-11-04 · Lista de calabazas, bebidas e infusiones de Wukong
+- «Refrescante abundancia»: 11 calabazas, 9 bebidas y 27 infusiones con ubicación, compras al Mono Shen por capítulo, aleatorias, perdible y objetos de NG+.
+
 ### 2026-11-04 · Lista de curiosidades de Wukong
 - «Una rara colección»: las 36 curiosidades por capítulo, con dónde están, cuáles son aleatorias (8) o perdibles (2) y la build de botín.
 
