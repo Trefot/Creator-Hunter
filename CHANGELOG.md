@@ -2,6 +2,11 @@
 
 ## [Sin publicar]
 
+### 2026-11-03 · S11 Calendario semanal
+- Calendario de lunes a domingo con las adaptaciones programadas, navegación entre semanas y apertura del proyecto con un clic.
+- Lista "Sin programar" con las adaptaciones en producción sin fecha.
+- Las consultas de adaptaciones comparten un único cargador (`loadAdaptations`), que incluye el título del proyecto mediante JOIN.
+
 ### 2026-11-03 · S10 Script Studio
 - Guion por secciones con tipo, texto y segundos, dentro de cada adaptación que use el paso de guion.
 - Plantilla inicial, reordenar con ↑ ↓, guardado automático y duración total calculada (indicada o estimada por palabras).

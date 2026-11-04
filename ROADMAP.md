@@ -77,12 +77,18 @@ Ritmo: sesiones diarias, cada una con un presupuesto de ~8–9 % del uso semanal
 - [x] Duración total: segundos indicados o estimados por palabras (unas 150 por minuto).
 - [x] Prueba del usuario superada.
 
-### ⬜ S11 · Calendario semanal (siguiente)
-Vista de lunes a domingo con las adaptaciones programadas (qué, dónde y a qué hora), navegación entre semanas y acceso directo a su proyecto. Todo se deriva de `adaptation.scheduled_at`, sin datos propios.
-**Terminado cuando:** las adaptaciones programadas aparecen en su día y hora, se puede cambiar de semana y, al cambiar la fecha de una adaptación, el calendario lo refleja.
+### ✅ S11 · Calendario semanal
+- [x] Vista de lunes a domingo con hora, red, título, formato y paso actual; hoy resaltado.
+- [x] Navegación entre semanas, contador semanal y apertura del proyecto con un clic.
+- [x] Lista "Sin programar" con las adaptaciones en producción sin fecha.
+- [x] Sin datos propios: todo se deriva de `adaptation.scheduled_at`.
+- [x] Prueba del usuario superada.
+
+### ⬜ S12 · Seguimiento de publicaciones y resultados (siguiente)
+Marcar una adaptación como publicada (fecha y enlace) y registrar sus resultados fechados (`result_snapshot`): vistas, likes, comentarios, compartidos y horas; en los directos, espectadores medios y máximos y duración. Conectar las metas de vistas.
+**Terminado cuando:** una adaptación publicada guarda su enlace, tiene resultados del día 1 y del día 7 con su evolución, y una meta de vistas muestra su progreso.
 
 ### ⬜ Siguientes
-- Seguimiento de publicaciones y resultados.
 - Dashboard multired.
 - Exportación e importación.
 - Cierre de Alpha 0.1: revisión completa con los criterios de PRODUCT.md.

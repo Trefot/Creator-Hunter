@@ -757,6 +757,105 @@ textarea:focus {
   margin-top: 8px;
 }
 
+/* Calendario */
+
+.page.page-wide {
+  max-width: 1280px;
+}
+
+.week-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.day-column {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-height: 220px;
+  padding: 8px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.day-today {
+  border-color: var(--accent);
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+
+.day-header {
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: capitalize;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+}
+
+.day-today .day-header {
+  color: var(--accent);
+}
+
+.day-empty {
+  text-align: center;
+  padding-top: 8px;
+}
+
+.cal-item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  width: 100%;
+  text-align: left;
+  padding: 8px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  white-space: normal;
+}
+
+.cal-item:hover {
+  border-color: var(--accent);
+}
+
+.cal-item-done {
+  opacity: 0.6;
+}
+
+.cal-item-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+}
+
+.cal-item-top .platform-badge {
+  font-size: 11px;
+  padding: 2px 6px;
+}
+
+.cal-item-title {
+  font-size: 13px;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+
+.unscheduled {
+  margin-top: 28px;
+}
+
+.unscheduled-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 8px;
+  margin-top: 10px;
+}
+
 .profile-main {
   display: flex;
   flex-direction: column;

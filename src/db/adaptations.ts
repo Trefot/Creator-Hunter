@@ -27,6 +27,8 @@ export interface AdaptationStep {
 export interface Adaptation {
   id: string;
   project_id: string;
+  /** Del proyecto al que pertenece (leído con JOIN, no copiado). */
+  project_title: string;
   profile_id: string;
   format: Format;
   title: string;
@@ -53,20 +55,27 @@ interface StepRow {
   completed_at: string | null;
 }
 
-export async function listAdaptations(projectId: string): Promise<Adaptation[]> {
+/**
+ * Carga adaptaciones con sus pasos. `where` filtra sobre el alias `a` (adaptation) y puede usar
+ * los parámetros `params`; el filtro por espacio de trabajo se añade aquí.
+ */
+async function loadAdaptations(where: string, params: unknown[]): Promise<Adaptation[]> {
   const db = await getDb();
+  const ws = `$${params.length + 1}`;
   const [rows, stepRows] = await Promise.all([
     db.select<Omit<Adaptation, "steps">[]>(
-      `SELECT id, project_id, profile_id, format, title, scheduled_at, published_at, published_url
-         FROM adaptation WHERE project_id = $1 AND workspace_id = $2
-        ORDER BY scheduled_at IS NULL, scheduled_at, created_at`,
-      [projectId, WORKSPACE_ID],
+      `SELECT a.id, a.project_id, p.title AS project_title, a.profile_id, a.format, a.title,
+              a.scheduled_at, a.published_at, a.published_url
+         FROM adaptation a JOIN project p ON p.id = a.project_id
+        WHERE ${where} AND a.workspace_id = ${ws}
+        ORDER BY a.scheduled_at IS NULL, a.scheduled_at, a.created_at`,
+      [...params, WORKSPACE_ID],
     ),
     db.select<StepRow[]>(
       `SELECT s.id, s.adaptation_id, s.step, s.enabled, s.completed_at
          FROM adaptation_step s JOIN adaptation a ON a.id = s.adaptation_id
-        WHERE a.project_id = $1 AND s.workspace_id = $2`,
-      [projectId, WORKSPACE_ID],
+        WHERE ${where} AND a.workspace_id = ${ws}`,
+      [...params, WORKSPACE_ID],
     ),
   ]);
 
@@ -77,6 +86,23 @@ export async function listAdaptations(projectId: string): Promise<Adaptation[]> 
       return row ? [{ id: row.id, step, enabled: row.enabled === 1, completed_at: row.completed_at }] : [];
     }),
   }));
+}
+
+export function listAdaptations(projectId: string): Promise<Adaptation[]> {
+  return loadAdaptations("a.project_id = $1", [projectId]);
+}
+
+/**
+ * Adaptaciones programadas en [from, to), con fechas locales 'AAAA-MM-DD'.
+ * scheduled_at es 'AAAA-MM-DDTHH:MM', así que comparar como texto ordena bien.
+ */
+export function listScheduledBetween(from: string, to: string): Promise<Adaptation[]> {
+  return loadAdaptations("a.scheduled_at >= $1 AND a.scheduled_at < $2", [from, to]);
+}
+
+/** Adaptaciones sin fecha programada y aún no publicadas. */
+export function listUnscheduled(): Promise<Adaptation[]> {
+  return loadAdaptations("a.scheduled_at IS NULL AND a.published_at IS NULL", []);
 }
 
 /** Crea la adaptación y sus seis pasos (activos o no según `disabled`). */

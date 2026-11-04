@@ -6,9 +6,9 @@ import { ProjectDetail } from "./ProjectDetail";
 const t = es.projects;
 
 /** Lista de proyectos; al abrir uno se muestra su detalle con las adaptaciones. */
-export function ProjectsPage() {
+export function ProjectsPage({ initialOpenId = null }: { initialOpenId?: string | null }) {
   const [projects, setProjects] = useState<Project[] | null>(null);
-  const [openId, setOpenId] = useState<string | null>(null);
+  const [openId, setOpenId] = useState<string | null>(initialOpenId);
   const [error, setError] = useState("");
 
   async function refresh() {
