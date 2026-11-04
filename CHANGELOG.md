@@ -2,6 +2,11 @@
 
 ## [Sin publicar]
 
+### 2026-11-03 · S8 Banco de ideas
+- Sección Ideas: título, descripción y etiquetas; pestañas por estado (nuevas, aprobadas, descartadas y todas) y filtro por etiqueta.
+- Aprobar una idea crea su proyecto enlazado, sin duplicados aunque se repita la acción.
+- Sección Proyectos: primera lista básica.
+
 ### 2026-11-03 · S7 Ingresos
 - Sección Ingresos: registrar, editar y eliminar ingresos con tipo, red, moneda y nota; totales del mes y del año por moneda.
 - Las metas de ingresos muestran su progreso en dinero (USD desde la creación de la meta).

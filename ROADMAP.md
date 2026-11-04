@@ -59,12 +59,17 @@ Ritmo: sesiones diarias, cada una con un presupuesto de ~8–9 % del uso semanal
 - [x] Migración 002: tipo "Twitch (total)". Twitch paga subs, bits y anuncios juntos, así que los tipos separados ya no se ofrecen.
 - [x] Prueba del usuario superada.
 
-### ⬜ S8 · Banco de ideas (siguiente)
-Sección Ideas: crear, editar, etiquetar y filtrar por estado (nueva, aprobada, descartada). Al **aprobar** una idea se crea su proyecto, enlazado a ella y sin copiar datos.
-**Terminado cuando:** se aprueba una idea, aparece su proyecto (aunque la sección Proyectos todavía sea básica) y la idea queda marcada como aprobada.
+### ✅ S8 · Banco de ideas
+- [x] Sección Ideas: crear, editar y eliminar; etiquetas que funcionan como filtro; pestañas por estado con contador.
+- [x] Descartar y recuperar. Una idea aprobada no se puede desaprobar.
+- [x] Aprobar crea el proyecto enlazado (idempotente: nunca se duplica). Lista básica en Proyectos.
+- [x] Prueba del usuario superada.
+
+### ⬜ S9 · Proyectos y adaptaciones (siguiente)
+Detalle de proyecto: crear adaptaciones (formato + red), con sus pasos de producción activables (guion, grabación, edición, programación, publicación, análisis) y su fecha programada. El estado actual se calcula como el primer paso activo sin completar.
+**Terminado cuando:** un proyecto tiene un vídeo largo y un Short, el Short sin el paso de guion, y ambos avanzan de forma independiente.
 
 ### ⬜ Siguientes
-- Proyectos y adaptaciones con su flujo (pasos opcionales).
 - Script Studio.
 - Calendario semanal.
 - Seguimiento de publicaciones y resultados.
