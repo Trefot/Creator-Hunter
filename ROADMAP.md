@@ -96,11 +96,20 @@ Ritmo: sesiones diarias, cada una con un presupuesto de ~8–9 % del uso semanal
 - [x] Todas las secciones de Alpha 0.1 construidas.
 - [x] Prueba del usuario superada.
 
-### ⬜ S14 · Exportar e importar (siguiente)
-Copia de seguridad en un archivo JSON autocontenido y versionado (versión de esquema, fecha y todas las tablas), y restauración desde ese archivo: validación completa antes de tocar nada, copia de seguridad automática previa y reemplazo de los datos en una transacción.
-**Terminado cuando:** se exporta, se borra o cambia algo, se importa y todo vuelve exactamente al estado exportado; un archivo inválido se rechaza sin modificar nada.
+### ✅ S14 · Exportar e importar
+- [x] Sección "Copias de seguridad": exporta todo a JSON versionado en Documentos\TrophyHunter\Copias (sincronizado con OneDrive).
+- [x] Importar: vista previa del contenido, validación completa, copia previa automática (`VACUUM INTO`) y reemplazo en una transacción todo o nada.
+- [x] Prueba del usuario superada: ida y vuelta exacta y archivo inválido rechazado.
 
-### ⬜ S15 · Cierre de Alpha 0.1
+### ⬜ S15 · Mejora visual (siguiente)
+Decidido por el usuario el 2026-11-03, con todas las secciones ya construidas:
+- Iconos en el menú y en los botones; menú más pulido.
+- Gráficas de evolución (seguidores, vistas e ingresos) en el Dashboard y en las secciones.
+- Identidad de marca: logo, paleta propia (morado TrefotG) y tipografía.
+- Pulido general: espaciados, tarjetas, transiciones suaves, estados vacíos y consistencia entre pantallas.
+Cualquier dependencia nueva (por ejemplo, iconos o gráficas) se justifica en ARCHITECTURE.md antes de añadirla.
+
+### ⬜ S16 · Cierre de Alpha 0.1
 Revisión completa con los criterios de PRODUCT.md, limpieza y etiqueta `v0.1.0` en Git.
 
 ## Alpha 0.2: conectores (decidido el 2026-11-03; empieza al cerrar 0.1)

@@ -2,6 +2,10 @@
 
 ## [Sin publicar]
 
+### 2026-11-03 · S14 Exportar e importar
+- Nueva sección "Copias de seguridad": exportar todos los datos a un JSON versionado e importarlo.
+- La importación muestra el contenido antes, valida el archivo completo, guarda una copia de los datos actuales y lo reemplaza todo en una sola transacción.
+
 ### 2026-11-03 · S13 Dashboard
 - Nueva pantalla de inicio: redes, ingresos del mes, metas activas, próximos 7 días, producción agrupada por paso y últimas publicaciones con sus vistas.
 - Cada bloque lleva a su sección y cada publicación abre su proyecto.

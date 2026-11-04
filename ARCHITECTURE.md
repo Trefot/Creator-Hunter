@@ -108,6 +108,12 @@ Cuentan lo recibido en USD desde la fecha local de creación de la meta, filtrad
 - Publicar completa el paso `publishing`; deshacer la publicación lo devuelve a pendiente y conserva los `result_snapshot`.
 - Las metas de vistas suman el último registro con vistas de cada adaptación publicada desde la fecha local de creación de la meta (filtrado por red si la meta tiene perfil). Es el mismo criterio que las metas de ingresos (D-008).
 
+### D-011 · Copias de seguridad en Rust (2026-11-03)
+- Exportar e importar viven en `src-tauri/src/backup.rs` como comandos de Tauri, porque una importación necesita una **transacción real** (todo o nada), algo que el plugin no ofrece desde el frontend.
+- Usan la misma conexión de la app (`tauri_plugin_sql::DbInstances`) con `sqlx` 0.8, la misma versión que ya trae el plugin, así que no se añade código nuevo a la app.
+- Formato: JSON con `format = "trophyhunter-studio-backup"`, `format_version`, `schema_version` (la última migración aplicada), `exported_at` y todas las tablas. Solo se importa una copia con el **mismo** `schema_version`.
+- La importación valida antes de tocar nada (formato, versiones, tablas, columnas reales y tipos de valor), guarda la base actual con `VACUUM INTO` en la carpeta de copias, borra de hijos a padres e inserta de padres a hijos dentro de una transacción, y comprueba `foreign_key_check` antes del commit.
+
 ## Dependencias
 
 | Dependencia | Para qué |
@@ -116,5 +122,6 @@ Cuentan lo recibido en USD desde la fecha local de creación de la meta, filtrad
 | React 19 + Vite | Interfaz |
 | TypeScript | Tipos |
 | `tauri-plugin-sql` (sqlite) + `@tauri-apps/plugin-sql` | Base de datos local y migraciones (D-006) |
+| `sqlx` 0.8 (sqlite, runtime-tokio) | Transacciones en exportar/importar; misma versión que la del plugin (D-011) |
 
 Las dependencias nuevas se añaden a esta tabla con su justificación.

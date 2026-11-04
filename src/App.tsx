@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { ComingSoon } from "./components/ComingSoon";
 import { Sidebar } from "./components/Sidebar";
+import { BackupsPage } from "./features/backups/BackupsPage";
 import { CalendarPage } from "./features/calendar/CalendarPage";
 import { DashboardPage } from "./features/dashboard/DashboardPage";
 import { GoalsPage } from "./features/goals/GoalsPage";
@@ -45,6 +46,8 @@ function App() {
           <CalendarPage onOpenProject={openProject} />
         ) : section === "income" ? (
           <IncomePage />
+        ) : section === "backups" ? (
+          <BackupsPage />
         ) : (
           <ComingSoon title={es.sections[section]} />
         )}

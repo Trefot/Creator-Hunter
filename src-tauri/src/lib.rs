@@ -1,8 +1,10 @@
 use tauri_plugin_sql::{Migration, MigrationKind};
 
+mod backup;
+
 /// Archivo de la base de datos, dentro de la carpeta de datos de la app.
 /// El frontend la abre con la misma cadena (ver src/db/database.ts).
-const DB_URL: &str = "sqlite:studio.db";
+pub(crate) const DB_URL: &str = "sqlite:studio.db";
 
 /// Migraciones de esquema, en orden. Una migración aplicada nunca se edita:
 /// los cambios van siempre en una migración nueva.
@@ -32,6 +34,7 @@ pub fn run() {
                 .add_migrations(DB_URL, migrations())
                 .build(),
         )
+        .invoke_handler(tauri::generate_handler![backup::export_backup, backup::import_backup])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
