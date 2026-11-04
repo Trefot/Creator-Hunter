@@ -3,6 +3,7 @@ import { Adaptation, AdaptationStep, setStepDone, setStepEnabled } from "../../d
 import { Profile } from "../../db/profiles";
 import { es } from "../../i18n/es";
 import { formatDateTime } from "../../i18n/format";
+import { ScriptEditor } from "./ScriptEditor";
 import { currentStep, stepProgress } from "./status";
 
 const t = es.projects;
@@ -20,7 +21,10 @@ interface Props {
 export function AdaptationCard({ adaptation, profile, onEdit, onDelete, onChange, onError }: Props) {
   const [configuring, setConfiguring] = useState(false);
   const [confirming, setConfirming] = useState(false);
+  const [scriptOpen, setScriptOpen] = useState(false);
 
+  /** El guion solo se ofrece si la adaptación usa el paso de guion. */
+  const usesScript = adaptation.steps.some((s) => s.step === "script" && s.enabled);
   const current = currentStep(adaptation);
   const { done, total } = stepProgress(adaptation);
 
@@ -71,6 +75,11 @@ export function AdaptationCard({ adaptation, profile, onEdit, onDelete, onChange
             </>
           ) : (
             <>
+              {usesScript && (
+                <button className={scriptOpen ? "" : "ghost"} onClick={() => setScriptOpen(!scriptOpen)}>
+                  {scriptOpen ? es.script.close : es.script.open}
+                </button>
+              )}
               <button className="ghost" onClick={() => setConfiguring(!configuring)}>
                 {configuring ? t.doneConfiguring : t.configureSteps}
               </button>
@@ -96,6 +105,7 @@ export function AdaptationCard({ adaptation, profile, onEdit, onDelete, onChange
           ))}
       </div>
       <p className="muted small">{configuring ? t.stepsHint : t.stepsInfo}</p>
+      {usesScript && scriptOpen && <ScriptEditor adaptationId={adaptation.id} />}
     </li>
   );
 }

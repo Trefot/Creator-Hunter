@@ -2,6 +2,10 @@
 
 ## [Sin publicar]
 
+### 2026-11-03 · S10 Script Studio
+- Guion por secciones con tipo, texto y segundos, dentro de cada adaptación que use el paso de guion.
+- Plantilla inicial, reordenar con ↑ ↓, guardado automático y duración total calculada (indicada o estimada por palabras).
+
 ### 2026-11-03 · S9 Proyectos y adaptaciones
 - Detalle de proyecto con edición y borrado.
 - Adaptaciones por formato y red, con fecha y hora programada, y red y pasos sugeridos según el formato.

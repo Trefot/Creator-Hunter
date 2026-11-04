@@ -660,6 +660,103 @@ textarea:focus {
   font-size: 14px;
 }
 
+/* Script Studio */
+
+.script-editor {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+
+.script-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 12px;
+}
+
+.script-header h3 {
+  margin: 0;
+  font-size: 15px;
+}
+
+.script-total strong {
+  font-size: 18px;
+  color: var(--accent);
+}
+
+.script-sections {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.script-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--accent);
+  border-radius: 8px;
+}
+
+.script-hook {
+  border-left-color: #f59e0b;
+}
+
+.script-body {
+  border-left-color: var(--accent);
+}
+
+.script-closing {
+  border-left-color: #38bdf8;
+}
+
+.script-cta {
+  border-left-color: var(--success);
+}
+
+.script-note {
+  border-left-color: var(--muted);
+}
+
+.script-section-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.script-section-head .spacer {
+  flex: 1;
+}
+
+.seconds-field {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.seconds-field input {
+  width: 64px;
+  padding: 5px 8px;
+}
+
+.empty-state.compact {
+  padding: 20px;
+  margin-bottom: 12px;
+}
+
+.empty-state.compact button {
+  margin-top: 8px;
+}
+
 .profile-main {
   display: flex;
   flex-direction: column;

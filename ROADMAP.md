@@ -71,12 +71,17 @@ Ritmo: sesiones diarias, cada una con un presupuesto de ~8–9 % del uso semanal
 - [x] Pasos pulsables (hecho/pendiente) y "Configurar pasos" para activarlos o desactivarlos; estado y progreso calculados.
 - [x] Prueba del usuario superada.
 
-### ⬜ S10 · Script Studio (siguiente)
-Guion por secciones para cada adaptación que tenga el paso de guion: gancho, desarrollo, cierre, llamada a la acción y notas, con orden y segundos estimados. Duración total calculada.
-**Terminado cuando:** se escribe un guion de varias secciones, se reordena, se ve su duración total y se conserva al cerrar la app.
+### ✅ S10 · Script Studio
+- [x] Guion por secciones (gancho, desarrollo, cierre, llamada a la acción y nota) en cada adaptación con paso de guion.
+- [x] Plantilla inicial, reordenar, guardado automático al salir de cada campo y contador de palabras.
+- [x] Duración total: segundos indicados o estimados por palabras (unas 150 por minuto).
+- [x] Prueba del usuario superada.
+
+### ⬜ S11 · Calendario semanal (siguiente)
+Vista de lunes a domingo con las adaptaciones programadas (qué, dónde y a qué hora), navegación entre semanas y acceso directo a su proyecto. Todo se deriva de `adaptation.scheduled_at`, sin datos propios.
+**Terminado cuando:** las adaptaciones programadas aparecen en su día y hora, se puede cambiar de semana y, al cambiar la fecha de una adaptación, el calendario lo refleja.
 
 ### ⬜ Siguientes
-- Calendario semanal.
 - Seguimiento de publicaciones y resultados.
 - Dashboard multired.
 - Exportación e importación.
