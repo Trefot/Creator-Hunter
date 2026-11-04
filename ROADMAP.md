@@ -181,10 +181,13 @@ Objetivo: el platino de Black Myth: Wukong (y los siguientes juegos) desde Troph
 - [x] Las copias de seguridad incluyen juegos y trofeos (y aceptan copias anteriores sin esas tablas).
 - [x] Prueba del usuario: Black Myth: Wukong importado con sus trofeos correctos.
 
-#### ⬜ G3 · Ruta al platino por fases (siguiente)
-Agrupar los trofeos por fase o capítulo (propuesta inicial escrita para Wukong, editable), perdibles, notas por trofeo y "qué hacer ahora".
+#### ✅ G3 · Ruta al platino por fases
+- [x] Vista "Ruta al platino": fases en orden con progreso, fase actual calculada (la primera con pendientes) y "Qué hacer ahora" con los perdibles pendientes de otras fases.
+- [x] Ruta sugerida para Black Myth: Wukong (9 fases, 7 perdibles, una nota por trofeo), redactada sin copiar guías y con su fuente; comprobado que los 36 trofeos están en una sola fase.
+- [x] Fases editables (crear, renombrar, nota, reordenar, borrar) y plan por trofeo (fase, perdible y nota), que la sincronización con PSN conserva.
+- [x] Prueba del usuario superada.
 
-#### ⬜ G4 · Guía del juego (pedido del usuario: "lo más completa posible")
+#### ⬜ G4 · Guía del juego (pedido del usuario: "lo más completa posible") (siguiente)
 Entradas por tipo (jefes, builds, atajos/rutas, puntos de farmeo y más), cada una con capítulo/fase, recomendaciones, debilidades, build sugerida, capturas, notas y enlaces (vídeos propios incluidos), y enlazadas a sus trofeos. Borradores originales de Claude para Wukong, **con enlace a la fuente** y marcados "por verificar" cuando haga falta; nunca copiando guías ajenas ni inventando datos. Incluye el punto de farmeo del Estanque del Jade Quebrado (proyecto TrefotWukong).
 
 #### ⬜ G5 · Detección del juego abierto ("modo juego")

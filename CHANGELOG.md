@@ -2,6 +2,11 @@
 
 ## [Sin publicar]
 
+### 2026-11-04 · G3 Ruta al platino por fases
+- Vista "Ruta al platino" en cada juego: fases con progreso, fase actual y "Qué hacer ahora" con perdibles pendientes.
+- Ruta sugerida para Black Myth: Wukong (9 fases, 7 perdibles, notas por trofeo) con su fuente.
+- Fases editables y plan por trofeo (fase, perdible y nota), conservado al sincronizar con PSN.
+
 ### 2026-11-04 · G2 Biblioteca de juegos y PlayStation Network
 - Nueva sección "Juegos": conectar PSN (no oficial, solo lectura), importar juegos con su portada y todos sus trofeos.
 - Ficha del juego con % al platino, trofeos por tipo, rareza y fecha de obtención.

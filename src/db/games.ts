@@ -158,3 +158,71 @@ export async function upsertPsnTrophies(gameId: string, trophies: PsnTrophy[]): 
 export function platformFromPsn(platform: string): GamePlatform {
   return platform.toUpperCase().includes("PS5") ? "ps5" : "ps4";
 }
+
+export interface TrophyPhase {
+  id: string;
+  name: string;
+  position: number;
+  note: string | null;
+}
+
+export async function listPhases(gameId: string): Promise<TrophyPhase[]> {
+  const db = await getDb();
+  return db.select<TrophyPhase[]>(
+    "SELECT id, name, position, note FROM trophy_phase WHERE game_id = $1 AND workspace_id = $2 ORDER BY position",
+    [gameId, WORKSPACE_ID],
+  );
+}
+
+/** Añade una fase al final de la ruta. */
+export async function createPhase(gameId: string, name: string, note: string | null = null): Promise<string> {
+  const db = await getDb();
+  const [{ next }] = await db.select<{ next: number }[]>(
+    "SELECT COALESCE(MAX(position), -1) + 1 AS next FROM trophy_phase WHERE game_id = $1",
+    [gameId],
+  );
+  const id = newId();
+  await db.execute(
+    "INSERT INTO trophy_phase (id, workspace_id, game_id, name, position, note) VALUES ($1, $2, $3, $4, $5, $6)",
+    [id, WORKSPACE_ID, gameId, name.trim(), next, note],
+  );
+  return id;
+}
+
+export async function updatePhase(id: string, name: string, note: string): Promise<void> {
+  const db = await getDb();
+  await db.execute(
+    `UPDATE trophy_phase SET name = $1, note = $2, updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
+      WHERE id = $3 AND workspace_id = $4`,
+    [name.trim(), note.trim() || null, id, WORKSPACE_ID],
+  );
+}
+
+/** Intercambia la posición de dos fases en una sola sentencia. */
+export async function swapPhases(a: TrophyPhase, b: TrophyPhase): Promise<void> {
+  const db = await getDb();
+  await db.execute(
+    `UPDATE trophy_phase SET position = CASE id WHEN $1 THEN $2 WHEN $3 THEN $4 END
+      WHERE id IN ($1, $3) AND workspace_id = $5`,
+    [a.id, b.position, b.id, a.position, WORKSPACE_ID],
+  );
+}
+
+/** Borra la fase; sus trofeos quedan sin fase (ON DELETE SET NULL). */
+export async function deletePhase(id: string): Promise<void> {
+  const db = await getDb();
+  await db.execute("DELETE FROM trophy_phase WHERE id = $1 AND workspace_id = $2", [id, WORKSPACE_ID]);
+}
+
+/** Datos propios del usuario sobre un trofeo (la sincronización con PSN no los toca). */
+export async function updateTrophyPlan(
+  id: string,
+  plan: { phase_id: string | null; missable: boolean; note: string | null },
+): Promise<void> {
+  const db = await getDb();
+  await db.execute(
+    `UPDATE trophy SET phase_id = $1, missable = $2, note = $3, updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
+      WHERE id = $4 AND workspace_id = $5`,
+    [plan.phase_id, plan.missable ? 1 : 0, plan.note?.trim() || null, id, WORKSPACE_ID],
+  );
+}

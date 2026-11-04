@@ -2373,3 +2373,197 @@ button.muted-link {
   gap: 4px;
   text-align: right;
 }
+
+/* Ruta al platino */
+
+.route {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.route-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 28px;
+  text-align: center;
+}
+
+.route-empty svg {
+  color: var(--accent-hover);
+}
+
+.route-empty p {
+  max-width: 560px;
+}
+
+.now-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 18px;
+  border-color: rgba(139, 92, 246, 0.5);
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.16), transparent 60%), var(--surface);
+}
+
+.now-card h2 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.now-list {
+  margin: 4px 0 0;
+  padding-left: 4px;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.now-missables {
+  margin-top: 8px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(251, 191, 36, 0.08);
+  border: 1px solid rgba(251, 191, 36, 0.35);
+}
+
+.now-missables strong {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--warning);
+}
+
+.phase {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: rgba(26, 22, 37, 0.5);
+}
+
+.phase-current {
+  border-color: var(--accent);
+}
+
+.phase-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.phase-head h3 {
+  margin: 0;
+  font-size: 16px;
+}
+
+.phase-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.phase-number {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  font-weight: 700;
+  background: var(--brand-gradient);
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.phase .progress {
+  display: block;
+  height: 6px;
+}
+
+.phase .progress-bar {
+  display: block;
+}
+
+.phase-note {
+  margin: 0;
+}
+
+.phase-edit {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+  min-width: 260px;
+}
+
+.add-phase {
+  display: flex;
+  gap: 8px;
+}
+
+.add-phase input {
+  flex: 1;
+}
+
+.trophy-row-wrap {
+  padding: 0;
+}
+
+.trophy-row-wrap .trophy-row {
+  border: none;
+}
+
+.trophy-missable {
+  border-color: rgba(251, 191, 36, 0.45);
+}
+
+.missable-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 999px;
+  color: var(--warning);
+  background: rgba(251, 191, 36, 0.14);
+}
+
+.trophy-note {
+  color: #c4b5fd;
+}
+
+.trophy-plan {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: 10px 14px;
+  align-items: end;
+  padding: 0 14px 14px 80px;
+}
+
+.trophy-plan label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.trophy-plan label.checkbox {
+  flex-direction: row;
+  align-items: center;
+  color: var(--text);
+}
+
+.trophy-plan .full-width {
+  grid-column: 1 / -1;
+}

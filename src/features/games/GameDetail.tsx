@@ -1,15 +1,29 @@
 import { useEffect, useState } from "react";
-import { EyeOff, RefreshCw, Trash2 } from "lucide-react";
+import { RefreshCw, Trash2 } from "lucide-react";
 import { ProgressRing } from "../../components/charts/ProgressRing";
-import { deleteGame, Game, GAME_STATUSES, GameStatus, listTrophies, Trophy, TrophyType, updateGameStatus } from "../../db/games";
+import {
+  deleteGame,
+  Game,
+  GAME_STATUSES,
+  GameStatus,
+  listPhases,
+  listTrophies,
+  Trophy,
+  TrophyPhase,
+  TrophyType,
+  updateGameStatus,
+} from "../../db/games";
 import { es } from "../../i18n/es";
 import { formatDate } from "../../i18n/format";
 import { refreshFromPsn } from "./importGame";
+import { RouteView } from "./RouteView";
+import { TrophyRow } from "./TrophyRow";
 
 const t = es.games;
 const TYPES: TrophyType[] = ["platinum", "gold", "silver", "bronze"];
 
 type Filter = "all" | "pending" | "earned";
+type View = "route" | "list";
 
 interface Props {
   game: Game;
@@ -21,6 +35,8 @@ interface Props {
 /** Ficha de un juego: progreso hacia el platino y lista de trofeos. */
 export function GameDetail({ game, psnConnected, onBack, onChanged }: Props) {
   const [trophies, setTrophies] = useState<Trophy[] | null>(null);
+  const [phases, setPhases] = useState<TrophyPhase[]>([]);
+  const [view, setView] = useState<View>("route");
   const [filter, setFilter] = useState<Filter>("pending");
   const [syncing, setSyncing] = useState(false);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
@@ -28,7 +44,9 @@ export function GameDetail({ game, psnConnected, onBack, onChanged }: Props) {
 
   async function refresh() {
     try {
-      setTrophies(await listTrophies(game.id));
+      const [tr, ph] = await Promise.all([listTrophies(game.id), listPhases(game.id)]);
+      setTrophies(tr);
+      setPhases(ph);
     } catch (err) {
       setError(String(err));
     }
@@ -133,12 +151,9 @@ export function GameDetail({ game, psnConnected, onBack, onChanged }: Props) {
       {error && <p className="error">{error}</p>}
 
       <div className="tabs">
-        {(["pending", "earned", "all"] as Filter[]).map((f) => (
-          <button key={f} className={`tab${filter === f ? " active" : ""}`} onClick={() => setFilter(f)}>
-            {t.filters[f]}{" "}
-            <span className="tab-count">
-              {f === "all" ? list.length : f === "earned" ? earned : list.length - earned}
-            </span>
+        {(["route", "list"] as View[]).map((v) => (
+          <button key={v} className={`tab${view === v ? " active" : ""}`} onClick={() => setView(v)}>
+            {t.views[v]}
           </button>
         ))}
       </div>
@@ -147,25 +162,26 @@ export function GameDetail({ game, psnConnected, onBack, onChanged }: Props) {
         <p className="muted">{t.loading}</p>
       ) : list.length === 0 ? (
         <p className="muted small">{t.noTrophies}</p>
+      ) : view === "route" ? (
+        <RouteView game={game} trophies={list} phases={phases} onChanged={refresh} />
       ) : (
-        <ul className="trophy-list">
-          {visible.map((x) => (
-            <li key={x.id} className={`card trophy-row${x.earned_at ? " trophy-earned" : ""}`}>
-              {x.icon_url ? <img className="trophy-icon" src={x.icon_url} alt="" loading="lazy" /> : <span className="trophy-icon" />}
-              <span className="trophy-main">
-                <strong>
-                  {x.name} {x.hidden && <EyeOff size={13} className="muted" aria-label={t.hidden} />}
-                </strong>
-                {x.detail && <span className="muted small">{x.detail}</span>}
-              </span>
-              <span className="trophy-side">
-                <span className={`trophy-badge trophy-${x.type}`}>{t.types[x.type]}</span>
-                {x.earned_rate !== null && <span className="muted small">{t.rarity(x.earned_rate)}</span>}
-                {x.earned_at && <span className="status-on small">{t.earnedOn(formatDate(x.earned_at.slice(0, 10)))}</span>}
-              </span>
-            </li>
-          ))}
-        </ul>
+        <>
+          <div className="tabs">
+            {(["pending", "earned", "all"] as Filter[]).map((f) => (
+              <button key={f} className={`tab${filter === f ? " active" : ""}`} onClick={() => setFilter(f)}>
+                {t.filters[f]}{" "}
+                <span className="tab-count">
+                  {f === "all" ? list.length : f === "earned" ? earned : list.length - earned}
+                </span>
+              </button>
+            ))}
+          </div>
+          <ul className="trophy-list">
+            {visible.map((x) => (
+              <TrophyRow key={x.id} trophy={x} phases={phases} onChanged={refresh} />
+            ))}
+          </ul>
+        </>
       )}
     </section>
   );
