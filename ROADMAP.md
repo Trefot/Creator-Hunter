@@ -90,13 +90,18 @@ Ritmo: sesiones diarias, cada una con un presupuesto de ~8–9 % del uso semanal
 - [x] Metas de vistas conectadas: las cuatro métricas de metas ya funcionan.
 - [x] Prueba del usuario superada.
 
-### ⬜ S13 · Dashboard multired (siguiente)
-Pantalla de inicio que reúne, sin datos propios: estado de cada red (último registro y monetización), ingresos del mes, metas activas con su progreso, publicaciones de los próximos 7 días, adaptaciones en producción por paso, y las últimas publicaciones con sus vistas.
-**Terminado cuando:** el Dashboard es la sección inicial, todo lo que muestra coincide con su sección de origen y cada bloque lleva a su sección.
+### ✅ S13 · Dashboard multired
+- [x] Sección inicial con redes, ingresos del mes, metas activas, próximos 7 días, producción por paso y últimas publicaciones.
+- [x] Sin datos propios: todo se calcula desde las secciones; cada bloque y cada fila llevan a su origen.
+- [x] Todas las secciones de Alpha 0.1 construidas.
+- [x] Prueba del usuario superada.
 
-### ⬜ Siguientes
-- Exportación e importación.
-- Cierre de Alpha 0.1: revisión completa con los criterios de PRODUCT.md.
+### ⬜ S14 · Exportar e importar (siguiente)
+Copia de seguridad en un archivo JSON autocontenido y versionado (versión de esquema, fecha y todas las tablas), y restauración desde ese archivo: validación completa antes de tocar nada, copia de seguridad automática previa y reemplazo de los datos en una transacción.
+**Terminado cuando:** se exporta, se borra o cambia algo, se importa y todo vuelve exactamente al estado exportado; un archivo inválido se rechaza sin modificar nada.
+
+### ⬜ S15 · Cierre de Alpha 0.1
+Revisión completa con los criterios de PRODUCT.md, limpieza y etiqueta `v0.1.0` en Git.
 
 ## Alpha 0.2: conectores (decidido el 2026-11-03; empieza al cerrar 0.1)
 

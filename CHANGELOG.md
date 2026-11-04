@@ -2,6 +2,10 @@
 
 ## [Sin publicar]
 
+### 2026-11-03 · S13 Dashboard
+- Nueva pantalla de inicio: redes, ingresos del mes, metas activas, próximos 7 días, producción agrupada por paso y últimas publicaciones con sus vistas.
+- Cada bloque lleva a su sección y cada publicación abre su proyecto.
+
 ### 2026-11-03 · S12 Seguimiento de publicaciones y resultados
 - Publicar una adaptación con fecha y enlace, y deshacer la publicación.
 - Resultados fechados (vistas, likes, comentarios, compartidos y horas; espectadores y duración en los directos) con la evolución de las vistas.

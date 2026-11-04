@@ -2,6 +2,7 @@ import { useState } from "react";
 import { ComingSoon } from "./components/ComingSoon";
 import { Sidebar } from "./components/Sidebar";
 import { CalendarPage } from "./features/calendar/CalendarPage";
+import { DashboardPage } from "./features/dashboard/DashboardPage";
 import { GoalsPage } from "./features/goals/GoalsPage";
 import { IdeasPage } from "./features/ideas/IdeasPage";
 import { IncomePage } from "./features/income/IncomePage";
@@ -12,8 +13,7 @@ import { Section } from "./sections";
 import "./App.css";
 
 function App() {
-  // Perfiles es la sección inicial mientras el Dashboard no exista.
-  const [section, setSection] = useState<Section>("profiles");
+  const [section, setSection] = useState<Section>("dashboard");
   /** Proyecto que Proyectos debe abrir al entrar (por ejemplo, desde el calendario). */
   const [projectToOpen, setProjectToOpen] = useState<string | null>(null);
 
@@ -31,7 +31,9 @@ function App() {
     <div className="layout">
       <Sidebar current={section} onSelect={select} />
       <main className="content">
-        {section === "profiles" ? (
+        {section === "dashboard" ? (
+          <DashboardPage onNavigate={select} onOpenProject={openProject} />
+        ) : section === "profiles" ? (
           <ProfilesPage />
         ) : section === "goals" ? (
           <GoalsPage />

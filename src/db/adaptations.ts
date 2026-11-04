@@ -100,6 +100,17 @@ export function listScheduledBetween(from: string, to: string): Promise<Adaptati
   return loadAdaptations("a.scheduled_at >= $1 AND a.scheduled_at < $2", [from, to]);
 }
 
+/** Adaptaciones aún no publicadas (en producción), programadas o no. */
+export function listInProduction(): Promise<Adaptation[]> {
+  return loadAdaptations("a.published_at IS NULL", []);
+}
+
+/** Últimas adaptaciones publicadas, de la más reciente a la más antigua. */
+export async function listRecentlyPublished(limit: number): Promise<Adaptation[]> {
+  const published = await loadAdaptations("a.published_at IS NOT NULL", []);
+  return published.sort((a, b) => b.published_at!.localeCompare(a.published_at!)).slice(0, limit);
+}
+
 /** Adaptaciones sin fecha programada y aún no publicadas. */
 export function listUnscheduled(): Promise<Adaptation[]> {
   return loadAdaptations("a.scheduled_at IS NULL AND a.published_at IS NULL", []);

@@ -2,6 +2,7 @@ import { AccountSnapshot } from "../../db/accountSnapshots";
 import { Goal } from "../../db/goals";
 import { Income } from "../../db/income";
 import { LatestViews } from "../../db/results";
+import { formatMoney, formatNumber } from "../../i18n/format";
 
 export type GoalProgress =
   | { kind: "pending" } // métrica sin datos todavía (vistas hasta su sección)
@@ -10,6 +11,11 @@ export type GoalProgress =
 
 /** Moneda de las metas de ingresos. */
 export const GOAL_CURRENCY = "USD";
+
+/** Las metas de ingresos se muestran como dinero; el resto, como número. */
+export function formatGoalValue(goal: Goal, value: number): string {
+  return goal.metric === "income" ? formatMoney(Math.round(value * 100), GOAL_CURRENCY) : formatNumber(value);
+}
 
 /** Fecha local (AAAA-MM-DD) en que se creó la meta: desde ahí cuentan sus ingresos. */
 export function goalStartDate(goal: Goal): string {

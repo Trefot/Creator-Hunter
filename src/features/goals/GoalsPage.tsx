@@ -5,16 +5,11 @@ import { Income, listIncome } from "../../db/income";
 import { listProfiles, Profile } from "../../db/profiles";
 import { LatestViews, latestViews } from "../../db/results";
 import { es } from "../../i18n/es";
-import { formatDate, formatMoney, formatNumber, todayIso } from "../../i18n/format";
+import { formatDate, todayIso } from "../../i18n/format";
 import { GoalForm } from "./GoalForm";
-import { computeProgress, daysUntil, GOAL_CURRENCY, goalStartDate } from "./progress";
+import { computeProgress, daysUntil, formatGoalValue, goalStartDate } from "./progress";
 
 const t = es.goals;
-
-/** Las metas de ingresos se muestran como dinero; el resto, como número. */
-function formatGoalValue(goal: Goal, value: number): string {
-  return goal.metric === "income" ? formatMoney(Math.round(value * 100), GOAL_CURRENCY) : formatNumber(value);
-}
 
 /** Qué muestra el formulario: nada, una meta nueva o la edición de una existente. */
 type Editing = null | "new" | Goal;
