@@ -134,6 +134,15 @@ Cuentan lo recibido en USD desde la fecha local de creación de la meta, filtrad
 - `account_snapshot.pending_minor` (migración 004) quedó sin uso al pasar del saldo manual al calculado. SQLite no borra columnas con facilidad, así que se deja vacía.
 - Las copias de seguridad aceptan versiones de esquema desde `MIN_IMPORTABLE_SCHEMA = 1` porque todas las migraciones hasta la 005 solo añaden (D-011).
 
+### D-015 · Integración con YouTube (2026-11-04; verificado en la documentación oficial de Google)
+- **OAuth para app de escritorio:** redirección a `http://127.0.0.1:<puerto>` (loopback) con **PKCE S256**. El esquema personalizado y el copiar/pegar (OOB) ya no se admiten. Una app de escritorio es un cliente público: su `client_secret` no se considera confidencial.
+- **Publicación de la app de Google "en producción" sin verificar:** en modo "Testing", los refresh tokens caducan a los 7 días. En producción no caducan; al conectar se ve el aviso de "app no verificada" (aceptable para uso personal; la verificación sería necesaria para el SaaS).
+- **Permisos:** `youtube.readonly` (datos del canal y de los vídeos) y `yt-analytics.readonly` (horas, vistas, suscriptores ganados/perdidos). El de ingresos (`yt-analytics-monetary.readonly`) exige que el canal esté en el Programa de Socios (si no, error 403); se pospone.
+- **Suscriptores:** `channels.statistics.subscriberCount` está **redondeado hacia abajo a 3 cifras significativas**. Para precisión se usan `subscribersGained`/`subscribersLost` de Analytics.
+- **Cuota:** 10.000 unidades al día; `channels.list` y `videos.list` cuestan 1 unidad. Sobra para el uso previsto.
+- **Credenciales del cliente OAuth** (el JSON descargado de Google): se importan desde la app y se guardan en la carpeta de datos de la app, nunca en Git. **Tokens** de acceso: en el Administrador de credenciales de Windows.
+- **Sincronización:** al abrir la app (como mucho una vez cada pocas horas) y con un botón. Los datos automáticos se marcan con origen `api` en las mismas tablas de registros.
+
 ## Dependencias
 
 | Dependencia | Para qué |

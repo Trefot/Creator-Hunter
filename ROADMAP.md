@@ -129,7 +129,30 @@ Primeras integraciones automáticas. Todo local, con inicio de sesión OAuth des
 - **El resto sigue manual:** TikTok, Instagram, Facebook, horas e ingresos de Twitch.
 - Los datos automáticos se guardan en las mismas tablas de registros, con una columna nueva de origen (`manual` o `api`) añadida mediante migración.
 - Los tokens de acceso se guardan de forma segura (almacén de credenciales del sistema), nunca en la base de datos en texto plano.
-- Por investigar antes de empezar: cuotas de la API de YouTube y el flujo OAuth recomendado para apps de escritorio en cada plataforma.
+- **Orden decidido el 2026-11-04: primero solo YouTube** (es la red que el usuario usa a diario). Twitch, después.
+
+### Alpha 0.2 · YouTube: sesiones (diseño en ARCHITECTURE.md, D-015)
+
+#### ⬜ S17 · App de Google y diseño (en curso)
+- [x] Investigación verificada en la documentación oficial (D-015).
+- [x] Decisiones: app de Google "en producción" sin verificar; sincronizar al abrir (con límite de frecuencia) y con botón; foto del canal como foto del perfil.
+- [ ] El usuario crea el proyecto en Google Cloud, activa YouTube Data API v3 y YouTube Analytics API, configura la pantalla de consentimiento y crea un cliente OAuth "Aplicación de escritorio" (descarga el JSON).
+**Terminado cuando:** el usuario tiene el JSON del cliente OAuth descargado.
+
+#### ⬜ S18 · Conectar YouTube
+Importar el JSON del cliente desde la app; inicio de sesión con el navegador (loopback + PKCE); tokens en el Administrador de credenciales de Windows; mostrar canal conectado y su foto.
+**Terminado cuando:** se conecta, se cierra la app, se reabre y sigue conectado; se puede desconectar.
+
+#### ⬜ S19 · Sincronizar el canal
+Migración 006 (origen `manual`/`api` en los registros). Suscriptores, vistas y vídeos (Data API) y horas y suscriptores ganados/perdidos (Analytics); un registro automático por día; progreso hacia las 4.000 h.
+**Terminado cuando:** al abrir la app aparece el registro del día con origen "YouTube" y coincide con YouTube Studio.
+
+#### ⬜ S20 · Resultados automáticos por vídeo
+Las adaptaciones publicadas con enlace de YouTube obtienen sus resultados (vistas, likes, comentarios, compartidos y horas) sin anotarlos.
+**Terminado cuando:** un vídeo publicado muestra resultados de origen "YouTube" que coinciden con Studio.
+
+#### Más adelante
+Ingresos estimados (`yt-analytics-monetary.readonly`): solo funciona con el canal en el Programa de Socios; hoy daría error 403.
 
 ## Ideas aparcadas
 Las ideas nuevas se anotan aquí y no interrumpen la fase actual.
