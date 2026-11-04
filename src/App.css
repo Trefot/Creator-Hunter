@@ -417,6 +417,81 @@ button.link:hover {
   margin-top: 8px;
 }
 
+/* Ingresos */
+
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.stat-card {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 16px;
+}
+
+.stat-value {
+  font-size: 22px;
+  font-weight: 600;
+}
+
+.money-input {
+  display: flex;
+  gap: 6px;
+}
+
+.money-input input:first-child {
+  flex: 1;
+  min-width: 0;
+}
+
+.currency-input {
+  width: 64px;
+  text-transform: uppercase;
+  text-align: center;
+}
+
+.form label.full-width {
+  margin-top: 14px;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.data-table th {
+  text-align: left;
+  font-weight: 500;
+  font-size: 13px;
+  color: var(--muted);
+  padding: 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+.data-table td {
+  padding: 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+.data-table .num {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.row-actions {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.row-actions button + button {
+  margin-left: 6px;
+}
+
 .profile-main {
   display: flex;
   flex-direction: column;

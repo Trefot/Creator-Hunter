@@ -52,12 +52,18 @@ Ritmo: sesiones diarias, cada una con un presupuesto de ~8–9 % del uso semanal
 - [x] Ingresos y vistas muestran "Pendiente de datos" hasta tener sus secciones.
 - [x] Prueba del usuario superada.
 
-### ⬜ S7 · Ingresos (siguiente)
-Sección Ingresos: registrar cantidad (en centavos internamente), moneda (USD por defecto), tipo, fecha, perfil opcional y nota. Mostrar el total del mes y del año, y conectar las metas de ingresos.
-**Terminado cuando:** se registran ingresos de varios tipos, los totales cuadran y una meta de ingresos muestra su progreso.
+### ✅ S7 · Ingresos
+- [x] Sección Ingresos: cantidad (en centavos), moneda, tipo, fecha, red opcional y nota. Editar y eliminar.
+- [x] Totales del mes y del año, separados por moneda.
+- [x] Las metas de ingresos cuentan lo recibido en USD desde la creación de la meta.
+- [x] Migración 002: tipo "Twitch (total)". Twitch paga subs, bits y anuncios juntos, así que los tipos separados ya no se ofrecen.
+- [x] Prueba del usuario superada.
+
+### ⬜ S8 · Banco de ideas (siguiente)
+Sección Ideas: crear, editar, etiquetar y filtrar por estado (nueva, aprobada, descartada). Al **aprobar** una idea se crea su proyecto, enlazado a ella y sin copiar datos.
+**Terminado cuando:** se aprueba una idea, aparece su proyecto (aunque la sección Proyectos todavía sea básica) y la idea queda marcada como aprobada.
 
 ### ⬜ Siguientes
-- Banco de ideas → aprobación → proyecto.
 - Proyectos y adaptaciones con su flujo (pasos opcionales).
 - Script Studio.
 - Calendario semanal.
@@ -81,3 +87,4 @@ Primeras integraciones automáticas. Todo local, con inicio de sesión OAuth des
 Las ideas nuevas se anotan aquí y no interrumpen la fase actual.
 - Revisar el código de Firebot (open source) como referencia para Live Studio.
 - Elegir la marca definitiva (verificando marca registrada y dominio).
+- Metas de ingresos por periodo (por ejemplo, "$100 cada mes"). Requiere una columna de periodo en `goal`.

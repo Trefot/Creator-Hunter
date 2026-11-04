@@ -1,13 +1,19 @@
 import { useEffect, useState } from "react";
 import { AccountSnapshot, latestSnapshots } from "../../db/accountSnapshots";
 import { createGoal, deleteGoal, Goal, GoalInput, listGoals, setGoalStatus, updateGoal } from "../../db/goals";
+import { Income, listIncome } from "../../db/income";
 import { listProfiles, Profile } from "../../db/profiles";
 import { es } from "../../i18n/es";
-import { formatDate, formatNumber, todayIso } from "../../i18n/format";
+import { formatDate, formatMoney, formatNumber, todayIso } from "../../i18n/format";
 import { GoalForm } from "./GoalForm";
-import { computeProgress, daysUntil } from "./progress";
+import { computeProgress, daysUntil, GOAL_CURRENCY, goalStartDate } from "./progress";
 
 const t = es.goals;
+
+/** Las metas de ingresos se muestran como dinero; el resto, como número. */
+function formatGoalValue(goal: Goal, value: number): string {
+  return goal.metric === "income" ? formatMoney(Math.round(value * 100), GOAL_CURRENCY) : formatNumber(value);
+}
 
 /** Qué muestra el formulario: nada, una meta nueva o la edición de una existente. */
 type Editing = null | "new" | Goal;
@@ -16,16 +22,18 @@ export function GoalsPage() {
   const [goals, setGoals] = useState<Goal[] | null>(null);
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [latest, setLatest] = useState<Map<string, AccountSnapshot>>(new Map());
+  const [incomes, setIncomes] = useState<Income[]>([]);
   const [editing, setEditing] = useState<Editing>(null);
   const [confirmingId, setConfirmingId] = useState<string | null>(null);
   const [error, setError] = useState("");
 
   async function refresh() {
     try {
-      const [g, p, l] = await Promise.all([listGoals(), listProfiles(), latestSnapshots()]);
+      const [g, p, l, i] = await Promise.all([listGoals(), listProfiles(), latestSnapshots(), listIncome()]);
       setGoals(g);
       setProfiles(p);
       setLatest(l);
+      setIncomes(i);
     } catch (err) {
       setError(`${t.errors.generic} ${err}`);
     }
@@ -92,7 +100,7 @@ export function GoalsPage() {
       ) : (
         <ul className="goal-list">
           {goals.map((g) => {
-            const progress = computeProgress(g, latest);
+            const progress = computeProgress(g, latest, incomes);
             const abandoned = g.status === "abandoned";
             const reached = progress.kind === "value" && progress.ratio >= 1;
             const days = g.deadline ? daysUntil(g.deadline, today) : null;
@@ -102,12 +110,15 @@ export function GoalsPage() {
                 <div className="goal-head">
                   <div>
                     <strong>
-                      {formatNumber(g.target_value)} · {t.metrics[g.metric]}
+                      {formatGoalValue(g, g.target_value)} · {t.metrics[g.metric]}
                     </strong>
                     <p className="muted small">
                       {profileLabel(g)}
                       {g.deadline && ` · ${formatDate(g.deadline)}`}
                     </p>
+                    {g.metric === "income" && (
+                      <p className="muted small">{t.incomeSince(formatDate(goalStartDate(g)))}</p>
+                    )}
                   </div>
                   <div className="profile-actions">
                     {confirmingId === g.id ? (
@@ -148,7 +159,7 @@ export function GoalsPage() {
                     </div>
                     <p className="goal-foot small">
                       <span>
-                        {formatNumber(progress.current)} {t.of} {formatNumber(g.target_value)} ·{" "}
+                        {formatGoalValue(g, progress.current)} {t.of} {formatGoalValue(g, g.target_value)} ·{" "}
                         {Math.floor(progress.ratio * 100)} %
                       </span>
                       {abandoned ? (

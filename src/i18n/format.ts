@@ -7,6 +7,13 @@ export function formatNumber(value: number): string {
   return numberFormat.format(value);
 }
 
+/** Formatea una cantidad guardada en centavos, por ejemplo 1250 → "USD 12.50". */
+export function formatMoney(amountMinor: number, currency: string): string {
+  return new Intl.NumberFormat(es.locale, { style: "currency", currency, currencyDisplay: "code" }).format(
+    amountMinor / 100,
+  );
+}
+
 /** Formatea una fecha 'AAAA-MM-DD' sin desplazarla por la zona horaria. */
 export function formatDate(isoDate: string): string {
   const [y, m, d] = isoDate.split("-").map(Number);

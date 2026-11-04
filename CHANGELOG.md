@@ -2,6 +2,11 @@
 
 ## [Sin publicar]
 
+### 2026-11-03 · S7 Ingresos
+- Sección Ingresos: registrar, editar y eliminar ingresos con tipo, red, moneda y nota; totales del mes y del año por moneda.
+- Las metas de ingresos muestran su progreso en dinero (USD desde la creación de la meta).
+- Migración 002: nuevo tipo "Twitch (total)", porque Twitch paga subs, bits y anuncios en un solo total. Probada sobre una copia de los datos reales antes de aplicarla.
+
 ### 2026-11-03 · S6 Metas
 - Sección "Metas": metas por red o globales de seguidores, horas, ingresos o vistas, con fecha límite opcional.
 - Progreso calculado (nunca guardado) a partir del último registro de cada perfil, con barra, porcentaje y cuenta atrás.

@@ -42,7 +42,7 @@ Todas las tablas incluyen además `id`, `workspace_id`, `created_at` y `updated_
 | `profile` | platform, handle, display_name, url, is_monetized | `platform` ∈ youtube, twitch, tiktok, instagram, facebook (lista en código, no tabla). Admite varias cuentas por red. |
 | `account_snapshot` | profile_id, recorded_on, followers, watch_hours | Registros fechados; nunca se sobrescriben. |
 | `goal` | profile_id?, metric, target_value, deadline, status | `metric` ∈ followers, watch_hours, income, views. **El progreso se calcula**, no se guarda. |
-| `income` | profile_id?, source, amount_minor, currency, received_on, note | `source` ∈ platform_ads, twitch_subs, twitch_bits, twitch_ads, membership, donation, sponsorship, affiliate, other. |
+| `income` | profile_id?, source, amount_minor, currency, received_on, note | `source` ∈ platform_ads, twitch_payout, membership, donation, sponsorship, affiliate, other. Los antiguos twitch_subs/bits/ads siguen siendo válidos, pero ya no se ofrecen (migración 002). |
 | `idea` | title, description, tags, status | `status` ∈ new, approved, discarded. `tags` es texto simple en Alpha. |
 | `project` | idea_id?, title, summary | Contenido "madre" que agrupa las adaptaciones. |
 | `adaptation` | project_id, profile_id, format, title, scheduled_at?, published_at?, published_url? | `format` ∈ long_video, short, tiktok, reel, post, live. **El calendario se deriva de `scheduled_at`.** |
@@ -88,6 +88,15 @@ El Core se construye **solo cuando una función real lo necesita**. Orden previs
 - Una migración aplicada **nunca se edita**: los cambios van siempre en una migración nueva.
 - El archivo de datos está en `%APPDATA%\com.trefotg.studio\studio.db`.
 **Alternativa descartada:** `rusqlite` con comandos propios en Rust. Da más control, pero obliga a escribir mucho más código para cada consulta.
+
+### D-007 · Procedimiento para migraciones con datos reales (2026-11-03)
+1. **Copia de seguridad consistente** con la API de backup de SQLite (por ejemplo, `sqlite3.Connection.backup` en Python), guardada en `C:\Users\trefo\TrophyHunter-backups\<fecha>-<motivo>\`. **Nunca copiar los archivos `.db`, `-wal` y `-shm` con la app abierta**: la copia sale incoherente.
+2. Probar la migración sobre una copia de esa copia: mismo número de filas, datos idénticos, `foreign_key_check` vacío e `integrity_check = ok`.
+3. Solo entonces registrarla en `lib.rs`; la app la aplica al arrancar.
+4. Para cambiar un `CHECK`, se reconstruye la tabla (crear la nueva, copiar, borrar, renombrar y recrear índices), comprobando antes que ninguna otra tabla la referencie.
+
+### D-008 · Metas de ingresos (2026-11-03)
+Cuentan lo recibido en USD desde la fecha local de creación de la meta, filtrado por red si la meta tiene perfil. Las metas por periodo quedan aparcadas en ROADMAP.md.
 
 ## Dependencias
 

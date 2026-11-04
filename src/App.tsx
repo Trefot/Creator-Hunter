@@ -2,6 +2,7 @@ import { useState } from "react";
 import { ComingSoon } from "./components/ComingSoon";
 import { Sidebar } from "./components/Sidebar";
 import { GoalsPage } from "./features/goals/GoalsPage";
+import { IncomePage } from "./features/income/IncomePage";
 import { ProfilesPage } from "./features/profiles/ProfilesPage";
 import { es } from "./i18n/es";
 import { Section } from "./sections";
@@ -19,6 +20,8 @@ function App() {
           <ProfilesPage />
         ) : section === "goals" ? (
           <GoalsPage />
+        ) : section === "income" ? (
+          <IncomePage />
         ) : (
           <ComingSoon title={es.sections[section]} />
         )}

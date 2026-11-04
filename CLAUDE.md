@@ -46,5 +46,5 @@ Requisitos en Windows: Node.js LTS, Rust (rustup, toolchain MSVC estable), Visua
   - `src/i18n/es.ts`: todos los textos visibles.
 - `src-tauri/`: aplicación de escritorio (Rust, Tauri 2).
   - `src-tauri/migrations/`: migraciones SQL numeradas. **Nunca se edita una ya aplicada**; los cambios van en una nueva, registrada en `src-tauri/src/lib.rs`.
-- Datos del usuario: `%APPDATA%\com.trefotg.studio\studio.db`. Nunca se borra ni se sobrescribe sin una copia de seguridad.
+- Datos del usuario: `%APPDATA%\com.trefotg.studio\studio.db`. Nunca se borra ni se sobrescribe sin una copia de seguridad. **Antes de cualquier migración nueva, sigue D-007 en ARCHITECTURE.md** (copia con la API de backup y prueba sobre una copia).
 - `Abrir TrophyHunter.bat`: abre la app con doble clic.
