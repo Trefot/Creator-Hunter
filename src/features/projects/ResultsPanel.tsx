@@ -1,3 +1,7 @@
+import { RefreshCw } from "lucide-react";
+import { youtubeStatus } from "../../db/youtube";
+import { syncPublishedVideos } from "../profiles/youtubeSync";
+import { extractVideoId } from "../profiles/youtubeVideo";
 import { FormEvent, useEffect, useState } from "react";
 import { createResult, deleteResult, listResults, LIVE_FIELDS, RESULT_FIELDS, ResultField, ResultSnapshot } from "../../db/results";
 import { es } from "../../i18n/es";
@@ -9,10 +13,15 @@ const t = es.publishing;
 interface Props {
   adaptationId: string;
   isLive: boolean;
+  /** Enlace publicado: si es de YouTube, los resultados se traen solos. */
+  publishedUrl: string | null;
 }
 
 /** Resultados fechados de una publicación, con la evolución de las vistas. */
-export function ResultsPanel({ adaptationId, isLive }: Props) {
+export function ResultsPanel({ adaptationId, isLive, publishedUrl }: Props) {
+  const fromYouTube = extractVideoId(publishedUrl) !== null;
+  const [fetching, setFetching] = useState(false);
+  const [ytMessage, setYtMessage] = useState("");
   const fields: ResultField[] = isLive ? [...LIVE_FIELDS, "views", "likes", "comments"] : [...RESULT_FIELDS];
   const empty = () => Object.fromEntries(fields.map((f) => [f, ""])) as Record<ResultField, string>;
 
@@ -25,9 +34,31 @@ export function ResultsPanel({ adaptationId, isLive }: Props) {
     setResults(await listResults(adaptationId));
   }
 
+  /** Trae de YouTube el resultado de hoy de esta publicación. */
+  async function fetchFromYouTube() {
+    setFetching(true);
+    setYtMessage("");
+    try {
+      const status = await youtubeStatus();
+      if (!status.connected) {
+        setYtMessage(es.youtube.notConnectedForResults);
+        return;
+      }
+      const result = await syncPublishedVideos(adaptationId);
+      setYtMessage(result.synced === 0 ? es.youtube.videoNotFound : result.warning ? es.youtube.partialResults : "");
+      await refresh();
+    } catch (err) {
+      setYtMessage(`${es.youtube.syncFailed} ${err}`);
+    } finally {
+      setFetching(false);
+    }
+  }
+
   useEffect(() => {
-    refresh().catch((err) => setError(String(err)));
-  }, [adaptationId]);
+    refresh()
+      .then(() => (fromYouTube ? fetchFromYouTube() : undefined))
+      .catch((err) => setError(String(err)));
+  }, [adaptationId, publishedUrl]);
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
@@ -64,8 +95,17 @@ export function ResultsPanel({ adaptationId, isLive }: Props) {
 
   return (
     <div className="inline-panel">
-      <h3>{t.resultsTitle}</h3>
-      <p className="muted small">{t.resultsHint}</p>
+      <div className="results-head">
+        <h3>{t.resultsTitle}</h3>
+        {fromYouTube && (
+          <button className="small-button" onClick={fetchFromYouTube} disabled={fetching}>
+            <RefreshCw size={14} className={fetching ? "spin" : ""} />
+            {fetching ? es.youtube.fetching : es.youtube.fetchFromYouTube}
+          </button>
+        )}
+      </div>
+      <p className="muted small">{fromYouTube ? es.youtube.resultsAutoHint : t.resultsHint}</p>
+      {ytMessage && <p className="small yt-warning">{ytMessage}</p>}
 
       <form className="results-form" onSubmit={onSubmit}>
         <label>
@@ -120,7 +160,10 @@ export function ResultsPanel({ adaptationId, isLive }: Props) {
               const diff = r.views !== null && prev ? r.views - prev.views! : null;
               return (
                 <tr key={r.id}>
-                  <td>{formatDate(r.recorded_on)}</td>
+                  <td>
+                    {formatDate(r.recorded_on)}
+                    {r.source === "api" && <span className="source-chip">{es.youtube.sourceApi}</span>}
+                  </td>
                   {fields.map((f) => (
                     <td key={f}>
                       {r[f] !== null ? formatNumber(r[f]!) : "—"}

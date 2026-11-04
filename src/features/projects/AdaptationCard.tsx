@@ -200,7 +200,7 @@ export function AdaptationCard({ adaptation, profile, onEdit, onDelete, onChange
           onCancel={() => setPanel(null)}
         />
       )}
-      {panel === "results" && published && <ResultsPanel adaptationId={adaptation.id} isLive={adaptation.format === "live"} />}
+      {panel === "results" && published && <ResultsPanel adaptationId={adaptation.id} isLive={adaptation.format === "live"} publishedUrl={adaptation.published_url} />}
     </li>
   );
 }

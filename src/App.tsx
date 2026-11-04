@@ -28,7 +28,10 @@ function App() {
       .then((data) => {
         if (!data) return;
         setDataVersion((v) => v + 1);
-        setNotice({ text: data.warning ? es.youtube.syncedWithWarning : es.youtube.synced, error: !!data.warning });
+        setNotice({
+          text: data.warning ? es.youtube.syncedWithWarning : es.youtube.synced(data.videosSynced),
+          error: !!data.warning,
+        });
       })
       .catch((err) => setNotice({ text: `${es.youtube.syncFailed} ${err}`, error: true }));
   }, []);

@@ -68,6 +68,7 @@ pub fn run() {
             youtube::youtube_connect,
             youtube::youtube_channel,
             youtube::youtube_sync,
+            youtube::youtube_video_stats,
             youtube::youtube_disconnect,
         ])
         .run(tauri::generate_context!())

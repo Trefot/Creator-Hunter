@@ -153,9 +153,13 @@ Primeras integraciones automáticas. Todo local, con inicio de sesión OAuth des
 - [x] Prueba del usuario: los datos cuadran con YouTube Studio.
 - **Pendiente para cuando el canal pase de 1.000 suscriptores:** la Data API los redondea a 3 cifras; habrá que calcularlos con `subscribersGained`/`subscribersLost` de Analytics.
 
-#### ⬜ S20 · Resultados automáticos por vídeo (siguiente)
-Las adaptaciones publicadas con enlace de YouTube obtienen sus resultados (vistas, likes, comentarios, compartidos y horas) sin anotarlos.
-**Terminado cuando:** un vídeo publicado muestra resultados de origen "YouTube" que coinciden con Studio.
+#### ✅ S20 · Resultados automáticos por vídeo
+- [x] Las publicaciones con enlace de YouTube (watch, youtu.be, shorts, live, embed) reciben un resultado diario de origen "YouTube".
+- [x] Vistas, likes y comentarios al día (Data API); compartidos y horas desde Analytics (1–2 días de retraso).
+- [x] Se traen al sincronizar, al abrir el panel de Resultados de esa publicación y con el botón "Traer de YouTube".
+- [x] Prueba del usuario superada.
+
+**Parte de YouTube de Alpha 0.2 terminada (2026-11-04).** Siguiente: Twitch (seguidores en tiempo real) y, cuando se quiera, las páginas públicas para publicar la app de Google.
 
 #### Más adelante
 Ingresos estimados (`yt-analytics-monetary.readonly`): solo funciona con el canal en el Programa de Socios; hoy daría error 403.

@@ -147,6 +147,8 @@ Cuentan lo recibido en USD desde la fecha local de creación de la meta, filtrad
 - `reqwest` usa el TLS nativo de Windows (`native-tls`, SChannel) para no compilar `aws-lc` en C.
 - **Sincronización del canal (S19):** comando `youtube_sync(start, end)`. Suscriptores y vistas totales de la Data API (exactos por debajo de 1.000 suscriptores). Horas = `estimatedMinutesWatched` de los últimos 365 días con `dimensions=creatorContentType`, **excluyendo `SHORTS` y `STORY`**, que es lo más parecido al contador de monetización; si esa consulta falla, se usa el total del canal. Studio también descuenta vídeos ocultos, privados o borrados, y eso Analytics no lo filtra.
 - El registro del día se guarda con `INSERT … ON CONFLICT (profile_id, recorded_on) WHERE source = 'api' DO UPDATE` (índice único parcial de la migración 006). La hora de la última sincronización se guarda en `localStorage` (solo limita la frecuencia; perderla no rompe nada).
+- **Resultados por vídeo (S20):** comando `youtube_video_stats(ids, start, end)`. Vistas, likes y comentarios de `videos.list` (bloques de 50, 1 unidad cada uno); compartidos y minutos de Analytics con `dimensions=video`, `filters=video==id1,id2…`, `sort` y `maxResults ≤ 200` (obligatorios en informes por vídeo). Los IDs se validan (11 caracteres `[A-Za-z0-9_-]`) antes de usarlos en filtros. El ID se extrae del enlace publicado (`src/features/profiles/youtubeVideo.ts`).
+- **Dónde se traen los resultados:** en la sincronización general, y además al abrir el panel de Resultados de una publicación con enlace de YouTube (y al publicarla), porque es donde el usuario los espera.
 
 ## Dependencias
 

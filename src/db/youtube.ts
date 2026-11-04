@@ -42,5 +42,19 @@ export interface YouTubeSyncData {
   warning: string | null;
 }
 
+export interface YouTubeVideoStats {
+  id: string;
+  views: number | null;
+  likes: number | null;
+  comments: number | null;
+  /** Compartidos y horas vienen de Analytics: 1–2 días de retraso. */
+  shares: number | null;
+  watch_hours: number | null;
+}
+
+/** Estadísticas de varios vídeos; start/end acotan los datos de Analytics. */
+export const fetchVideoStats = (ids: string[], start: string, end: string) =>
+  invoke<{ videos: YouTubeVideoStats[]; warning: string | null }>("youtube_video_stats", { ids, start, end });
+
 /** Datos del canal y horas de visualización del intervalo [start, end] (fechas 'AAAA-MM-DD'). */
 export const syncYouTubeData = (start: string, end: string) => invoke<YouTubeSyncData>("youtube_sync", { start, end });

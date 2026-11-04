@@ -2,6 +2,10 @@
 
 ## [Sin publicar]
 
+### 2026-11-04 · S20 Resultados automáticos por vídeo de YouTube
+- Las publicaciones con enlace de YouTube reciben solas sus vistas, likes y comentarios, y compartidos y horas cuando Analytics los tiene.
+- Se traen al abrir sus Resultados, al publicarlas, con "Traer de YouTube" y en cada sincronización.
+
 ### 2026-11-04 · S19 Sincronizar el canal de YouTube
 - Al abrir la app (como mucho cada 3 horas) o con "Sincronizar ahora", se guarda el registro del día con suscriptores, vistas totales y horas de los últimos 365 días sin Shorts.
 - Migración 006: origen manual/YouTube y vistas totales en los registros.

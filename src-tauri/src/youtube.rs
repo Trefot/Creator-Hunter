@@ -456,6 +456,123 @@ pub async fn youtube_sync(
     Ok(SyncData { profile_id: connection.profile_id, channel, watch_hours, warning })
 }
 
+const VIDEOS_URL: &str = "https://www.googleapis.com/youtube/v3/videos";
+
+/// Estadísticas de un vídeo: contadores públicos al día (Data API) y compartidos/horas (Analytics,
+/// con 1–2 días de retraso; None si Analytics aún no tiene datos o el vídeo no es del canal).
+#[derive(Serialize, Default, Clone)]
+pub struct VideoStats {
+    id: String,
+    views: Option<u64>,
+    likes: Option<u64>,
+    comments: Option<u64>,
+    shares: Option<u64>,
+    watch_hours: Option<f64>,
+}
+
+/// ID de vídeo de YouTube: 11 caracteres [A-Za-z0-9_-]. Se valida porque va dentro de filtros de la API.
+fn is_video_id(id: &str) -> bool {
+    id.len() == 11 && id.chars().all(|c| c.is_ascii_alphanumeric() || c == '-' || c == '_')
+}
+
+async fn fetch_public_counts(token: &str, ids: &[String], out: &mut std::collections::HashMap<String, VideoStats>) -> Result<(), String> {
+    for chunk in ids.chunks(50) {
+        let doc: Value = reqwest::Client::new()
+            .get(VIDEOS_URL)
+            .query(&[("part", "statistics"), ("id", &chunk.join(",")), ("maxResults", "50")])
+            .bearer_auth(token)
+            .send()
+            .await
+            .map_err(|e| e.to_string())?
+            .error_for_status()
+            .map_err(|e| format!("YouTube rechazó la consulta de vídeos: {e}"))?
+            .json()
+            .await
+            .map_err(|e| e.to_string())?;
+        let num = |v: &Value| v.as_str().and_then(|s| s.parse().ok());
+        for item in doc["items"].as_array().cloned().unwrap_or_default() {
+            let id = item["id"].as_str().unwrap_or_default().to_string();
+            let stats = out.entry(id.clone()).or_insert_with(|| VideoStats { id, ..Default::default() });
+            stats.views = num(&item["statistics"]["viewCount"]);
+            stats.likes = num(&item["statistics"]["likeCount"]);
+            stats.comments = num(&item["statistics"]["commentCount"]);
+        }
+    }
+    Ok(())
+}
+
+async fn fetch_analytics_counts(
+    token: &str,
+    ids: &[String],
+    start: &str,
+    end: &str,
+    out: &mut std::collections::HashMap<String, VideoStats>,
+) -> Result<(), String> {
+    for chunk in ids.chunks(200) {
+        let filter = format!("video=={}", chunk.join(","));
+        let response = reqwest::Client::new()
+            .get(ANALYTICS_URL)
+            .query(&[
+                ("ids", "channel==MINE"),
+                ("startDate", start),
+                ("endDate", end),
+                ("metrics", "estimatedMinutesWatched,shares"),
+                ("dimensions", "video"),
+                ("filters", filter.as_str()),
+                ("sort", "-estimatedMinutesWatched"),
+                ("maxResults", "200"),
+            ])
+            .bearer_auth(token)
+            .send()
+            .await
+            .map_err(|e| e.to_string())?;
+        if !response.status().is_success() {
+            let body = response.text().await.unwrap_or_default();
+            return Err(format!("YouTube Analytics rechazó la consulta por vídeo: {body}"));
+        }
+        let doc: Value = response.json().await.map_err(|e| e.to_string())?;
+        // Filas: [videoId, minutos, compartidos]
+        for row in doc["rows"].as_array().cloned().unwrap_or_default() {
+            let Some(id) = row[0].as_str() else { continue };
+            let stats = out.entry(id.to_string()).or_insert_with(|| VideoStats { id: id.to_string(), ..Default::default() });
+            stats.watch_hours = row[1].as_f64().map(|m| (m / 60.0 * 10.0).round() / 10.0);
+            stats.shares = row[2].as_f64().map(|s| s as u64);
+        }
+    }
+    Ok(())
+}
+
+#[derive(Serialize)]
+pub struct VideoSyncData {
+    videos: Vec<VideoStats>,
+    warning: Option<String>,
+}
+
+/// Estadísticas de varios vídeos. `start`/`end` acotan los datos de Analytics (desde la publicación más antigua).
+#[tauri::command]
+pub async fn youtube_video_stats(
+    app: AppHandle,
+    state: State<'_, YouTubeState>,
+    ids: Vec<String>,
+    start: String,
+    end: String,
+) -> Result<VideoSyncData, String> {
+    if !is_iso_date(&start) || !is_iso_date(&end) {
+        return Err("Fechas no válidas.".into());
+    }
+    let mut ids: Vec<String> = ids.into_iter().filter(|id| is_video_id(id)).collect();
+    ids.sort();
+    ids.dedup();
+    if ids.is_empty() {
+        return Ok(VideoSyncData { videos: vec![], warning: None });
+    }
+    let token = access_token(&app, &state).await?;
+    let mut out = std::collections::HashMap::new();
+    fetch_public_counts(&token, &ids, &mut out).await?;
+    let warning = fetch_analytics_counts(&token, &ids, &start, &end, &mut out).await.err();
+    Ok(VideoSyncData { videos: out.into_values().collect(), warning })
+}
+
 /// Desconecta: revoca el acceso en Google y borra el token de Windows y la conexión guardada.
 #[tauri::command]
 pub async fn youtube_disconnect(app: AppHandle, state: State<'_, YouTubeState>) -> Result<(), String> {
@@ -554,5 +671,19 @@ mod analytics_tests {
             json!(["UNSPECIFIED", 30.0]),
         ];
         assert_eq!(long_form_minutes(&rows), 10230.0);
+    }
+}
+
+#[cfg(test)]
+mod video_tests {
+    use super::is_video_id;
+
+    #[test]
+    fn valida_ids_de_video() {
+        assert!(is_video_id("dQw4w9WgXcQ"));
+        assert!(is_video_id("a-b_c1234XY"));
+        assert!(!is_video_id("corto"));
+        assert!(!is_video_id("dQw4w9WgXcQ,"));
+        assert!(!is_video_id("abc def ghi"));
     }
 }

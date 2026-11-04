@@ -14,11 +14,20 @@ export const es = {
     stats: (subs: string, views: string, videos: string) => `${subs} suscriptores · ${views} vistas · ${videos} vídeos`,
     syncNow: "Sincronizar ahora",
     lastSync: (when: string) => `Última sincronización: ${when}`,
-    synced: "YouTube sincronizado: registro del día actualizado.",
-    syncedWithWarning: "YouTube sincronizado, pero sin horas de visualización (revisa Perfiles → YouTube).",
+    synced: (videos: number) =>
+      videos > 0
+        ? `YouTube sincronizado: canal y ${videos === 1 ? "1 publicación" : `${videos} publicaciones`} actualizados.`
+        : "YouTube sincronizado: registro del día actualizado.",
+    syncedWithWarning: "YouTube sincronizado, pero Analytics no respondió (revisa Perfiles → YouTube).",
     syncFailed: "No se pudo sincronizar YouTube:",
     analyticsWarning: "No se pudieron leer las horas desde YouTube Analytics:",
     sourceApi: "YouTube",
+    fetchFromYouTube: "Traer de YouTube",
+    fetching: "Trayendo…",
+    resultsAutoHint: "Este vídeo está en YouTube: sus resultados se traen solos al abrir este panel. Compartidos y horas llegan con 1–2 días de retraso.",
+    notConnectedForResults: "Conecta YouTube en Perfiles para traer estos resultados automáticamente.",
+    videoNotFound: "YouTube no encontró este vídeo. Revisa que el enlace sea correcto y que el vídeo sea público u oculto (no privado).",
+    partialResults: "Vistas, likes y comentarios actualizados; compartidos y horas aún no están en Analytics (1–2 días).",
     sourceManual: "Manual",
     disconnect: "Desconectar",
     confirmDisconnect: "¿Desconectar YouTube?",

@@ -2133,3 +2133,10 @@ button.muted-link {
 .toast-error {
   border-color: rgba(248, 113, 113, 0.6);
 }
+
+.results-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
