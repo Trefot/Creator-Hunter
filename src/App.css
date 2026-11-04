@@ -2705,3 +2705,43 @@ button.muted-link {
   flex-direction: column;
   gap: 10px;
 }
+
+/* Modo juego */
+
+.now-playing {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 24px;
+  background: linear-gradient(90deg, rgba(0, 112, 209, 0.9), rgba(139, 92, 246, 0.9));
+  color: #fff;
+  font-size: 14px;
+  box-shadow: var(--shadow);
+}
+
+.now-playing .small-button {
+  margin-left: auto;
+  background: rgba(255, 255, 255, 0.18);
+  border-color: rgba(255, 255, 255, 0.35);
+}
+
+.game-mode {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 16px;
+  margin-bottom: 20px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.game-mode label.checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}

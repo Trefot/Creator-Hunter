@@ -2,6 +2,10 @@
 
 ## [Sin publicar]
 
+### 2026-11-04 · G5 Modo juego
+- La app detecta el juego que tienes abierto en la PS5 (presencia de PSN, cada minuto) y abre su ficha con la ruta al platino.
+- Franja "Jugando ahora" con "Ver ruta" e interruptor "Modo juego automático".
+
 ### 2026-11-04 · G4 Guía del juego
 - Pestaña "Guía" en cada juego: jefes, builds, atajos, farmeo y consejos, con captura, vídeo, fuente, fase y trofeos enlazados.
 - "Qué hacer ahora" muestra la guía de la fase actual.

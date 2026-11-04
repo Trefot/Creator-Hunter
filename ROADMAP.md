@@ -195,10 +195,15 @@ Objetivo: el platino de Black Myth: Wukong (y los siguientes juegos) desde Troph
 - [x] Prueba del usuario superada.
 - **Cómo crece:** cuando el usuario llegue a un jefe, Claude investiga una guía fiable de ese jefe y redacta un resumen original con la fuente.
 
-#### ⬜ G5 · Detección del juego abierto ("modo juego") (siguiente)
-Presencia de PSN (`https://m.np.playstation.com/api/userProfile/v1/internal/users/me/basicPresences?type=primary` → `gameTitleInfoList`, verificado en psn-api): consulta cada ~60 s con la app abierta; si el juego abierto está en la biblioteca, la app abre su ficha (ruta, próximo trofeo y guía). Requiere estado en línea visible en PSN. Más adelante: juegos de PC por proceso en ejecución.
+#### ✅ G5 · Detección del juego abierto ("modo juego")
+- [x] Presencia de PSN (`basicPresences` de `me`, verificado en psn-api) consultada cada minuto con la app abierta.
+- [x] Emparejamiento con la biblioteca por nombre normalizado (8/8 casos de prueba), porque la presencia usa otro ID.
+- [x] Al empezar a jugar, la app abre la ficha del juego una sola vez por partida y muestra la franja "Jugando ahora" con "Ver ruta".
+- [x] Interruptor "Modo juego automático" con su estado (activo, detectado, error o desactivado).
+- [x] Prueba del usuario: detectó Black Myth: Wukong abierto en la PS5.
+- **Más adelante:** juegos de PC por proceso en ejecución.
 
-#### ⬜ G6 · Objetivos de juego y enlace con vídeos
+#### ⬜ G6 · Objetivos de juego y enlace con vídeos (siguiente)
 Objetivos con progreso (nivel, XP farmeada…) y proyectos del Creator Studio enlazados al juego.
 
 ## Ideas aparcadas

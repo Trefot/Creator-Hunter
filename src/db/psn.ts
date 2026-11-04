@@ -35,3 +35,18 @@ export const psnTitles = () => invoke<PsnTitle[]>("psn_titles");
 export const psnTitleTrophies = (npCommunicationId: string, npServiceName: string) =>
   invoke<PsnTrophy[]>("psn_title_trophies", { npCommunicationId, npServiceName });
 export const psnDownloadImage = (url: string) => invoke<string>("psn_download_image", { url });
+
+export interface PlayingGame {
+  title_id: string;
+  name: string;
+  icon_url: string | null;
+}
+
+export interface NowPlaying {
+  online: boolean;
+  platform: string | null;
+  games: PlayingGame[];
+}
+
+/** Qué se está jugando ahora (presencia de PSN; requiere estado en línea visible). */
+export const psnNowPlaying = () => invoke<NowPlaying>("psn_now_playing");

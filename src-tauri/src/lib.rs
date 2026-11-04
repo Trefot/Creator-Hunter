@@ -89,6 +89,7 @@ pub fn run() {
             psn::psn_titles,
             psn::psn_title_trophies,
             psn::psn_download_image,
+            psn::psn_now_playing,
             youtube::youtube_disconnect,
         ])
         .run(tauri::generate_context!())

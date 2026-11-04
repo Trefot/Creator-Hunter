@@ -311,6 +311,50 @@ pub async fn psn_title_trophies(
     Ok(trophies)
 }
 
+const PRESENCE_URL: &str = "https://m.np.playstation.com/api/userProfile/v1/internal/users/me/basicPresences";
+
+#[derive(Serialize)]
+pub struct NowPlaying {
+    online: bool,
+    platform: Option<String>,
+    /// Juegos abiertos ahora mismo (normalmente uno).
+    games: Vec<PlayingGame>,
+}
+
+#[derive(Serialize)]
+pub struct PlayingGame {
+    title_id: String,
+    name: String,
+    icon_url: Option<String>,
+}
+
+/// Qué está jugando ahora la cuenta (presencia de PSN). Requiere estado en línea visible.
+#[tauri::command]
+pub async fn psn_now_playing(state: State<'_, PsnState>) -> Result<NowPlaying, String> {
+    let token = access_token(&state).await?;
+    let doc = get_json(&token, PRESENCE_URL, &[("type", "primary")])
+        .await
+        .map_err(|e| format!("{e} (¿tienes tu estado en línea oculto en PSN?)"))?;
+    let p = &doc["basicPresence"];
+    let status = p["primaryPlatformInfo"]["onlineStatus"].as_str().or(p["onlineStatus"].as_str());
+    let games = p["gameTitleInfoList"]
+        .as_array()
+        .cloned()
+        .unwrap_or_default()
+        .into_iter()
+        .map(|g| PlayingGame {
+            title_id: g["npTitleId"].as_str().unwrap_or_default().to_string(),
+            name: g["titleName"].as_str().unwrap_or_default().to_string(),
+            icon_url: g["conceptIconUrl"].as_str().or(g["npTitleIconUrl"].as_str()).map(String::from),
+        })
+        .collect();
+    Ok(NowPlaying {
+        online: status == Some("online"),
+        platform: p["primaryPlatformInfo"]["platform"].as_str().map(String::from),
+        games,
+    })
+}
+
 /// Descarga la portada del juego y la devuelve como data URL (para verla sin conexión).
 #[tauri::command]
 pub async fn psn_download_image(url: String) -> Result<String, String> {

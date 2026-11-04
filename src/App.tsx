@@ -5,6 +5,8 @@ import { BackupsPage } from "./features/backups/BackupsPage";
 import { CalendarPage } from "./features/calendar/CalendarPage";
 import { DashboardPage } from "./features/dashboard/DashboardPage";
 import { GamesPage } from "./features/games/GamesPage";
+import { useGameMode } from "./features/games/useGameMode";
+import { Gamepad2 } from "lucide-react";
 import { GoalsPage } from "./features/goals/GoalsPage";
 import { IdeasPage } from "./features/ideas/IdeasPage";
 import { IncomePage } from "./features/income/IncomePage";
@@ -22,6 +24,11 @@ function App() {
   /** Cambia cuando llegan datos nuevos de fuera (sincronización) para recargar la sección visible. */
   const [dataVersion, setDataVersion] = useState(0);
   const [notice, setNotice] = useState<{ text: string; error: boolean } | null>(null);
+  /** Juego que Juegos debe abrir al entrar (modo juego o banner). */
+  const [gameToOpen, setGameToOpen] = useState<string | null>(null);
+
+  // Modo juego: al empezar a jugar en la PS5 un juego de la biblioteca, la app abre su ficha.
+  const gameMode = useGameMode((game) => openGame(game.id));
 
   // Sincronización automática de YouTube al abrir (como mucho cada 3 horas).
   useEffect(() => {
@@ -45,7 +52,13 @@ function App() {
 
   function select(next: Section) {
     setProjectToOpen(null);
+    setGameToOpen(null);
     setSection(next);
+  }
+
+  function openGame(gameId: string) {
+    setGameToOpen(gameId);
+    setSection("games");
   }
 
   function openProject(projectId: string) {
@@ -57,6 +70,19 @@ function App() {
     <div className="layout">
       <Sidebar current={section} onSelect={select} />
       <main className="content" key={dataVersion}>
+        {gameMode.playing && (
+          <div className="now-playing">
+            <Gamepad2 size={18} />
+            <span>
+              {es.games.nowPlaying} <strong>{gameMode.playing.title}</strong>
+            </span>
+            {!(section === "games" && gameToOpen === gameMode.playing.id) && (
+              <button className="small-button" onClick={() => openGame(gameMode.playing!.id)}>
+                {es.games.openRoute}
+              </button>
+            )}
+          </div>
+        )}
         {section === "dashboard" ? (
           <DashboardPage onNavigate={select} onOpenProject={openProject} />
         ) : section === "profiles" ? (
@@ -72,7 +98,7 @@ function App() {
         ) : section === "income" ? (
           <IncomePage />
         ) : section === "games" ? (
-          <GamesPage />
+          <GamesPage key={gameToOpen ?? "list"} initialOpenId={gameToOpen} gameMode={gameMode} />
         ) : section === "backups" ? (
           <BackupsPage />
         ) : (

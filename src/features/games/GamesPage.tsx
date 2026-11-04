@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
-import { Gamepad2 } from "lucide-react";
+import { Gamepad2, Radar } from "lucide-react";
+import { isGameModeEnabled, setGameModeEnabled } from "./gameMode";
+import type { GameModeState } from "./useGameMode";
 import { EmptyState } from "../../components/EmptyState";
 import { PageTitle } from "../../components/PageTitle";
 import { Game, listGames } from "../../db/games";
@@ -12,11 +14,12 @@ import { PsnImport } from "./PsnImport";
 const t = es.games;
 
 /** Biblioteca de juegos; al abrir uno se muestra su ficha con los trofeos. */
-export function GamesPage() {
+export function GamesPage({ initialOpenId = null, gameMode }: { initialOpenId?: string | null; gameMode: GameModeState }) {
   const [games, setGames] = useState<Game[] | null>(null);
+  const [gameModeOn, setGameModeOn] = useState(isGameModeEnabled());
   const [connected, setConnected] = useState(false);
   const [importing, setImporting] = useState(false);
-  const [openId, setOpenId] = useState<string | null>(null);
+  const [openId, setOpenId] = useState<string | null>(initialOpenId);
   const [error, setError] = useState("");
 
   async function refresh() {
@@ -47,6 +50,31 @@ export function GamesPage() {
       </header>
 
       <PsnConnect connected={connected} onChange={refresh} onImport={() => setImporting(true)} />
+
+      {connected && (
+        <div className="game-mode">
+          <label className="checkbox">
+            <input
+              type="checkbox"
+              checked={gameModeOn}
+              onChange={(e) => {
+                setGameModeEnabled(e.target.checked);
+                setGameModeOn(e.target.checked);
+              }}
+            />
+            <Radar size={16} /> <strong>{t.gameMode}</strong>
+          </label>
+          <span className="muted small">
+            {!gameModeOn
+              ? t.gameModeOff
+              : gameMode.error
+                ? t.gameModeError(gameMode.error)
+                : gameMode.playing
+                  ? t.gameModePlaying(gameMode.playing.title)
+                  : t.gameModeIdle}
+          </span>
+        </div>
+      )}
 
       {importing && (
         <PsnImport

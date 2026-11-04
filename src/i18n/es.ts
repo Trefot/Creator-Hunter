@@ -5,6 +5,13 @@ export const es = {
   version: "Alpha 0.1 · v0.1.0",
   games: {
     subtitle: "Tu biblioteca y tu camino al platino. Los trofeos llegan desde tu cuenta de PlayStation.",
+    nowPlaying: "Jugando ahora en tu consola:",
+    openRoute: "Ver ruta",
+    gameMode: "Modo juego automático",
+    gameModeOff: "Desactivado: la app no cambiará de pantalla cuando juegues.",
+    gameModeIdle: "Activo: cada minuto se comprueba qué juegas; al abrir un juego de tu biblioteca, la app salta a su ficha.",
+    gameModePlaying: (title: string) => `Activo: detectado ${title}.`,
+    gameModeError: (error: string) => `Activo, pero no se pudo leer tu actividad: ${error}`,
     connectTitle: "Conectar PlayStation Network (no oficial)",
     step1: "Inicia sesión en",
     step2: "En el mismo navegador abre",
