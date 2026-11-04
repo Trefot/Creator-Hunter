@@ -7,6 +7,7 @@ Ritmo: sesiones diarias, cada una con un presupuesto de ~8–9 % del uso semanal
 | Fase | Contenido | Estado |
 |---|---|---|
 | I | Preparación + **Creator Studio Alpha 0.1** | 🟢 En curso |
+| I | **Alpha 0.2**: conectores de YouTube y Twitch (local, sin nube) | ⚪ Tras 0.1 |
 | II | Core e integraciones · Community Hub · Community Identity Sync | ⚪ |
 | III | Live Studio · Automation Builder · Music Requests | ⚪ |
 | IV | Video Studio · Growth Intelligence | ⚪ |
@@ -53,6 +54,17 @@ Registrar seguidores y horas de visualización con fecha (`account_snapshot`) de
 - Dashboard multired.
 - Exportación e importación.
 - Cierre de Alpha 0.1: revisión completa con los criterios de PRODUCT.md.
+
+## Alpha 0.2: conectores (decidido el 2026-11-03; empieza al cerrar 0.1)
+
+Primeras integraciones automáticas. Todo local, con inicio de sesión OAuth desde la app de escritorio y sin servidor.
+
+- **YouTube (automático):** suscriptores, vistas, horas de visualización e ingresos estimados (YouTube Data API + YouTube Analytics API).
+- **Twitch (solo seguidores en tiempo real):** total de seguidores y aviso de nuevos seguidores mientras la app está abierta (EventSub por WebSocket, sin servidor público).
+- **El resto sigue manual:** TikTok, Instagram, Facebook, horas e ingresos de Twitch.
+- Los datos automáticos se guardan en las mismas tablas de registros, con una columna nueva de origen (`manual` o `api`) añadida mediante migración.
+- Los tokens de acceso se guardan de forma segura (almacén de credenciales del sistema), nunca en la base de datos en texto plano.
+- Por investigar antes de empezar: cuotas de la API de YouTube y el flujo OAuth recomendado para apps de escritorio en cada plataforma.
 
 ## Ideas aparcadas
 Las ideas nuevas se anotan aquí y no interrumpen la fase actual.
