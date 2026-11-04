@@ -2,6 +2,11 @@
 
 ## [Sin publicar]
 
+### 2026-11-04 · G2 Biblioteca de juegos y PlayStation Network
+- Nueva sección "Juegos": conectar PSN (no oficial, solo lectura), importar juegos con su portada y todos sus trofeos.
+- Ficha del juego con % al platino, trofeos por tipo, rareza y fecha de obtención.
+- Migración 007 (juegos, trofeos, fases y objetivos); las copias de seguridad incluyen los juegos.
+
 ### 2026-11-04 · S20 Resultados automáticos por vídeo de YouTube
 - Las publicaciones con enlace de YouTube reciben solas sus vistas, likes y comentarios, y compartidos y horas cuando Analytics los tiene.
 - Se traen al abrir sus Resultados, al publicarlas, con "Traer de YouTube" y en cada sincronización.

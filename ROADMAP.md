@@ -173,11 +173,15 @@ Objetivo: el platino de Black Myth: Wukong (y los siguientes juegos) desde Troph
 - [x] Riesgos explicados y **aceptados por el usuario**: va contra los términos de Sony (solo lectura, uso personal) y el NPSSO equivale a la contraseña. **Nunca irá en el SaaS** sin un acuerdo oficial.
 - [x] Esquema diseñado (migración 007).
 
-#### ⬜ G2 · Biblioteca de juegos y conexión con PSN (siguiente)
-Sección "Juegos": pegar el NPSSO (guardado en el Administrador de credenciales de Windows), importar tus juegos con su progreso y sus trofeos (ganados, fecha, rareza e icono). Juegos manuales para plataformas sin conexión.
-**Terminado cuando:** Black Myth: Wukong aparece con su % y sus trofeos iguales a los de la consola.
+#### ✅ G2 · Biblioteca de juegos y conexión con PSN
+- [x] Migración 007: juegos, trofeos, fases, objetivos de juego y `project.game_id`.
+- [x] Sección "Juegos" (grupo Gaming): conectar PSN pegando el NPSSO (se canjea y se descarta; el refresh token queda en el Administrador de credenciales de Windows).
+- [x] Importador con todos los juegos de la cuenta y buscador; portada guardada en local.
+- [x] Ficha del juego: % al platino, recuento por tipo, trofeos pendientes/conseguidos/todos con icono, rareza y fecha; estado del juego; actualizar desde PSN; quitar de la biblioteca.
+- [x] Las copias de seguridad incluyen juegos y trofeos (y aceptan copias anteriores sin esas tablas).
+- [x] Prueba del usuario: Black Myth: Wukong importado con sus trofeos correctos.
 
-#### ⬜ G3 · Ruta al platino por fases
+#### ⬜ G3 · Ruta al platino por fases (siguiente)
 Agrupar los trofeos por fase o capítulo (propuesta inicial escrita para Wukong, editable), perdibles, notas por trofeo y "qué hacer ahora".
 
 #### ⬜ G4 · Guía del juego (pedido del usuario: "lo más completa posible")

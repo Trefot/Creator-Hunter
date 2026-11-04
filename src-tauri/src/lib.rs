@@ -1,6 +1,7 @@
 use tauri_plugin_sql::{Migration, MigrationKind};
 
 mod backup;
+mod psn;
 mod youtube;
 
 /// Archivo de la base de datos, dentro de la carpeta de datos de la app.
@@ -47,6 +48,12 @@ fn migrations() -> Vec<Migration> {
             sql: include_str!("../migrations/006_api_source.sql"),
             kind: MigrationKind::Up,
         },
+        Migration {
+            version: 7,
+            description: "juegos, trofeos, fases y objetivos",
+            sql: include_str!("../migrations/007_games.sql"),
+            kind: MigrationKind::Up,
+        },
     ]
 }
 
@@ -60,6 +67,7 @@ pub fn run() {
                 .build(),
         )
         .manage(youtube::YouTubeState::default())
+        .manage(psn::PsnState::default())
         .invoke_handler(tauri::generate_handler![
             backup::export_backup,
             backup::import_backup,
@@ -69,6 +77,12 @@ pub fn run() {
             youtube::youtube_channel,
             youtube::youtube_sync,
             youtube::youtube_video_stats,
+            psn::psn_connect,
+            psn::psn_status,
+            psn::psn_disconnect,
+            psn::psn_titles,
+            psn::psn_title_trophies,
+            psn::psn_download_image,
             youtube::youtube_disconnect,
         ])
         .run(tauri::generate_context!())

@@ -4,6 +4,7 @@ import { Sidebar } from "./components/Sidebar";
 import { BackupsPage } from "./features/backups/BackupsPage";
 import { CalendarPage } from "./features/calendar/CalendarPage";
 import { DashboardPage } from "./features/dashboard/DashboardPage";
+import { GamesPage } from "./features/games/GamesPage";
 import { GoalsPage } from "./features/goals/GoalsPage";
 import { IdeasPage } from "./features/ideas/IdeasPage";
 import { IncomePage } from "./features/income/IncomePage";
@@ -70,6 +71,8 @@ function App() {
           <CalendarPage onOpenProject={openProject} />
         ) : section === "income" ? (
           <IncomePage />
+        ) : section === "games" ? (
+          <GamesPage />
         ) : section === "backups" ? (
           <BackupsPage />
         ) : (

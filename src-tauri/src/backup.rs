@@ -16,13 +16,18 @@ use tauri_plugin_sql::{DbInstances, DbPool};
 use crate::DB_URL;
 
 /// Tablas de datos, de padres a hijos (orden de inserción; el borrado va al revés).
-const TABLES: [&str; 11] = [
+const TABLES: [&str; 15] = [
     "workspace",
     "profile",
     "account_snapshot",
     "goal",
     "income",
     "idea",
+    // Juegos antes que proyectos: project.game_id apunta a game (migración 007).
+    "game",
+    "trophy_phase",
+    "trophy",
+    "game_goal",
     "project",
     "adaptation",
     "adaptation_step",
@@ -159,9 +164,13 @@ async fn validate(pool: &Pool<Sqlite>, content: &str) -> Result<Vec<(&'static st
 
     let mut result = Vec::new();
     for table in TABLES {
-        let rows = doc["tables"][table]
-            .as_array()
-            .ok_or_else(|| format!("Falta la tabla «{table}» en la copia."))?;
+        // Una copia de una versión anterior puede no tener tablas creadas después: cuentan como vacías.
+        let empty = Vec::new();
+        let rows = match doc["tables"][table].as_array() {
+            Some(rows) => rows,
+            None if version < current => &empty,
+            None => return Err(format!("Falta la tabla «{table}» en la copia.")),
+        };
         let allowed = columns(pool, table).await?;
         let mut list = Vec::with_capacity(rows.len());
         for row in rows {

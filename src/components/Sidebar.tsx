@@ -2,6 +2,7 @@ import {
   CalendarDays,
   DatabaseBackup,
   FolderKanban,
+  Gamepad2,
   LayoutDashboard,
   Lightbulb,
   LucideIcon,
@@ -21,6 +22,7 @@ export const SECTION_ICONS: Record<Section, LucideIcon> = {
   projects: FolderKanban,
   calendar: CalendarDays,
   income: Wallet,
+  games: Gamepad2,
   backups: DatabaseBackup,
 };
 
@@ -28,6 +30,7 @@ export const SECTION_ICONS: Record<Section, LucideIcon> = {
 const GROUPS: { label: string; sections: Section[] }[] = [
   { label: es.nav.studio, sections: ["dashboard", "ideas", "projects", "calendar"] },
   { label: es.nav.growth, sections: ["profiles", "goals", "income"] },
+  { label: es.nav.gaming, sections: ["games"] },
 ];
 
 interface Props {

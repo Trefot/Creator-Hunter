@@ -2140,3 +2140,236 @@ button.muted-link {
   align-items: center;
   gap: 10px;
 }
+
+/* Juegos */
+
+.psn-connect {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px;
+  margin-bottom: 20px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: linear-gradient(90deg, rgba(0, 112, 209, 0.14), transparent 70%), var(--surface);
+}
+
+.psn-connected {
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.psn-steps {
+  margin: 0;
+  padding-left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.psn-warning {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  color: var(--warning);
+  margin: 0;
+}
+
+.psn-warning svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.psn-input-row {
+  display: flex;
+  gap: 8px;
+}
+
+.psn-input-row input {
+  flex: 1;
+  min-width: 0;
+}
+
+.psn-import {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px;
+  margin-bottom: 20px;
+}
+
+.psn-title-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 420px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.psn-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px;
+  border-radius: 8px;
+  background: var(--bg);
+}
+
+.psn-title img,
+.psn-title-noimg {
+  width: 72px;
+  height: 40px;
+  object-fit: cover;
+  border-radius: 6px;
+  flex-shrink: 0;
+  background: var(--surface-hover);
+}
+
+.psn-title-main {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.game-gallery-cover img {
+  object-fit: cover;
+}
+
+.game-status-platinum {
+  color: #c7d2fe;
+}
+
+.game-status-playing {
+  color: var(--success);
+}
+
+.game-hero {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 20px;
+  margin-bottom: 20px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(0, 112, 209, 0.12)), var(--surface);
+  border: 1px solid var(--border);
+}
+
+.game-cover {
+  width: 200px;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border-radius: 12px;
+  flex-shrink: 0;
+  box-shadow: var(--shadow);
+}
+
+.game-cover-empty {
+  background: var(--brand-gradient);
+}
+
+.game-hero-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.game-hero-main h1 {
+  font-size: 24px;
+}
+
+.game-actions {
+  justify-content: flex-start;
+  margin-top: 6px;
+}
+
+.trophy-counts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.trophy-count,
+.trophy-badge {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 2px 9px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.trophy-platinum {
+  color: #e0e7ff;
+  background: rgba(165, 180, 252, 0.22);
+}
+
+.trophy-gold {
+  color: #fcd34d;
+  background: rgba(252, 211, 77, 0.16);
+}
+
+.trophy-silver {
+  color: #e5e7eb;
+  background: rgba(229, 231, 235, 0.14);
+}
+
+.trophy-bronze {
+  color: #fdba74;
+  background: rgba(251, 146, 60, 0.16);
+}
+
+.trophy-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.trophy-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 14px;
+}
+
+.trophy-earned {
+  border-color: rgba(74, 222, 128, 0.35);
+}
+
+.trophy-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 8px;
+  flex-shrink: 0;
+  object-fit: cover;
+  background: var(--surface-hover);
+}
+
+.trophy-row:not(.trophy-earned) .trophy-icon {
+  filter: grayscale(0.85) brightness(0.8);
+}
+
+.trophy-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.trophy-side {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  text-align: right;
+}
