@@ -51,14 +51,14 @@ Los módulos futuros se diseñan en detalle **cuando llegue su fase**, no antes.
 ### No incluye
 APIs de redes sociales, bots, publicación automática, OBS, Spotify, IA avanzada, procesamiento de vídeo ni infraestructura en la nube.
 
-### Alpha 0.1 está terminada cuando puedo…
-- Registrar mis cinco redes con sus metas e ingresos.
-- Guardar y organizar ideas, y convertir una idea aprobada en proyecto.
-- Crear adaptaciones, escribir guiones y avanzar cada adaptación por su flujo.
-- Ver en el calendario semanal lo que toca publicar.
-- Registrar los resultados de lo publicado.
-- Cerrar la app y encontrar todo igual al volver.
-- Exportar una copia de seguridad e importarla.
+### Alpha 0.1 está terminada cuando puedo… ✅ (cerrada el 2026-11-04, v0.1.0)
+- [x] Registrar mis cinco redes con sus metas e ingresos.
+- [x] Guardar y organizar ideas, y convertir una idea aprobada en proyecto.
+- [x] Crear adaptaciones, escribir guiones y avanzar cada adaptación por su flujo.
+- [x] Ver en el calendario semanal lo que toca publicar.
+- [x] Registrar los resultados de lo publicado.
+- [x] Cerrar la app y encontrar todo igual al volver.
+- [x] Exportar una copia de seguridad e importarla.
 
 ## Realidades verificadas de plataformas (para fases futuras)
 

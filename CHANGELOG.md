@@ -2,6 +2,10 @@
 
 ## [Sin publicar]
 
+## [0.1.0] · 2026-11-04 · Creator Studio Alpha 0.1
+
+Primera versión completa: los 7 criterios de PRODUCT.md cumplidos.
+
 ### 2026-11-03/04 · S15 Mejora visual
 - Logo e icono de la app originales, paleta de marca, tipografía Inter y menú agrupado con iconos.
 - Gráficas de evolución en SVG propio; logos oficiales de las redes; títulos de sección con icono e ilustraciones.

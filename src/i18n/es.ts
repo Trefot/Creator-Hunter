@@ -2,7 +2,7 @@
 export const es = {
   appName: "TrophyHunter",
   appTagline: "Creator Studio",
-  version: "Alpha 0.1 · en desarrollo",
+  version: "Alpha 0.1 · v0.1.0",
   images: {
     add: "Añadir imagen",
     change: "Cambiar imagen",

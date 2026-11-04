@@ -6,8 +6,8 @@ Ritmo: sesiones diarias, cada una con un presupuesto de ~8–9 % del uso semanal
 
 | Fase | Contenido | Estado |
 |---|---|---|
-| I | Preparación + **Creator Studio Alpha 0.1** | 🟢 En curso |
-| I | **Alpha 0.2**: conectores de YouTube y Twitch (local, sin nube) | ⚪ Tras 0.1 |
+| I | Preparación + **Creator Studio Alpha 0.1** | ✅ v0.1.0 (2026-11-04) |
+| I | **Alpha 0.2**: conectores de YouTube y Twitch (local, sin nube) | 🟢 Siguiente |
 | II | Core e integraciones · Community Hub · Community Identity Sync | ⚪ |
 | III | Live Studio · Automation Builder · Music Requests | ⚪ |
 | IV | Video Studio · Growth Intelligence | ⚪ |
@@ -113,8 +113,12 @@ Ritmo: sesiones diarias, cada una con un presupuesto de ~8–9 % del uso semanal
 - [x] Umbrales de pago calculados desde los ingresos, con avisos y "Marcar como cobrado" (migraciones 004 y 005, D-014).
 - [x] Revisión visual del usuario superada.
 
-### ⬜ S16 · Cierre de Alpha 0.1 (siguiente)
-Revisión completa con los criterios de PRODUCT.md, limpieza y etiqueta `v0.1.0` en Git.
+### ✅ S16 · Cierre de Alpha 0.1
+- [x] Los 7 criterios de PRODUCT.md, confirmados por el usuario.
+- [x] Limpieza: sin código ni textos sin uso.
+- [x] Instalador de Windows de la versión (`npm run tauri build`).
+- [x] Copia de seguridad de los datos de la versión en TrophyHunter-backups.
+- [x] Etiqueta `v0.1.0` en Git.
 
 ## Alpha 0.2: conectores (decidido el 2026-11-03; empieza al cerrar 0.1)
 
