@@ -20,6 +20,22 @@ export function formatDate(isoDate: string): string {
   return dateFormat.format(new Date(y, m - 1, d));
 }
 
+const dateTimeFormat = new Intl.DateTimeFormat(es.locale, {
+  weekday: "short",
+  day: "numeric",
+  month: "short",
+  hour: "2-digit",
+  minute: "2-digit",
+});
+
+/** Formatea una fecha y hora local sin zona, 'AAAA-MM-DDTHH:MM'. */
+export function formatDateTime(local: string): string {
+  const [date, time = "00:00"] = local.split("T");
+  const [y, m, d] = date.split("-").map(Number);
+  const [h, min] = time.split(":").map(Number);
+  return dateTimeFormat.format(new Date(y, m - 1, d, h, min));
+}
+
 /** Fecha de hoy en hora local, como 'AAAA-MM-DD'. */
 export function todayIso(): string {
   const now = new Date();

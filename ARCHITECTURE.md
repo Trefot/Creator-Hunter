@@ -98,6 +98,11 @@ El Core se construye **solo cuando una función real lo necesita**. Orden previs
 ### D-008 · Metas de ingresos (2026-11-03)
 Cuentan lo recibido en USD desde la fecha local de creación de la meta, filtrado por red si la meta tiene perfil. Las metas por periodo quedan aparcadas en ROADMAP.md.
 
+### D-009 · Adaptaciones y pasos (2026-11-03)
+- `adaptation.scheduled_at` se guarda como **hora local sin zona** (`AAAA-MM-DDTHH:MM`), porque lo que importa al programar es la hora de tu reloj. Es la única excepción a "fechas en UTC". Si llega el SaaS con usuarios en varias zonas, se añadirá la zona mediante migración.
+- Al crear una adaptación se insertan sus seis pasos en **una sola sentencia** (todos o ninguno). Los pasos desactivados por defecto dependen del formato (`DEFAULT_DISABLED_STEPS`).
+- Aprobar una idea crea el proyecto con `INSERT OR IGNORE` sobre `project.idea_id UNIQUE`, así que repetirlo nunca duplica.
+
 ## Dependencias
 
 | Dependencia | Para qué |

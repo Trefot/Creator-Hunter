@@ -65,12 +65,17 @@ Ritmo: sesiones diarias, cada una con un presupuesto de ~8–9 % del uso semanal
 - [x] Aprobar crea el proyecto enlazado (idempotente: nunca se duplica). Lista básica en Proyectos.
 - [x] Prueba del usuario superada.
 
-### ⬜ S9 · Proyectos y adaptaciones (siguiente)
-Detalle de proyecto: crear adaptaciones (formato + red), con sus pasos de producción activables (guion, grabación, edición, programación, publicación, análisis) y su fecha programada. El estado actual se calcula como el primer paso activo sin completar.
-**Terminado cuando:** un proyecto tiene un vídeo largo y un Short, el Short sin el paso de guion, y ambos avanzan de forma independiente.
+### ✅ S9 · Proyectos y adaptaciones
+- [x] Detalle de proyecto: editar, eliminar (en cascada) y lista de adaptaciones.
+- [x] Adaptaciones con formato, red, título y fecha y hora programada; red y pasos sugeridos según el formato.
+- [x] Pasos pulsables (hecho/pendiente) y "Configurar pasos" para activarlos o desactivarlos; estado y progreso calculados.
+- [x] Prueba del usuario superada.
+
+### ⬜ S10 · Script Studio (siguiente)
+Guion por secciones para cada adaptación que tenga el paso de guion: gancho, desarrollo, cierre, llamada a la acción y notas, con orden y segundos estimados. Duración total calculada.
+**Terminado cuando:** se escribe un guion de varias secciones, se reordena, se ve su duración total y se conserva al cerrar la app.
 
 ### ⬜ Siguientes
-- Script Studio.
 - Calendario semanal.
 - Seguimiento de publicaciones y resultados.
 - Dashboard multired.

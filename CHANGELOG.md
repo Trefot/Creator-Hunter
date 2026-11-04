@@ -2,6 +2,11 @@
 
 ## [Sin publicar]
 
+### 2026-11-03 · S9 Proyectos y adaptaciones
+- Detalle de proyecto con edición y borrado.
+- Adaptaciones por formato y red, con fecha y hora programada, y red y pasos sugeridos según el formato.
+- Pasos de producción pulsables y configurables; el estado ("En: Grabación") y el progreso se calculan solos.
+
 ### 2026-11-03 · S8 Banco de ideas
 - Sección Ideas: título, descripción y etiquetas; pestañas por estado (nuevas, aprobadas, descartadas y todas) y filtro por etiqueta.
 - Aprobar una idea crea su proyecto enlazado, sin duplicados aunque se repita la acción.

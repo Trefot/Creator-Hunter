@@ -1,19 +1,30 @@
 import { useEffect, useState } from "react";
 import { listProjects, Project } from "../../db/projects";
 import { es } from "../../i18n/es";
+import { ProjectDetail } from "./ProjectDetail";
 
 const t = es.projects;
 
-/** Lista básica de proyectos; las adaptaciones y la producción llegan en la siguiente sesión. */
+/** Lista de proyectos; al abrir uno se muestra su detalle con las adaptaciones. */
 export function ProjectsPage() {
   const [projects, setProjects] = useState<Project[] | null>(null);
+  const [openId, setOpenId] = useState<string | null>(null);
   const [error, setError] = useState("");
 
+  async function refresh() {
+    try {
+      setProjects(await listProjects());
+    } catch (err) {
+      setError(String(err));
+    }
+  }
+
   useEffect(() => {
-    listProjects()
-      .then(setProjects)
-      .catch((err) => setError(String(err)));
+    refresh();
   }, []);
+
+  const open = projects?.find((p) => p.id === openId);
+  if (open) return <ProjectDetail key={open.id} project={open} onBack={() => setOpenId(null)} onChanged={refresh} />;
 
   return (
     <section className="page">
@@ -35,10 +46,15 @@ export function ProjectsPage() {
       ) : (
         <ul className="goal-list">
           {projects.map((p) => (
-            <li key={p.id} className="card idea-card">
-              <strong>{p.title}</strong>
-              {p.summary && <p className="muted idea-description">{p.summary}</p>}
-              {p.idea_id && <p className="muted small">{t.fromIdea}</p>}
+            <li key={p.id}>
+              <button className="card project-row" onClick={() => setOpenId(p.id)}>
+                <strong>{p.title}</strong>
+                {p.summary && <span className="muted idea-description">{p.summary}</span>}
+                <span className="muted small">
+                  {t.adaptationCount(p.adaptation_count)}
+                  {p.idea_id && ` · ${t.fromIdea}`}
+                </span>
+              </button>
             </li>
           ))}
         </ul>

@@ -572,6 +572,94 @@ textarea:focus {
   border-color: var(--accent);
 }
 
+/* Proyectos y adaptaciones */
+
+.project-row {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  text-align: left;
+  padding: 16px;
+  color: var(--text);
+}
+
+.project-row:hover {
+  border-color: var(--accent);
+}
+
+.back-link {
+  margin-bottom: 16px;
+  font-size: 14px;
+}
+
+.adaptation-card {
+  padding: 16px;
+}
+
+.pill {
+  font-size: 12px;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--text);
+}
+
+.pill-done {
+  background: rgba(74, 222, 128, 0.15);
+  color: var(--success);
+}
+
+.steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 4px 0 8px;
+}
+
+.step {
+  background: transparent;
+  border-color: var(--border);
+  color: var(--muted);
+  font-size: 13px;
+  padding: 5px 12px;
+}
+
+.step-current {
+  border-color: var(--accent);
+  color: var(--text);
+}
+
+.step-done {
+  background: rgba(74, 222, 128, 0.12);
+  border-color: rgba(74, 222, 128, 0.4);
+  color: var(--success);
+}
+
+.step-off {
+  opacity: 0.5;
+  text-decoration: line-through;
+}
+
+.step-picker {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin: 14px 0 0;
+  padding: 10px 14px 14px;
+}
+
+.step-picker legend {
+  font-size: 13px;
+  color: var(--muted);
+  padding: 0 6px;
+}
+
+.form label.chip-check {
+  margin-top: 0;
+  font-size: 14px;
+}
+
 .profile-main {
   display: flex;
   flex-direction: column;
