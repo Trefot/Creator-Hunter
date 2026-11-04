@@ -36,6 +36,13 @@ export function formatDateTime(local: string): string {
   return dateTimeFormat.format(new Date(y, m - 1, d, h, min));
 }
 
+/** Fecha y hora actual en hora local, como 'AAAA-MM-DDTHH:MM'. */
+export function nowLocal(): string {
+  const now = new Date();
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${todayIso()}T${pad(now.getHours())}:${pad(now.getMinutes())}`;
+}
+
 /** Fecha de hoy en hora local, como 'AAAA-MM-DD'. */
 export function todayIso(): string {
   const now = new Date();

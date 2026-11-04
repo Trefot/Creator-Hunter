@@ -757,6 +757,52 @@ textarea:focus {
   margin-top: 8px;
 }
 
+/* Publicación y resultados */
+
+.inline-panel {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+
+.inline-panel h3 {
+  margin: 0 0 4px;
+  font-size: 15px;
+}
+
+.publish-form {
+  grid-template-columns: 200px 1fr auto auto;
+}
+
+.results-form {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  align-items: end;
+  gap: 10px;
+  margin: 12px 0;
+}
+
+.results-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.results-form input {
+  min-width: 0;
+}
+
+.profile-actions.wrap {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+button.muted-link {
+  color: var(--muted);
+}
+
 /* Calendario */
 
 .page.page-wide {

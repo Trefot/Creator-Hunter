@@ -3,6 +3,7 @@ import { AccountSnapshot, latestSnapshots } from "../../db/accountSnapshots";
 import { createGoal, deleteGoal, Goal, GoalInput, listGoals, setGoalStatus, updateGoal } from "../../db/goals";
 import { Income, listIncome } from "../../db/income";
 import { listProfiles, Profile } from "../../db/profiles";
+import { LatestViews, latestViews } from "../../db/results";
 import { es } from "../../i18n/es";
 import { formatDate, formatMoney, formatNumber, todayIso } from "../../i18n/format";
 import { GoalForm } from "./GoalForm";
@@ -23,17 +24,25 @@ export function GoalsPage() {
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [latest, setLatest] = useState<Map<string, AccountSnapshot>>(new Map());
   const [incomes, setIncomes] = useState<Income[]>([]);
+  const [views, setViews] = useState<LatestViews[]>([]);
   const [editing, setEditing] = useState<Editing>(null);
   const [confirmingId, setConfirmingId] = useState<string | null>(null);
   const [error, setError] = useState("");
 
   async function refresh() {
     try {
-      const [g, p, l, i] = await Promise.all([listGoals(), listProfiles(), latestSnapshots(), listIncome()]);
+      const [g, p, l, i, v] = await Promise.all([
+        listGoals(),
+        listProfiles(),
+        latestSnapshots(),
+        listIncome(),
+        latestViews(),
+      ]);
       setGoals(g);
       setProfiles(p);
       setLatest(l);
       setIncomes(i);
+      setViews(v);
     } catch (err) {
       setError(`${t.errors.generic} ${err}`);
     }
@@ -100,7 +109,7 @@ export function GoalsPage() {
       ) : (
         <ul className="goal-list">
           {goals.map((g) => {
-            const progress = computeProgress(g, latest, incomes);
+            const progress = computeProgress(g, latest, incomes, views);
             const abandoned = g.status === "abandoned";
             const reached = progress.kind === "value" && progress.ratio >= 1;
             const days = g.deadline ? daysUntil(g.deadline, today) : null;
@@ -118,6 +127,9 @@ export function GoalsPage() {
                     </p>
                     {g.metric === "income" && (
                       <p className="muted small">{t.incomeSince(formatDate(goalStartDate(g)))}</p>
+                    )}
+                    {g.metric === "views" && (
+                      <p className="muted small">{t.viewsSince(formatDate(goalStartDate(g)))}</p>
                     )}
                   </div>
                   <div className="profile-actions">

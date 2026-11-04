@@ -103,6 +103,11 @@ Cuentan lo recibido en USD desde la fecha local de creación de la meta, filtrad
 - Al crear una adaptación se insertan sus seis pasos en **una sola sentencia** (todos o ninguno). Los pasos desactivados por defecto dependen del formato (`DEFAULT_DISABLED_STEPS`).
 - Aprobar una idea crea el proyecto con `INSERT OR IGNORE` sobre `project.idea_id UNIQUE`, así que repetirlo nunca duplica.
 
+### D-010 · Publicación y metas de vistas (2026-11-03)
+- `adaptation.published_at` usa la misma hora local sin zona que `scheduled_at` (D-009).
+- Publicar completa el paso `publishing`; deshacer la publicación lo devuelve a pendiente y conserva los `result_snapshot`.
+- Las metas de vistas suman el último registro con vistas de cada adaptación publicada desde la fecha local de creación de la meta (filtrado por red si la meta tiene perfil). Es el mismo criterio que las metas de ingresos (D-008).
+
 ## Dependencias
 
 | Dependencia | Para qué |

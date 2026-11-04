@@ -2,6 +2,11 @@
 
 ## [Sin publicar]
 
+### 2026-11-03 · S12 Seguimiento de publicaciones y resultados
+- Publicar una adaptación con fecha y enlace, y deshacer la publicación.
+- Resultados fechados (vistas, likes, comentarios, compartidos y horas; espectadores y duración en los directos) con la evolución de las vistas.
+- Metas de vistas con progreso real.
+
 ### 2026-11-03 · S11 Calendario semanal
 - Calendario de lunes a domingo con las adaptaciones programadas, navegación entre semanas y apertura del proyecto con un clic.
 - Lista "Sin programar" con las adaptaciones en producción sin fecha.

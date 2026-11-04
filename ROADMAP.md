@@ -84,12 +84,17 @@ Ritmo: sesiones diarias, cada una con un presupuesto de ~8–9 % del uso semanal
 - [x] Sin datos propios: todo se deriva de `adaptation.scheduled_at`.
 - [x] Prueba del usuario superada.
 
-### ⬜ S12 · Seguimiento de publicaciones y resultados (siguiente)
-Marcar una adaptación como publicada (fecha y enlace) y registrar sus resultados fechados (`result_snapshot`): vistas, likes, comentarios, compartidos y horas; en los directos, espectadores medios y máximos y duración. Conectar las metas de vistas.
-**Terminado cuando:** una adaptación publicada guarda su enlace, tiene resultados del día 1 y del día 7 con su evolución, y una meta de vistas muestra su progreso.
+### ✅ S12 · Seguimiento de publicaciones y resultados
+- [x] Publicar con fecha y enlace (completa el paso de publicación) y deshacer (conserva los resultados).
+- [x] Resultados fechados con la evolución de las vistas; campos propios para los directos.
+- [x] Metas de vistas conectadas: las cuatro métricas de metas ya funcionan.
+- [x] Prueba del usuario superada.
+
+### ⬜ S13 · Dashboard multired (siguiente)
+Pantalla de inicio que reúne, sin datos propios: estado de cada red (último registro y monetización), ingresos del mes, metas activas con su progreso, publicaciones de los próximos 7 días, adaptaciones en producción por paso, y las últimas publicaciones con sus vistas.
+**Terminado cuando:** el Dashboard es la sección inicial, todo lo que muestra coincide con su sección de origen y cada bloque lleva a su sección.
 
 ### ⬜ Siguientes
-- Dashboard multired.
 - Exportación e importación.
 - Cierre de Alpha 0.1: revisión completa con los criterios de PRODUCT.md.
 

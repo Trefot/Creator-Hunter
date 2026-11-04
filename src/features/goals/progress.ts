@@ -1,6 +1,7 @@
 import { AccountSnapshot } from "../../db/accountSnapshots";
 import { Goal } from "../../db/goals";
 import { Income } from "../../db/income";
+import { LatestViews } from "../../db/results";
 
 export type GoalProgress =
   | { kind: "pending" } // métrica sin datos todavía (vistas hasta su sección)
@@ -21,8 +22,22 @@ export function goalStartDate(goal: Goal): string {
  * Progreso de una meta, calculado siempre a partir de los datos; nunca se guarda.
  * - Seguidores y horas: último registro del perfil; una meta global suma el de cada perfil.
  * - Ingresos: suma en USD de lo recibido desde que se creó la meta (del perfil, o de todo si es global).
+ * - Vistas: suma de las últimas vistas registradas de cada publicación hecha desde que se creó la meta.
  */
-export function computeProgress(goal: Goal, latest: Map<string, AccountSnapshot>, incomes: Income[]): GoalProgress {
+export function computeProgress(
+  goal: Goal,
+  latest: Map<string, AccountSnapshot>,
+  incomes: Income[],
+  views: LatestViews[],
+): GoalProgress {
+  if (goal.metric === "views") {
+    const start = goalStartDate(goal);
+    const current = views
+      .filter((v) => v.published_at !== null && v.published_at.slice(0, 10) >= start)
+      .filter((v) => goal.profile_id === null || v.profile_id === goal.profile_id)
+      .reduce((sum, v) => sum + v.views, 0);
+    return { kind: "value", current, ratio: Math.min(current / goal.target_value, 1) };
+  }
   if (goal.metric === "income") {
     const start = goalStartDate(goal);
     const minor = incomes

@@ -144,6 +144,41 @@ export async function deleteAdaptation(id: string): Promise<void> {
   await db.execute("DELETE FROM adaptation WHERE id = $1 AND workspace_id = $2", [id, WORKSPACE_ID]);
 }
 
+/**
+ * Marca la adaptación como publicada (hora local 'AAAA-MM-DDTHH:MM' y enlace opcional)
+ * y completa su paso de publicación si estaba pendiente.
+ */
+export async function publishAdaptation(id: string, publishedAt: string, url: string | null): Promise<void> {
+  const db = await getDb();
+  await db.execute(
+    `UPDATE adaptation SET published_at = $1, published_url = $2, updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
+      WHERE id = $3 AND workspace_id = $4`,
+    [publishedAt, url, id, WORKSPACE_ID],
+  );
+  await db.execute(
+    `UPDATE adaptation_step SET completed_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now'),
+            updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
+      WHERE adaptation_id = $1 AND workspace_id = $2 AND step = 'publishing' AND completed_at IS NULL`,
+    [id, WORKSPACE_ID],
+  );
+}
+
+/** Deshace la publicación y deja pendiente su paso de publicación. Los resultados se conservan. */
+export async function unpublishAdaptation(id: string): Promise<void> {
+  const db = await getDb();
+  await db.execute(
+    `UPDATE adaptation SET published_at = NULL, published_url = NULL,
+            updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
+      WHERE id = $1 AND workspace_id = $2`,
+    [id, WORKSPACE_ID],
+  );
+  await db.execute(
+    `UPDATE adaptation_step SET completed_at = NULL, updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
+      WHERE adaptation_id = $1 AND workspace_id = $2 AND step = 'publishing'`,
+    [id, WORKSPACE_ID],
+  );
+}
+
 /** Marca un paso como hecho (fecha actual) o pendiente. */
 export async function setStepDone(stepId: string, done: boolean): Promise<void> {
   const db = await getDb();
