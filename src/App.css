@@ -536,7 +536,9 @@ button.link:hover {
   margin-bottom: 12px;
 }
 
+/* display: block para que funcione igual con <div> y con <span>. */
 .progress {
+  display: block;
   height: 10px;
   background: var(--bg);
   border: 1px solid var(--border);
@@ -545,6 +547,7 @@ button.link:hover {
 }
 
 .progress-bar {
+  display: block;
   height: 100%;
   background: var(--accent);
   border-radius: 999px;
@@ -2744,4 +2747,1051 @@ button.muted-link {
   align-items: center;
   gap: 8px;
   cursor: pointer;
+}
+
+/* Partida de hoy */
+
+.today-plan {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 18px;
+}
+
+.today-plan h2 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.today-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.today-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.today-suggestion {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+  cursor: pointer;
+}
+
+.today-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.today-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+}
+
+.today-done .today-title {
+  color: var(--muted);
+  text-decoration: line-through;
+}
+
+.today-title {
+  flex: 1;
+}
+
+.today-check,
+.today-check:hover:not(:disabled) {
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border-radius: 7px;
+  background: transparent;
+  border: 2px solid var(--border-strong);
+  color: #fff;
+}
+
+.today-check.checked {
+  background: var(--success);
+  border-color: var(--success);
+}
+
+.today-note {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.today-history {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.today-history summary {
+  cursor: pointer;
+}
+
+/* Skin del juego: arte de la portada de fondo, difuminado (solo mientras se juega) */
+
+.content {
+  position: relative;
+}
+
+:root[data-game-skin] .content::before {
+  content: "";
+  position: fixed;
+  inset: 0 0 0 232px;
+  background-image: var(--game-art);
+  background-size: cover;
+  background-position: center;
+  filter: blur(36px) saturate(1.3);
+  opacity: 0.22;
+  pointer-events: none;
+  z-index: 0;
+  animation: page-in 600ms ease-out;
+}
+
+:root[data-game-skin] .content > * {
+  position: relative;
+  z-index: 1;
+}
+
+:root[data-game-skin] .now-playing {
+  position: sticky;
+  z-index: 6;
+}
+
+:root[data-game-skin] .sidebar {
+  background: linear-gradient(180deg, var(--accent-soft), transparent 40%), var(--sidebar);
+}
+
+/* La franja usa el degradado de la skin */
+.now-playing {
+  background: var(--brand-gradient);
+}
+
+/* Portada difuminada detrás de la cabecera del juego */
+.game-hero {
+  position: relative;
+  overflow: hidden;
+}
+
+.today-title,
+.today-suggestion-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.today-how {
+  color: var(--muted);
+}
+
+.today-suggestion {
+  align-items: flex-start;
+}
+
+.today-suggestion input {
+  margin-top: 3px;
+}
+
+.today-replan {
+  align-self: flex-start;
+}
+
+/* Hoy, versión visual: cabecera con el arte del juego, objetivo principal y tarjetas */
+
+.today-hero {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 22px 24px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: linear-gradient(100deg, rgba(14, 12, 20, 0.92) 30%, rgba(14, 12, 20, 0.55)), var(--today-art, none), var(--surface);
+  background-size: cover;
+  background-position: center 30%;
+}
+
+.today-hero-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.today-hero h2 {
+  font-size: 26px;
+  margin: 2px 0;
+}
+
+.today-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--accent-hover);
+}
+
+.today-phase-of {
+  color: var(--muted);
+}
+
+.today-phases {
+  display: flex;
+  gap: 5px;
+  margin-top: 10px;
+}
+
+.today-phases span {
+  width: 30px;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.today-phases .done {
+  background: var(--success);
+}
+
+.today-phases .now {
+  background: var(--accent);
+  box-shadow: 0 0 10px var(--accent);
+}
+
+.today-main,
+.today-main:hover:not(:disabled) {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  padding: 14px 18px;
+  text-align: left;
+  color: var(--text);
+  border-radius: var(--radius);
+  border: 1px solid var(--accent);
+  background: linear-gradient(90deg, var(--accent-soft), transparent 70%), var(--surface);
+  box-shadow: 0 0 0 1px var(--accent-soft), var(--shadow);
+}
+
+.today-main:hover:not(:disabled) {
+  background: linear-gradient(90deg, var(--accent-soft), var(--accent-soft)), var(--surface);
+}
+
+.today-main img {
+  width: 64px;
+  height: 64px;
+  border-radius: 10px;
+  object-fit: cover;
+}
+
+.today-main-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.today-main-text strong {
+  font-size: 18px;
+}
+
+.today-pick {
+  margin: 0;
+}
+
+.today-group-label {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+
+.today-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 10px;
+}
+
+.today-card {
+  --kind: var(--accent);
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--kind);
+  background: var(--bg);
+  transition: border-color var(--ease), background var(--ease), opacity var(--ease);
+}
+
+.today-card[role="checkbox"],
+.today-card.clickable {
+  cursor: pointer;
+}
+
+.today-card[role="checkbox"]:hover,
+.today-card.clickable:hover {
+  background: var(--surface-hover);
+}
+
+.today-card.kind-missable {
+  --kind: var(--warning);
+}
+
+.today-card.kind-farm {
+  --kind: #38bdf8;
+}
+
+.today-card.kind-guide {
+  --kind: #c084fc;
+}
+
+.today-card.kind-custom {
+  --kind: var(--muted);
+}
+
+/* Al planear: las no elegidas quedan apagadas */
+.today-card[role="checkbox"]:not(.selected) {
+  opacity: 0.55;
+}
+
+.today-card.selected {
+  border-color: var(--kind);
+  background: linear-gradient(135deg, var(--accent-soft), transparent 60%), var(--bg);
+}
+
+.today-card.today-done {
+  opacity: 0.6;
+}
+
+.today-card.today-done .today-title {
+  text-decoration: line-through;
+}
+
+.today-thumb {
+  width: 48px;
+  height: 48px;
+  border-radius: 9px;
+  flex-shrink: 0;
+  object-fit: cover;
+}
+
+.today-thumb-icon {
+  display: grid;
+  place-items: center;
+  color: var(--kind);
+  background: var(--surface-hover);
+}
+
+.today-card-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.today-kind {
+  color: var(--kind);
+  font-weight: 600;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.today-tick {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 7px;
+  border: 2px solid var(--border-strong);
+  color: #fff;
+}
+
+.today-tick.on {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.link-button,
+.link-button:hover:not(:disabled) {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  align-self: flex-start;
+  padding: 0;
+  margin-top: 2px;
+  border: 0;
+  background: none;
+  color: var(--accent-hover);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.chip-count {
+  white-space: nowrap;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent-hover);
+}
+
+.chip-soft {
+  font-size: 12px;
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--muted);
+}
+
+.trophy-main.clickable {
+  cursor: pointer;
+}
+
+.trophy-main.clickable:hover strong {
+  color: var(--accent-hover);
+}
+
+/* Ficha del trofeo (panel lateral) */
+
+.sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  justify-content: flex-end;
+  background: rgba(5, 4, 9, 0.6);
+  backdrop-filter: blur(3px);
+}
+
+.sheet {
+  width: min(620px, 100%);
+  height: 100%;
+  overflow-y: auto;
+  background: var(--surface);
+  border-left: 1px solid var(--border-strong);
+  box-shadow: -20px 0 40px rgba(0, 0, 0, 0.4);
+  animation: sheet-in 220ms ease-out;
+}
+
+@keyframes sheet-in {
+  from {
+    transform: translateX(40px);
+    opacity: 0;
+  }
+}
+
+.sheet-hero {
+  --tier: var(--accent);
+  position: relative;
+  display: flex;
+  gap: 18px;
+  align-items: center;
+  padding: 28px 24px 22px;
+  background: radial-gradient(circle at 15% 30%, color-mix(in srgb, var(--tier) 30%, transparent), transparent 60%), var(--bg);
+  border-bottom: 1px solid var(--border);
+}
+
+.sheet-hero.sheet-gold {
+  --tier: #fcd34d;
+}
+
+.sheet-hero.sheet-silver {
+  --tier: #e5e7eb;
+}
+
+.sheet-hero.sheet-bronze {
+  --tier: #fb923c;
+}
+
+.sheet-hero.sheet-platinum {
+  --tier: #a5b4fc;
+}
+
+.sheet-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+}
+
+.sheet-icon {
+  width: 104px;
+  height: 104px;
+  flex-shrink: 0;
+  border-radius: 16px;
+  object-fit: cover;
+  background: var(--surface-hover);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--tier) 60%, transparent), 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.sheet-icon.locked {
+  filter: grayscale(0.6) brightness(0.85);
+}
+
+.sheet-hero-text {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.sheet-hero-text h2 {
+  font-size: 24px;
+  margin: 0;
+}
+
+.sheet-quote {
+  margin: 0;
+  font-style: italic;
+  color: var(--muted);
+}
+
+.sheet-body {
+  display: flex;
+  flex-direction: column;
+  padding: 8px 24px 28px;
+}
+
+.sheet-section {
+  padding: 16px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.sheet-section:last-child {
+  border-bottom: 0;
+}
+
+.sheet-section h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 8px;
+  font-size: 15px;
+}
+
+.sheet-section p {
+  margin: 0;
+}
+
+.sheet-collection-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.sheet-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.source-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.source-fixed {
+  color: var(--success);
+  background: rgba(74, 222, 128, 0.14);
+}
+
+.source-random {
+  color: var(--warning);
+  background: rgba(251, 191, 36, 0.14);
+}
+
+.source-enemy {
+  color: #f0abfc;
+  background: rgba(240, 171, 252, 0.14);
+}
+
+.sheet-steps,
+.sheet-tips {
+  margin: 0;
+  padding-left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sheet-items-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.sheet-chapter {
+  margin-top: 10px;
+}
+
+.sheet-chapter-label {
+  display: inline-block;
+  margin-bottom: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--accent-hover);
+}
+
+.sheet-items {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sheet-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px;
+  border-radius: 10px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+}
+
+.sheet-item.got {
+  border-color: rgba(74, 222, 128, 0.35);
+}
+
+.sheet-item.got .sheet-item-main strong {
+  color: var(--muted);
+  text-decoration: line-through;
+}
+
+.sheet-item-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sheet-where {
+  opacity: 0.85;
+}
+
+.sheet-item .guide-flag,
+.sheet-guide .guide-flag {
+  margin-left: 0;
+}
+
+.sheet-pieces {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 8px;
+  margin: 10px 0;
+}
+
+.sheet-piece {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 12px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, rgba(240, 171, 252, 0.1), transparent 70%), var(--bg);
+  border: 1px solid var(--border);
+}
+
+.sheet-slot {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #f0abfc;
+}
+
+.sheet-guide {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sheet-guide li {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.sheet-guide li > span {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sheet-sources {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Plan de hoy: las tarjetas sin elegir ya no se ven apagadas; una píldora dice si está en el plan */
+
+.today-card[role="checkbox"]:not(.selected) {
+  opacity: 1;
+}
+
+.today-card[role="checkbox"]:not(.selected) .today-thumb {
+  filter: grayscale(0.5);
+}
+
+.today-card.selected {
+  box-shadow: 0 0 0 1px var(--kind), 0 0 18px var(--accent-soft);
+}
+
+.today-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  color: var(--text);
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
+}
+
+.today-pill.on {
+  color: #fff;
+  border-color: var(--accent);
+  background: var(--accent);
+}
+
+.today-card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-top: 2px;
+}
+
+.today-card-actions .link-button {
+  margin-top: 0;
+}
+
+.lost-button,
+.lost-button:hover:not(:disabled) {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-weight: 600;
+  color: var(--warning);
+  border: 1px solid rgba(251, 191, 36, 0.4);
+  background: rgba(251, 191, 36, 0.08);
+  cursor: pointer;
+}
+
+.lost-button:hover:not(:disabled) {
+  background: rgba(251, 191, 36, 0.18);
+}
+
+.sheet-lost {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(251, 191, 36, 0.4);
+  background: rgba(251, 191, 36, 0.06);
+}
+
+.sheet-lost h3 {
+  color: var(--warning);
+  margin: 0;
+}
+
+/* Plan de hoy armado a mano + listas por trofeo */
+
+.today-main {
+  cursor: pointer;
+}
+
+.today-toggle,
+.today-toggle:hover:not(:disabled) {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  font-weight: 600;
+  color: var(--accent-hover);
+  border: 1px solid var(--accent);
+  background: var(--accent-soft);
+}
+
+.today-toggle:hover:not(:disabled) {
+  color: #fff;
+  background: var(--accent);
+}
+
+.today-toggle.on,
+.today-toggle.on:hover:not(:disabled) {
+  color: #fff;
+  background: var(--accent);
+}
+
+.today-toggle.big {
+  align-self: flex-start;
+  padding: 8px 14px;
+  border-radius: 10px;
+}
+
+.progress-line {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 4px;
+  min-width: 0;
+}
+
+.progress-line-head {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+}
+
+.progress-line .progress {
+  height: 7px;
+}
+
+.next-step,
+.next-step:hover:not(:disabled) {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  align-self: flex-start;
+  max-width: 100%;
+  padding: 3px 10px 3px 8px;
+  border-radius: 999px;
+  text-align: left;
+  color: var(--text);
+  border: 1px solid var(--border-strong);
+  background: var(--surface-hover);
+}
+
+.next-step:hover:not(:disabled) {
+  border-color: var(--accent);
+}
+
+.next-step svg:first-child {
+  color: var(--accent-hover);
+  flex-shrink: 0;
+}
+
+.sheet-ring {
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.sheet-next {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  margin-top: 14px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 1px solid var(--accent);
+  background: linear-gradient(135deg, var(--accent-soft), transparent 70%), var(--bg);
+}
+
+.sheet-next strong {
+  font-size: 16px;
+}
+
+.sheet-next .small-button {
+  margin-top: 6px;
+}
+
+.sheet-next-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--accent-hover);
+}
+
+.sheet-missable {
+  color: var(--warning);
+}
+
+.sheet-where svg,
+.sheet-next span svg {
+  vertical-align: -1px;
+}
+
+.sheet-add-own {
+  margin-top: 12px;
+}
+
+.today-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 26px 16px;
+  text-align: center;
+  border-radius: 12px;
+  border: 1px dashed var(--border-strong);
+  color: var(--text);
+}
+
+.today-empty > svg {
+  color: var(--accent-hover);
+}
+
+.today-howto {
+  margin: 0;
+  padding-left: 18px;
+  text-align: left;
+  color: var(--muted);
+}
+
+.today-plan-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.plan-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  background: var(--bg);
+  cursor: pointer;
+  transition: background var(--ease), border-color var(--ease);
+}
+
+.plan-card:hover {
+  background: var(--surface-hover);
+}
+
+.plan-card.today-done {
+  border-left-color: var(--success);
+  opacity: 0.7;
+}
+
+.plan-icon {
+  width: 64px;
+  height: 64px;
+  flex-shrink: 0;
+  border-radius: 10px;
+  object-fit: cover;
+  background: var(--surface-hover);
+}
+
+.plan-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.plan-title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.plan-title strong {
+  font-size: 16px;
+}
+
+.plan-side {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.today-free {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+}
+
+.today-free .today-title {
+  flex: 1;
+}
+
+.today-free.today-done .today-title {
+  color: var(--muted);
+  text-decoration: line-through;
+}
+
+.today-more {
+  align-self: flex-start;
+}
+
+.trophy-main .progress-line {
+  max-width: 460px;
+}
+
+.trophy-side .today-toggle {
+  margin-top: 2px;
 }

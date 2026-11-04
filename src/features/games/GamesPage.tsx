@@ -7,14 +7,22 @@ import { PageTitle } from "../../components/PageTitle";
 import { Game, listGames } from "../../db/games";
 import { psnStatus } from "../../db/psn";
 import { es } from "../../i18n/es";
-import { GameDetail } from "./GameDetail";
+import { GameDetail, GameView } from "./GameDetail";
 import { PsnConnect } from "./PsnConnect";
 import { PsnImport } from "./PsnImport";
 
 const t = es.games;
 
 /** Biblioteca de juegos; al abrir uno se muestra su ficha con los trofeos. */
-export function GamesPage({ initialOpenId = null, gameMode }: { initialOpenId?: string | null; gameMode: GameModeState }) {
+export function GamesPage({
+  initialOpenId = null,
+  initialView,
+  gameMode,
+}: {
+  initialOpenId?: string | null;
+  initialView?: GameView;
+  gameMode: GameModeState;
+}) {
   const [games, setGames] = useState<Game[] | null>(null);
   const [gameModeOn, setGameModeOn] = useState(isGameModeEnabled());
   const [connected, setConnected] = useState(false);
@@ -39,7 +47,14 @@ export function GamesPage({ initialOpenId = null, gameMode }: { initialOpenId?: 
   const open = games?.find((g) => g.id === openId);
   if (open) {
     return (
-      <GameDetail key={open.id} game={open} psnConnected={connected} onBack={() => setOpenId(null)} onChanged={refresh} />
+      <GameDetail
+        key={open.id}
+        game={open}
+        psnConnected={connected}
+        initialView={open.id === initialOpenId ? initialView : undefined}
+        onBack={() => setOpenId(null)}
+        onChanged={refresh}
+      />
     );
   }
 

@@ -60,6 +60,24 @@ fn migrations() -> Vec<Migration> {
             sql: include_str!("../migrations/008_game_guide.sql"),
             kind: MigrationKind::Up,
         },
+        Migration {
+            version: 9,
+            description: "partidas del día y objetivos",
+            sql: include_str!("../migrations/009_play_sessions.sql"),
+            kind: MigrationKind::Up,
+        },
+        Migration {
+            version: 10,
+            description: "progreso de coleccionables",
+            sql: include_str!("../migrations/010_collection_items.sql"),
+            kind: MigrationKind::Up,
+        },
+        Migration {
+            version: 11,
+            description: "puntos propios por trofeo",
+            sql: include_str!("../migrations/011_trophy_tasks.sql"),
+            kind: MigrationKind::Up,
+        },
     ]
 }
 

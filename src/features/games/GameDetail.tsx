@@ -18,32 +18,39 @@ import { formatDate } from "../../i18n/format";
 import { refreshFromPsn } from "./importGame";
 import { GuideEntry, listGuide } from "../../db/guide";
 import { GuideView } from "./GuideView";
+import { TodayView } from "./TodayView";
 import { RouteView } from "./RouteView";
 import { TrophyRow } from "./TrophyRow";
+import { TrophySheet } from "./TrophySheet";
+import { GameContextProvider, useGameState } from "./GameContext";
 
 const t = es.games;
 const TYPES: TrophyType[] = ["platinum", "gold", "silver", "bronze"];
 
 type Filter = "all" | "pending" | "earned";
-type View = "route" | "guide" | "list";
+export type GameView = "today" | "route" | "guide" | "list";
 
 interface Props {
   game: Game;
   psnConnected: boolean;
+  /** Pestaña inicial (el modo juego abre "Hoy"). */
+  initialView?: GameView;
   onBack: () => void;
   onChanged: () => Promise<void>;
 }
 
 /** Ficha de un juego: progreso hacia el platino y lista de trofeos. */
-export function GameDetail({ game, psnConnected, onBack, onChanged }: Props) {
+export function GameDetail({ game, psnConnected, initialView = "route", onBack, onChanged }: Props) {
   const [trophies, setTrophies] = useState<Trophy[] | null>(null);
   const [phases, setPhases] = useState<TrophyPhase[]>([]);
-  const [view, setView] = useState<View>("route");
+  const [view, setView] = useState<GameView>(initialView);
   const [guide, setGuide] = useState<GuideEntry[]>([]);
   const [filter, setFilter] = useState<Filter>("pending");
   const [syncing, setSyncing] = useState(false);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [error, setError] = useState("");
+  const [sheetId, setSheetId] = useState<string | null>(null);
+  const gameState = useGameState(game, trophies, (x) => setSheetId(x.id));
 
   async function refresh() {
     try {
@@ -154,8 +161,9 @@ export function GameDetail({ game, psnConnected, onBack, onChanged }: Props) {
 
       {error && <p className="error">{error}</p>}
 
+      <GameContextProvider value={gameState}>
       <div className="tabs">
-        {(["route", "guide", "list"] as View[]).map((v) => (
+        {(["today", "route", "guide", "list"] as GameView[]).map((v) => (
           <button key={v} className={`tab${view === v ? " active" : ""}`} onClick={() => setView(v)}>
             {t.views[v]}
           </button>
@@ -166,6 +174,16 @@ export function GameDetail({ game, psnConnected, onBack, onChanged }: Props) {
         <p className="muted">{t.loading}</p>
       ) : list.length === 0 ? (
         <p className="muted small">{t.noTrophies}</p>
+      ) : view === "today" ? (
+        <TodayView
+          game={game}
+          trophies={list}
+          phases={phases}
+          onGoPending={() => {
+            setFilter("pending");
+            setView("list");
+          }}
+        />
       ) : view === "route" ? (
         <RouteView game={game} trophies={list} phases={phases} guide={guide} onChanged={refresh} />
       ) : view === "guide" ? (
@@ -189,6 +207,17 @@ export function GameDetail({ game, psnConnected, onBack, onChanged }: Props) {
           </ul>
         </>
       )}
+
+      {sheetId && trophies?.find((x) => x.id === sheetId) && (
+        <TrophySheet
+          trophy={trophies.find((x) => x.id === sheetId)!}
+          phases={phases}
+          guide={guide}
+          onChanged={refresh}
+          onClose={() => setSheetId(null)}
+        />
+      )}
+      </GameContextProvider>
     </section>
   );
 }

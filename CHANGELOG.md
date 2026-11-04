@@ -2,6 +2,16 @@
 
 ## [Sin publicar]
 
+### 2026-11-04 · G5+ Listas por trofeo y plan de hoy
+- Cada trofeo tiene su ficha (panel lateral): lo siguiente que toca, la lista de lo que hay que conseguir con casillas, fijo o aleatorio, perdibles, build de farmeo, consejos y fuentes.
+- Los puntos se marcan solos cuando ya tienes el trofeo relacionado; en cualquier trofeo puedes añadir puntos propios.
+- Listas investigadas para Black Myth: Wukong: final del capítulo 6, final secreto, 18 hechizos, 6 reliquias y 15 semillas.
+- Pestaña "Hoy": el plan lo arma el jugador con «Plan de hoy» en cada trofeo pendiente; cada trofeo del plan muestra su progreso y su siguiente paso.
+- "Ya lo perdí → NG+": un perdible ya perdido pasa a la fase NG+ y deja de avisar.
+- Skin del juego: con el modo juego activo, los colores y el fondo de la app salen de la portada del juego.
+- Corregida la barra de progreso de la biblioteca.
+- Migraciones 009 (partidas del día), 010 (progreso de listas) y 011 (puntos propios); las copias de seguridad las incluyen.
+
 ### 2026-11-04 · G5 Modo juego
 - La app detecta el juego que tienes abierto en la PS5 (presencia de PSN, cada minuto) y abre su ficha con la ruta al platino.
 - Franja "Jugando ahora" con "Ver ruta" e interruptor "Modo juego automático".

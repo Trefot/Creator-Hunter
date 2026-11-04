@@ -6,6 +6,7 @@ import { CalendarPage } from "./features/calendar/CalendarPage";
 import { DashboardPage } from "./features/dashboard/DashboardPage";
 import { GamesPage } from "./features/games/GamesPage";
 import { useGameMode } from "./features/games/useGameMode";
+import { applySkin, skinFromCover } from "./features/games/gameSkin";
 import { Gamepad2 } from "lucide-react";
 import { GoalsPage } from "./features/goals/GoalsPage";
 import { IdeasPage } from "./features/ideas/IdeasPage";
@@ -26,9 +27,26 @@ function App() {
   const [notice, setNotice] = useState<{ text: string; error: boolean } | null>(null);
   /** Juego que Juegos debe abrir al entrar (modo juego o banner). */
   const [gameToOpen, setGameToOpen] = useState<string | null>(null);
+  const [gameView, setGameView] = useState<"today" | undefined>(undefined);
 
   // Modo juego: al empezar a jugar en la PS5 un juego de la biblioteca, la app abre su ficha.
-  const gameMode = useGameMode((game) => openGame(game.id));
+  const gameMode = useGameMode((game) => openGame(game.id, "today"));
+
+  // Skin del juego: mientras se juega, la app toma los colores y el arte de su portada.
+  const playingCover = gameMode.playing?.cover ?? null;
+  useEffect(() => {
+    let cancelled = false;
+    if (!playingCover) {
+      applySkin(null, null);
+      return;
+    }
+    skinFromCover(playingCover)
+      .then((skin) => !cancelled && applySkin(skin, playingCover))
+      .catch(() => applySkin(null, null));
+    return () => {
+      cancelled = true;
+    };
+  }, [playingCover]);
 
   // Sincronización automática de YouTube al abrir (como mucho cada 3 horas).
   useEffect(() => {
@@ -56,8 +74,9 @@ function App() {
     setSection(next);
   }
 
-  function openGame(gameId: string) {
+  function openGame(gameId: string, view?: "today") {
     setGameToOpen(gameId);
+    setGameView(view);
     setSection("games");
   }
 
@@ -77,8 +96,8 @@ function App() {
               {es.games.nowPlaying} <strong>{gameMode.playing.title}</strong>
             </span>
             {!(section === "games" && gameToOpen === gameMode.playing.id) && (
-              <button className="small-button" onClick={() => openGame(gameMode.playing!.id)}>
-                {es.games.openRoute}
+              <button className="small-button" onClick={() => openGame(gameMode.playing!.id, "today")}>
+                {es.games.openToday}
               </button>
             )}
           </div>
@@ -98,7 +117,7 @@ function App() {
         ) : section === "income" ? (
           <IncomePage />
         ) : section === "games" ? (
-          <GamesPage key={gameToOpen ?? "list"} initialOpenId={gameToOpen} gameMode={gameMode} />
+          <GamesPage key={gameToOpen ?? "list"} initialOpenId={gameToOpen} initialView={gameView} gameMode={gameMode} />
         ) : section === "backups" ? (
           <BackupsPage />
         ) : (

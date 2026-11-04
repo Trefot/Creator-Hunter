@@ -16,7 +16,7 @@ use tauri_plugin_sql::{DbInstances, DbPool};
 use crate::DB_URL;
 
 /// Tablas de datos, de padres a hijos (orden de inserción; el borrado va al revés).
-const TABLES: [&str; 17] = [
+const TABLES: [&str; 21] = [
     "workspace",
     "profile",
     "account_snapshot",
@@ -29,6 +29,10 @@ const TABLES: [&str; 17] = [
     "trophy",
     "guide_entry",
     "guide_entry_trophy",
+    "play_session",
+    "session_objective",
+    "collection_item",
+    "trophy_task",
     "game_goal",
     "project",
     "adaptation",

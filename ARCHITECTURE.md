@@ -94,6 +94,7 @@ El Core se construye **solo cuando una función real lo necesita**. Orden previs
 2. Probar la migración sobre una copia de esa copia: mismo número de filas, datos idénticos, `foreign_key_check` vacío e `integrity_check = ok`.
 3. Solo entonces registrarla en `lib.rs`; la app la aplica al arrancar.
 4. Para cambiar un `CHECK`, se reconstruye la tabla (crear la nueva, copiar, borrar, renombrar y recrear índices), comprobando antes que ninguna otra tabla la referencie.
+5. **Con `tauri dev` abierto**, guardar `lib.rs` recompila la app y aplica la migración al reiniciar: haz la copia del paso 1 *antes* de registrarla (pasó con la 010, que solo añade una tabla; sin daño).
 
 ### D-008 · Metas de ingresos (2026-11-03)
 Cuentan lo recibido en USD desde la fecha local de creación de la meta, filtrado por red si la meta tiene perfil. Las metas por periodo quedan aparcadas en ROADMAP.md.
@@ -164,6 +165,12 @@ Cuentan lo recibido en USD desde la fecha local de creación de la meta, filtrad
 - **Modo juego (G5):** comando `psn_now_playing` (presencia de `me`). La vigilancia vive en `useGameMode` (cada 60 s, solo si PSN está conectado y el modo está activo; preferencia en `localStorage`). El emparejamiento es por nombre normalizado (`matchPlaying`), porque la presencia usa el `npTitleId` (PPSA…) y no el `npCommunicationId` (NPWR…) de los trofeos. Solo salta una vez por partida para no arrastrar al usuario mientras navega.
 - **Copias de seguridad:** las tablas de juegos van antes de `project` (por `project.game_id`). Una copia de una versión anterior sin alguna tabla la importa como vacía.
 - **Orden por capítulos:** PSN no lo da. La agrupación inicial por fases para Wukong la escribe Claude a partir de guías públicas (sin copiar su texto) y el usuario la edita.
+
+### D-017 · Listas por trofeo y plan de hoy (2026-11-04)
+- **Contenido en la app, progreso en la base de datos.** Las listas (qué conseguir, dónde, fijo o aleatorio) son archivos TypeScript por juego en `src/features/games/collections/`, redactados con fuentes (nunca copiados) y con `verified: false` cuando las fuentes no coinciden. La base de datos solo guarda qué marcó el usuario (`collection_item`, por clave estable) y sus puntos propios (`trophy_task`). Así se pueden corregir textos sin migraciones.
+- **Lo derivado no se guarda:** un punto con `doneWithTrophy` sale hecho si ese trofeo está ganado en PSN; el progreso y el siguiente paso se calculan.
+- **El plan de hoy lo arma el usuario** (decisión del usuario: las sugerencias automáticas no le servían). Se reutilizan `play_session` y `session_objective` (migración 009); la app solo recomienda el siguiente trofeo de la ruta.
+- **"Ya lo perdí → NG+"** mueve el trofeo a la fase cuyo nombre contiene "NG+", quita la marca de perdible y lo anota en su nota.
 
 ## Dependencias
 
