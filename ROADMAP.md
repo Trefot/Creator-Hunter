@@ -20,7 +20,7 @@ Ritmo: 2–3 noches por semana, una tarea cerrada y probada por sesión.
 - [x] Comprobar que la app abre en Windows.
 - [x] Escribir los documentos base.
 - [x] Iniciar Git y hacer el primer commit.
-- [ ] Repositorio privado en GitHub (lo crea el usuario y lo conectamos).
+- [x] Repositorio privado en GitHub: https://github.com/Trefot/Creator-Hunter (rama `main`).
 
 ### ✅ S2 · Modelo de datos
 - [x] Respuestas del usuario: todas las métricas (seguidores, vistas por publicación, horas, directos); todos los tipos de ingreso; Script Studio por secciones; volumen bajo.
