@@ -133,15 +133,17 @@ Primeras integraciones automáticas. Todo local, con inicio de sesión OAuth des
 
 ### Alpha 0.2 · YouTube: sesiones (diseño en ARCHITECTURE.md, D-015)
 
-#### ⬜ S17 · App de Google y diseño (en curso)
+#### ✅ S17 · App de Google y diseño
 - [x] Investigación verificada en la documentación oficial (D-015).
 - [x] Decisiones: app de Google "en producción" sin verificar; sincronizar al abrir (con límite de frecuencia) y con botón; foto del canal como foto del perfil.
-- [ ] El usuario crea el proyecto en Google Cloud, activa YouTube Data API v3 y YouTube Analytics API, configura la pantalla de consentimiento y crea un cliente OAuth "Aplicación de escritorio" (descarga el JSON).
-**Terminado cuando:** el usuario tiene el JSON del cliente OAuth descargado.
+- [x] El usuario crea el proyecto en Google Cloud, activa YouTube Data API v3 y YouTube Analytics API, configura la pantalla de consentimiento y crea un cliente OAuth "App de escritorio" (JSON descargado).
+- [ ] **Pendiente:** publicar la app "en producción". Google exige una URL de página principal y otra de política de privacidad (y no tener logotipo subido). Mientras tanto, la app está en modo "Prueba" con el usuario como usuario de prueba: **la conexión caduca cada 7 días**. Plan: dos páginas públicas en GitHub Pages (repositorio público aparte).
 
-#### ⬜ S18 · Conectar YouTube
-Importar el JSON del cliente desde la app; inicio de sesión con el navegador (loopback + PKCE); tokens en el Administrador de credenciales de Windows; mostrar canal conectado y su foto.
-**Terminado cuando:** se conecta, se cierra la app, se reabre y sigue conectado; se puede desconectar.
+#### ✅ S18 · Conectar YouTube
+- [x] Importar el JSON del cliente desde Perfiles; inicio de sesión con el navegador (loopback + PKCE S256); refresh token en el Administrador de credenciales de Windows.
+- [x] Canal conectado con sus estadísticas y la foto del canal como foto del perfil; comprobar conexión y desconectar (revoca en Google).
+- [x] Tests del receptor loopback y de PKCE (5/5).
+- [x] Prueba del usuario: canal conectado.
 
 #### ⬜ S19 · Sincronizar el canal
 Migración 006 (origen `manual`/`api` en los registros). Suscriptores, vistas y vídeos (Data API) y horas y suscriptores ganados/perdidos (Analytics); un registro automático por día; progreso hacia las 4.000 h.

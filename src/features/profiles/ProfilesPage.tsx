@@ -20,6 +20,7 @@ import { es } from "../../i18n/es";
 import { formatDate, formatNumber } from "../../i18n/format";
 import { ProfileForm } from "./ProfileForm";
 import { SnapshotsPanel } from "./SnapshotsPanel";
+import { YouTubeConnect } from "./YouTubeConnect";
 
 const ts = es.snapshots;
 
@@ -172,6 +173,7 @@ export function ProfilesPage() {
                     )}
                   </div>
                 </div>
+                {p.platform === "youtube" && <YouTubeConnect profileId={p.id} onChange={refresh} />}
                 {openSnapshotsId === p.id && <SnapshotsPanel profileId={p.id} onChange={refresh} />}
               </li>
             ))}

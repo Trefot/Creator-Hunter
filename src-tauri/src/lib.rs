@@ -1,6 +1,7 @@
 use tauri_plugin_sql::{Migration, MigrationKind};
 
 mod backup;
+mod youtube;
 
 /// Archivo de la base de datos, dentro de la carpeta de datos de la app.
 /// El frontend la abre con la misma cadena (ver src/db/database.ts).
@@ -52,7 +53,16 @@ pub fn run() {
                 .add_migrations(DB_URL, migrations())
                 .build(),
         )
-        .invoke_handler(tauri::generate_handler![backup::export_backup, backup::import_backup])
+        .manage(youtube::YouTubeState::default())
+        .invoke_handler(tauri::generate_handler![
+            backup::export_backup,
+            backup::import_backup,
+            youtube::youtube_import_client,
+            youtube::youtube_status,
+            youtube::youtube_connect,
+            youtube::youtube_channel,
+            youtube::youtube_disconnect,
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

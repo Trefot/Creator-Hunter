@@ -142,6 +142,9 @@ Cuentan lo recibido en USD desde la fecha local de creación de la meta, filtrad
 - **Cuota:** 10.000 unidades al día; `channels.list` y `videos.list` cuestan 1 unidad. Sobra para el uso previsto.
 - **Credenciales del cliente OAuth** (el JSON descargado de Google): se importan desde la app y se guardan en la carpeta de datos de la app, nunca en Git. **Tokens** de acceso: en el Administrador de credenciales de Windows.
 - **Sincronización:** al abrir la app (como mucho una vez cada pocas horas) y con un botón. Los datos automáticos se marcan con origen `api` en las mismas tablas de registros.
+- **Implementación (S18):** `src-tauri/src/youtube.rs`. Comandos `youtube_import_client`, `youtube_status`, `youtube_connect`, `youtube_channel` y `youtube_disconnect`. Archivos en la carpeta de datos: `google-client.json` (cliente OAuth) y `youtube-connection.json` (perfil enlazado y canal). El access token solo vive en memoria (`YouTubeState`).
+- **Publicar en producción** exige en Google Auth Platform una URL de página principal y otra de política de privacidad, y no tener logotipo subido (con logo hay que pasar la verificación). Hasta tenerlas, la app está en "Prueba" con el usuario como usuario de prueba.
+- `reqwest` usa el TLS nativo de Windows (`native-tls`, SChannel) para no compilar `aws-lc` en C.
 
 ## Dependencias
 
@@ -155,5 +158,8 @@ Cuentan lo recibido en USD desde la fecha local de creación de la meta, filtrad
 | `lucide-react` (ISC) | Iconos coherentes; solo se incluyen los que se usan |
 | `@fontsource-variable/inter` (OFL) | Tipografía Inter incluida en la app, sin depender de internet |
 | `simple-icons` (CC0) | Logos de las cinco redes, solo para identificarlas; solo se incluyen esos cinco |
+| `reqwest` 0.13 (native-tls, json, form, query) | Llamadas HTTPS a Google y YouTube (D-015); ya estaba en el árbol de dependencias |
+| `keyring` 3 (windows-native) | Guardar el refresh token en el Administrador de credenciales de Windows |
+| `sha2`, `base64`, `rand`, `url` | PKCE, `state` aleatorio y construcción de URLs del OAuth; ya estaban en el árbol |
 
 Las dependencias nuevas se añaden a esta tabla con su justificación.

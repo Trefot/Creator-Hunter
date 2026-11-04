@@ -2,6 +2,11 @@
 
 ## [Sin publicar]
 
+### 2026-11-04 · S17–S18 Conectar YouTube (Alpha 0.2)
+- Plan de integración con YouTube verificado en la documentación oficial (D-015).
+- Perfiles → YouTube: importar el cliente OAuth de Google, conectar con el navegador (loopback + PKCE), ver el canal y desconectar.
+- El acceso se guarda en el Administrador de credenciales de Windows; la foto del canal se usa como foto del perfil.
+
 ## [0.1.0] · 2026-11-04 · Creator Studio Alpha 0.1
 
 Primera versión completa: los 7 criterios de PRODUCT.md cumplidos.
