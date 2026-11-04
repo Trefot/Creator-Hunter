@@ -1,5 +1,34 @@
+import {
+  CalendarDays,
+  DatabaseBackup,
+  FolderKanban,
+  LayoutDashboard,
+  Lightbulb,
+  LucideIcon,
+  Target,
+  UsersRound,
+  Wallet,
+} from "lucide-react";
 import { es } from "../i18n/es";
-import { READY_SECTIONS, Section, SECTIONS } from "../sections";
+import { READY_SECTIONS, Section } from "../sections";
+import { Logo } from "./Logo";
+
+export const SECTION_ICONS: Record<Section, LucideIcon> = {
+  dashboard: LayoutDashboard,
+  profiles: UsersRound,
+  goals: Target,
+  ideas: Lightbulb,
+  projects: FolderKanban,
+  calendar: CalendarDays,
+  income: Wallet,
+  backups: DatabaseBackup,
+};
+
+/** Grupos del menú; las copias de seguridad van aparte, al final. */
+const GROUPS: { label: string; sections: Section[] }[] = [
+  { label: es.nav.studio, sections: ["dashboard", "ideas", "projects", "calendar"] },
+  { label: es.nav.growth, sections: ["profiles", "goals", "income"] },
+];
 
 interface Props {
   current: Section;
@@ -7,25 +36,37 @@ interface Props {
 }
 
 export function Sidebar({ current, onSelect }: Props) {
+  function item(section: Section) {
+    const Icon = SECTION_ICONS[section];
+    return (
+      <li key={section}>
+        <button className={`nav-item${section === current ? " active" : ""}`} onClick={() => onSelect(section)}>
+          <Icon size={18} strokeWidth={2} />
+          {es.sections[section]}
+          {!READY_SECTIONS.includes(section) && <span className="nav-soon" aria-hidden>·</span>}
+        </button>
+      </li>
+    );
+  }
+
   return (
     <nav className="sidebar">
       <div className="brand">
-        <span className="brand-name">{es.appName}</span>
-        <span className="brand-tagline">{es.appTagline}</span>
+        <Logo size={36} />
+        <div className="brand-text">
+          <span className="brand-name">{es.appName}</span>
+          <span className="brand-tagline">{es.appTagline}</span>
+        </div>
       </div>
-      <ul>
-        {SECTIONS.map((section) => (
-          <li key={section}>
-            <button
-              className={`nav-item${section === current ? " active" : ""}`}
-              onClick={() => onSelect(section)}
-            >
-              {es.sections[section]}
-              {!READY_SECTIONS.includes(section) && <span className="nav-soon" aria-hidden>·</span>}
-            </button>
-          </li>
+      <div className="sidebar-main">
+        {GROUPS.map((group) => (
+          <div key={group.label}>
+            <div className="nav-group-label">{group.label}</div>
+            <ul>{group.sections.map(item)}</ul>
+          </div>
         ))}
-      </ul>
+      </div>
+      <ul>{item("backups")}</ul>
       <p className="sidebar-footer">{es.version}</p>
     </nav>
   );

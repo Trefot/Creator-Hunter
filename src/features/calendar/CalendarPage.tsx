@@ -1,3 +1,5 @@
+import { PageTitle } from "../../components/PageTitle";
+import { PlatformBadge } from "../../components/PlatformBadge";
 import { useEffect, useState } from "react";
 import { Adaptation, listScheduledBetween, listUnscheduled } from "../../db/adaptations";
 import { listProfiles, Profile } from "../../db/profiles";
@@ -47,10 +49,11 @@ export function CalendarPage({ onOpenProject }: Props) {
     const published = a.published_at !== null || step === null;
     return (
       <button className={`cal-item${published ? " cal-item-done" : ""}`} onClick={() => onOpenProject(a.project_id)}>
+        {a.thumbnail && <img className="cal-thumb" src={a.thumbnail} alt="" />}
         <span className="cal-item-top">
           {showTime && a.scheduled_at && <strong>{a.scheduled_at.slice(11, 16)}</strong>}
           {profile && (
-            <span className={`platform-badge platform-${profile.platform}`}>{es.platforms[profile.platform]}</span>
+            <PlatformBadge platform={profile.platform} />
           )}
         </span>
         <span className="cal-item-title">{a.title}</span>
@@ -64,10 +67,7 @@ export function CalendarPage({ onOpenProject }: Props) {
   return (
     <section className="page page-wide">
       <header className="page-header">
-        <div>
-          <h1>{es.sections.calendar}</h1>
-          <p className="muted">{t.subtitle}</p>
-        </div>
+        <PageTitle section="calendar" subtitle={t.subtitle} />
         <div className="profile-actions">
           <button className="ghost" onClick={() => setMonday(addDays(monday, -7))}>
             {t.previous}

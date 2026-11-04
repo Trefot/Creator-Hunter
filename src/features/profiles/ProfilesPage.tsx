@@ -1,7 +1,21 @@
+import { PageTitle } from "../../components/PageTitle";
+import { EmptyState } from "../../components/EmptyState";
+import { AVATAR_SIZE } from "../../components/images";
+import { ImagePicker } from "../../components/ImagePicker";
+import { PlatformBadge, PlatformLogo } from "../../components/PlatformBadge";
+import { Plus } from "lucide-react";
 import { useEffect, useState } from "react";
 import { openUrl } from "@tauri-apps/plugin-opener";
 import { AccountSnapshot, latestSnapshots } from "../../db/accountSnapshots";
-import { createProfile, deleteProfile, listProfiles, Profile, ProfileInput, updateProfile } from "../../db/profiles";
+import {
+  createProfile,
+  deleteProfile,
+  listProfiles,
+  Profile,
+  ProfileInput,
+  setProfileAvatar,
+  updateProfile,
+} from "../../db/profiles";
 import { es } from "../../i18n/es";
 import { formatDate, formatNumber } from "../../i18n/format";
 import { ProfileForm } from "./ProfileForm";
@@ -69,11 +83,8 @@ export function ProfilesPage() {
   return (
     <section className="page">
       <header className="page-header">
-        <div>
-          <h1>{es.sections.profiles}</h1>
-          <p className="muted">{t.subtitle}</p>
-        </div>
-        {editing === null && <button onClick={() => setEditing("new")}>{t.add}</button>}
+        <PageTitle section="profiles" subtitle={t.subtitle} />
+        {editing === null && <button onClick={() => setEditing("new")}><Plus size={16} />{t.add}</button>}
       </header>
 
       {editing !== null && (
@@ -90,9 +101,7 @@ export function ProfilesPage() {
       {profiles === null ? (
         <p className="muted">{t.loading}</p>
       ) : profiles.length === 0 ? (
-        <div className="empty-state">
-          <p>{t.empty}</p>
-        </div>
+        <EmptyState section="profiles" text={t.empty} />
       ) : (
         <>
           <p className="muted small">{t.summary(profiles.length, monetizedCount)}</p>
@@ -100,9 +109,27 @@ export function ProfilesPage() {
             {profiles.map((p) => (
               <li key={p.id} className="card profile-card">
                 <div className="profile-row">
-                  <span className={`platform-badge platform-${p.platform}`}>{es.platforms[p.platform]}</span>
+                  <div className="avatar-with-logo">
+                    <ImagePicker
+                      image={p.avatar}
+                      size={AVATAR_SIZE}
+                      round
+                      className="avatar-lg"
+                      placeholder={<PlatformLogo platform={p.platform} size={56} />}
+                      onChange={async (img) => {
+                        await setProfileAvatar(p.id, img);
+                        await refresh();
+                      }}
+                    />
+                    {p.avatar && (
+                      <span className="avatar-logo">
+                        <PlatformLogo platform={p.platform} size={22} />
+                      </span>
+                    )}
+                  </div>
 
                   <div className="profile-main">
+                    <PlatformBadge platform={p.platform} size={16} withName />
                     <strong>{p.display_name ?? p.handle}</strong>
                     {p.display_name && <span className="muted">{p.handle}</span>}
                     <span className="muted small">{latestSummary(latest.get(p.id))}</span>

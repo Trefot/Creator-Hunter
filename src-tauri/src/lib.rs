@@ -22,6 +22,24 @@ fn migrations() -> Vec<Migration> {
             sql: include_str!("../migrations/002_twitch_payout.sql"),
             kind: MigrationKind::Up,
         },
+        Migration {
+            version: 3,
+            description: "foto de perfil y miniatura de adaptación",
+            sql: include_str!("../migrations/003_images.sql"),
+            kind: MigrationKind::Up,
+        },
+        Migration {
+            version: 4,
+            description: "umbral de pago y saldo pendiente",
+            sql: include_str!("../migrations/004_payout_thresholds.sql"),
+            kind: MigrationKind::Up,
+        },
+        Migration {
+            version: 5,
+            description: "fecha del último cobro",
+            sql: include_str!("../migrations/005_last_payout.sql"),
+            kind: MigrationKind::Up,
+        },
     ]
 }
 

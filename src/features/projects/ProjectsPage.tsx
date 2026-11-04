@@ -1,4 +1,11 @@
+import { PageTitle } from "../../components/PageTitle";
+import { EmptyState } from "../../components/EmptyState";
+import { FolderKanban } from "lucide-react";
 import { useEffect, useState } from "react";
+import { coverFor } from "../../components/cover";
+import { PlatformLogo } from "../../components/PlatformBadge";
+import { Adaptation, listAllAdaptations } from "../../db/adaptations";
+import { listProfiles, Platform, Profile } from "../../db/profiles";
 import { listProjects, Project } from "../../db/projects";
 import { es } from "../../i18n/es";
 import { ProjectDetail } from "./ProjectDetail";
@@ -9,11 +16,16 @@ const t = es.projects;
 export function ProjectsPage({ initialOpenId = null }: { initialOpenId?: string | null }) {
   const [projects, setProjects] = useState<Project[] | null>(null);
   const [openId, setOpenId] = useState<string | null>(initialOpenId);
+  const [adaptations, setAdaptations] = useState<Adaptation[]>([]);
+  const [profiles, setProfiles] = useState<Profile[]>([]);
   const [error, setError] = useState("");
 
   async function refresh() {
     try {
-      setProjects(await listProjects());
+      const [pr, ad, pf] = await Promise.all([listProjects(), listAllAdaptations(), listProfiles()]);
+      setAdaptations(ad);
+      setProfiles(pf);
+      setProjects(pr);
     } catch (err) {
       setError(String(err));
     }
@@ -29,10 +41,7 @@ export function ProjectsPage({ initialOpenId = null }: { initialOpenId?: string 
   return (
     <section className="page">
       <header className="page-header">
-        <div>
-          <h1>{es.sections.projects}</h1>
-          <p className="muted">{t.subtitle}</p>
-        </div>
+        <PageTitle section="projects" subtitle={t.subtitle} />
       </header>
 
       {error && <p className="error">{error}</p>}
@@ -40,23 +49,39 @@ export function ProjectsPage({ initialOpenId = null }: { initialOpenId?: string 
       {projects === null ? (
         <p className="muted">{t.loading}</p>
       ) : projects.length === 0 ? (
-        <div className="empty-state">
-          <p>{t.empty}</p>
-        </div>
+        <EmptyState section="projects" text={t.empty} />
       ) : (
-        <ul className="goal-list">
-          {projects.map((p) => (
-            <li key={p.id}>
-              <button className="card project-row" onClick={() => setOpenId(p.id)}>
-                <strong>{p.title}</strong>
-                {p.summary && <span className="muted idea-description">{p.summary}</span>}
-                <span className="muted small">
-                  {t.adaptationCount(p.adaptation_count)}
-                  {p.idea_id && ` · ${t.fromIdea}`}
-                </span>
-              </button>
-            </li>
-          ))}
+        <ul className="gallery">
+          {projects.map((p) => {
+            const own = adaptations.filter((a) => a.project_id === p.id);
+            const cover = own.find((a) => a.thumbnail)?.thumbnail;
+            const platforms = [...new Set(own.map((a) => profiles.find((x) => x.id === a.profile_id)?.platform))].filter(
+              (x): x is Platform => !!x,
+            );
+            const published = own.filter((a) => a.published_at !== null).length;
+            return (
+              <li key={p.id}>
+                <button className="card gallery-card gallery-button" onClick={() => setOpenId(p.id)}>
+                  <div className="gallery-cover" style={cover ? undefined : { background: coverFor(p.title) }}>
+                    {cover ? <img src={cover} alt="" /> : <FolderKanban size={30} />}
+                  </div>
+                  <div className="gallery-body">
+                    <strong className="gallery-title">{p.title}</strong>
+                    {p.summary && <span className="muted gallery-description">{p.summary}</span>}
+                    <span className="chips">
+                      {platforms.map((pl) => (
+                        <PlatformLogo key={pl} platform={pl} size={20} />
+                      ))}
+                    </span>
+                    <span className="muted small">
+                      {t.adaptationCount(p.adaptation_count)} · {t.publishedCount(published)}
+                      {p.idea_id && ` · ${t.fromIdea}`}
+                    </span>
+                  </div>
+                </button>
+              </li>
+            );
+          })}
         </ul>
       )}
     </section>

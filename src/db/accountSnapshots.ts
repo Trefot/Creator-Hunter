@@ -28,6 +28,15 @@ export async function listSnapshots(profileId: string): Promise<AccountSnapshot[
   );
 }
 
+/** Todos los registros, del más antiguo al más reciente (para las gráficas del dashboard). */
+export async function listAllSnapshots(): Promise<AccountSnapshot[]> {
+  const db = await getDb();
+  return db.select<AccountSnapshot[]>(
+    `SELECT ${COLUMNS} FROM account_snapshot WHERE workspace_id = $1 ORDER BY recorded_on, created_at`,
+    [WORKSPACE_ID],
+  );
+}
+
 /** Último registro de cada perfil, indexado por profile_id. */
 export async function latestSnapshots(): Promise<Map<string, AccountSnapshot>> {
   const db = await getDb();

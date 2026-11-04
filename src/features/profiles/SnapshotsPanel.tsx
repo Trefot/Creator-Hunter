@@ -1,7 +1,8 @@
 import { FormEvent, useEffect, useState } from "react";
 import { AccountSnapshot, createSnapshot, deleteSnapshot, listSnapshots } from "../../db/accountSnapshots";
 import { es } from "../../i18n/es";
-import { formatDate, formatNumber, todayIso } from "../../i18n/format";
+import { LineChart } from "../../components/charts/LineChart";
+import { formatCompact, formatDate, formatNumber, formatShortDate, todayIso } from "../../i18n/format";
 
 const t = es.snapshots;
 
@@ -59,6 +60,10 @@ export function SnapshotsPanel({ profileId, onChange }: Props) {
     onChange();
   }
 
+  const followerPoints = snapshots
+    .filter((s) => s.followers !== null)
+    .map((s) => ({ date: s.recorded_on, value: s.followers! }));
+
   return (
     <div className="snapshots">
       <h3>{t.title}</h3>
@@ -86,6 +91,19 @@ export function SnapshotsPanel({ profileId, onChange }: Props) {
       </form>
 
       {error && <p className="error">{error}</p>}
+
+      {followerPoints.length >= 2 && (
+        <>
+          <p className="chart-title">{t.chartTitle}</p>
+          <LineChart
+            points={followerPoints}
+            height={170}
+            formatValue={formatCompact}
+            formatDate={formatShortDate}
+            label={t.chartTitle}
+          />
+        </>
+      )}
 
       {snapshots.length === 0 ? (
         <p className="muted small">{t.empty}</p>

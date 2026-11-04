@@ -33,6 +33,11 @@ const TABLES: [&str; 11] = [
 const FORMAT: &str = "trophyhunter-studio-backup";
 const FORMAT_VERSION: u64 = 1;
 
+/// Versión de esquema más antigua que se puede importar. Hasta ahora todas las migraciones solo
+/// añaden (tipos de ingreso, columnas opcionales), así que una copia antigua cabe en el esquema actual.
+/// Si una migración futura quita o renombra algo, hay que subir este mínimo (D-011).
+const MIN_IMPORTABLE_SCHEMA: i64 = 1;
+
 #[derive(Serialize)]
 pub struct ExportResult {
     path: String,
@@ -145,10 +150,10 @@ async fn validate(pool: &Pool<Sqlite>, content: &str) -> Result<Vec<(&'static st
         return Err("La copia usa un formato de archivo que esta versión no reconoce.".into());
     }
     let current = schema_version(pool).await?;
-    if doc["schema_version"] != current {
+    let version = doc["schema_version"].as_i64().unwrap_or(-1);
+    if !(MIN_IMPORTABLE_SCHEMA..=current).contains(&version) {
         return Err(format!(
-            "La copia es de otra versión de la base de datos ({} frente a {current}). Importarla podría dañar los datos.",
-            doc["schema_version"]
+            "La copia es de otra versión de la base de datos ({version}; esta app admite de {MIN_IMPORTABLE_SCHEMA} a {current}). Importarla podría dañar los datos."
         ));
     }
 

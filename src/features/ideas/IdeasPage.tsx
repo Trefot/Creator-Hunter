@@ -1,3 +1,7 @@
+import { PageTitle } from "../../components/PageTitle";
+import { EmptyState } from "../../components/EmptyState";
+import { Archive, ArchiveRestore, Check, Lightbulb, Pencil, Plus, Trash2 } from "lucide-react";
+import { coverFor } from "../../components/cover";
 import { useEffect, useState } from "react";
 import {
   approveIdea,
@@ -75,11 +79,8 @@ export function IdeasPage() {
   return (
     <section className="page">
       <header className="page-header">
-        <div>
-          <h1>{es.sections.ideas}</h1>
-          <p className="muted">{t.subtitle}</p>
-        </div>
-        {editing === null && <button onClick={() => setEditing("new")}>{t.add}</button>}
+        <PageTitle section="ideas" subtitle={t.subtitle} />
+        {editing === null && <button onClick={() => setEditing("new")}><Plus size={16} />{t.add}</button>}
       </header>
 
       {editing !== null && (
@@ -112,60 +113,65 @@ export function IdeasPage() {
       {ideas === null ? (
         <p className="muted">{t.loading}</p>
       ) : visible.length === 0 ? (
-        <div className="empty-state">
-          <p>{t.empty}</p>
-        </div>
+        <EmptyState section="ideas" text={t.empty} />
       ) : (
-        <ul className="goal-list">
+        <ul className="gallery">
           {visible.map((idea) => (
-            <li key={idea.id} className={`card idea-card${idea.status === "discarded" ? " goal-abandoned" : ""}`}>
-              <div className="goal-head">
-                <div className="idea-main">
-                  <strong>{idea.title}</strong>
-                  {idea.description && <p className="muted idea-description">{idea.description}</p>}
-                  <div className="chips">
-                    {splitTags(idea.tags).map((tag) => (
-                      <button key={tag} className="chip" onClick={() => setTagFilter(tag)}>
-                        #{tag}
-                      </button>
-                    ))}
-                    <span className="muted small">{formatDate(localDate(idea.created_at))}</span>
-                  </div>
-                  {idea.status === "approved" && <p className="status-on small">{t.approvedNote}</p>}
+            <li key={idea.id} className={`card gallery-card${idea.status === "discarded" ? " goal-abandoned" : ""}`}>
+              <div className="gallery-cover" style={{ background: coverFor(splitTags(idea.tags)[0] ?? idea.title) }}>
+                <Lightbulb size={30} />
+                <span className={`gallery-status status-${idea.status}`}>{t.statusLabels[idea.status]}</span>
+              </div>
+              <div className="gallery-body">
+                <strong className="gallery-title">{idea.title}</strong>
+                {idea.description && <p className="muted gallery-description">{idea.description}</p>}
+                <div className="chips">
+                  {splitTags(idea.tags).map((tag) => (
+                    <button key={tag} className="chip" onClick={() => setTagFilter(tag)}>
+                      #{tag}
+                    </button>
+                  ))}
                 </div>
-
-                <div className="profile-actions">
-                  {confirmingId === idea.id ? (
-                    <>
-                      <button className="danger" onClick={() => run(() => deleteIdea(idea.id))}>
-                        {t.confirmRemove}
+                <span className="muted small">{formatDate(localDate(idea.created_at))}</span>
+                {idea.status === "approved" && <p className="status-on small">{t.approvedNote}</p>}
+              </div>
+              <div className="gallery-actions">
+                {confirmingId === idea.id ? (
+                  <>
+                    <button className="danger" onClick={() => run(() => deleteIdea(idea.id))}>
+                      {t.confirmRemove}
+                    </button>
+                    <button className="ghost" onClick={() => setConfirmingId(null)}>
+                      {t.cancel}
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    {idea.status === "new" && (
+                      <button onClick={() => run(() => approveIdea(idea.id))}>
+                        <Check size={16} />
+                        {t.approve}
                       </button>
-                      <button className="ghost" onClick={() => setConfirmingId(null)}>
-                        {t.cancel}
+                    )}
+                    <button className="ghost icon-button" onClick={() => setEditing(idea)} title={t.edit}>
+                      <Pencil size={16} />
+                    </button>
+                    {idea.status === "new" && (
+                      <button className="ghost icon-button" onClick={() => run(() => setIdeaStatus(idea.id, "discarded"))} title={t.discard}>
+                        <Archive size={16} />
                       </button>
-                    </>
-                  ) : (
-                    <>
-                      {idea.status === "new" && <button onClick={() => run(() => approveIdea(idea.id))}>{t.approve}</button>}
-                      <button className="ghost" onClick={() => setEditing(idea)}>
-                        {t.edit}
+                    )}
+                    {idea.status === "discarded" && (
+                      <button className="ghost" onClick={() => run(() => setIdeaStatus(idea.id, "new"))}>
+                        <ArchiveRestore size={16} />
+                        {t.restore}
                       </button>
-                      {idea.status === "new" && (
-                        <button className="ghost" onClick={() => run(() => setIdeaStatus(idea.id, "discarded"))}>
-                          {t.discard}
-                        </button>
-                      )}
-                      {idea.status === "discarded" && (
-                        <button className="ghost" onClick={() => run(() => setIdeaStatus(idea.id, "new"))}>
-                          {t.restore}
-                        </button>
-                      )}
-                      <button className="ghost" onClick={() => setConfirmingId(idea.id)}>
-                        {t.remove}
-                      </button>
-                    </>
-                  )}
-                </div>
+                    )}
+                    <button className="ghost icon-button" onClick={() => setConfirmingId(idea.id)} title={t.remove}>
+                      <Trash2 size={16} />
+                    </button>
+                  </>
+                )}
               </div>
             </li>
           ))}

@@ -2,6 +2,15 @@
 
 ## [Sin publicar]
 
+### 2026-11-03/04 · S15 Mejora visual
+- Logo e icono de la app originales, paleta de marca, tipografía Inter y menú agrupado con iconos.
+- Gráficas de evolución en SVG propio; logos oficiales de las redes; títulos de sección con icono e ilustraciones.
+- Fotos de perfil y miniaturas de adaptaciones, incluidas en las copias de seguridad (migración 003).
+- Dashboard con portada, cifras clave, metas en anillos de progreso y distribución fija por áreas.
+- Ideas y Proyectos en galería; Ingresos divididos en total y por red, con filtro.
+- Umbrales de pago por red: saldo calculado desde los ingresos, aviso al superarlos y "Marcar como cobrado" (migraciones 004 y 005).
+- Las copias de seguridad antiguas siguen siendo importables (las migraciones solo añaden).
+
 ### 2026-11-03 · S14 Exportar e importar
 - Nueva sección "Copias de seguridad": exportar todos los datos a un JSON versionado e importarlo.
 - La importación muestra el contenido antes, valida el archivo completo, guarda una copia de los datos actuales y lo reemplaza todo en una sola transacción.

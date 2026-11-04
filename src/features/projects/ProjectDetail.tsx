@@ -1,3 +1,5 @@
+import { EmptyState } from "../../components/EmptyState";
+import { Plus } from "lucide-react";
 import { FormEvent, useEffect, useState } from "react";
 import {
   Adaptation,
@@ -130,7 +132,7 @@ export function ProjectDetail({ project, onBack, onChanged }: Props) {
                   {t.remove}
                 </button>
                 {editing === null && profiles.length > 0 && (
-                  <button onClick={() => setEditing("new")}>{t.addAdaptation}</button>
+                  <button onClick={() => setEditing("new")}><Plus size={16} />{t.addAdaptation}</button>
                 )}
               </>
             )}
@@ -154,13 +156,9 @@ export function ProjectDetail({ project, onBack, onChanged }: Props) {
       {adaptations === null ? (
         <p className="muted">{t.loading}</p>
       ) : profiles.length === 0 ? (
-        <div className="empty-state">
-          <p>{t.needProfiles}</p>
-        </div>
+        <EmptyState section="projects" text={t.needProfiles} />
       ) : adaptations.length === 0 ? (
-        <div className="empty-state">
-          <p>{t.noAdaptations}</p>
-        </div>
+        <EmptyState section="projects" text={t.noAdaptations} />
       ) : (
         <ul className="goal-list">
           {adaptations.map((a) => (

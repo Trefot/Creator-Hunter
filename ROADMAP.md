@@ -101,15 +101,19 @@ Ritmo: sesiones diarias, cada una con un presupuesto de ~8–9 % del uso semanal
 - [x] Importar: vista previa del contenido, validación completa, copia previa automática (`VACUUM INTO`) y reemplazo en una transacción todo o nada.
 - [x] Prueba del usuario superada: ida y vuelta exacta y archivo inválido rechazado.
 
-### ⬜ S15 · Mejora visual (siguiente)
-Decidido por el usuario el 2026-11-03, con todas las secciones ya construidas:
-- Iconos en el menú y en los botones; menú más pulido.
-- Gráficas de evolución (seguidores, vistas e ingresos) en el Dashboard y en las secciones.
-- Identidad de marca: logo, paleta propia (morado TrefotG) y tipografía.
-- Pulido general: espaciados, tarjetas, transiciones suaves, estados vacíos y consistencia entre pantallas.
-Cualquier dependencia nueva (por ejemplo, iconos o gráficas) se justifica en ARCHITECTURE.md antes de añadirla.
+### ✅ S15 · Mejora visual (y ajustes pedidos por el usuario)
+- [x] Identidad: logo e icono de ventana originales, paleta de marca y tipografía Inter (D-012).
+- [x] Menú agrupado con iconos; títulos de sección con icono; ilustraciones en pantallas vacías.
+- [x] Gráficas propias en SVG: seguidores, vistas e ingresos (Dashboard, Registros, Resultados e Ingresos).
+- [x] Logos reales de las redes (Simple Icons) en toda la app.
+- [x] Fotos de perfil y miniaturas de adaptaciones (migración 003, D-013).
+- [x] Dashboard con portada, cifras clave, metas en anillos y distribución fija sin huecos.
+- [x] Ideas y Proyectos en galería con portadas.
+- [x] Ingresos divididos en total y por red, con filtro por red.
+- [x] Umbrales de pago calculados desde los ingresos, con avisos y "Marcar como cobrado" (migraciones 004 y 005, D-014).
+- [x] Revisión visual del usuario superada.
 
-### ⬜ S16 · Cierre de Alpha 0.1
+### ⬜ S16 · Cierre de Alpha 0.1 (siguiente)
 Revisión completa con los criterios de PRODUCT.md, limpieza y etiqueta `v0.1.0` en Git.
 
 ## Alpha 0.2: conectores (decidido el 2026-11-03; empieza al cerrar 0.1)

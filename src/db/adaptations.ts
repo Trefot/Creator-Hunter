@@ -36,6 +36,8 @@ export interface Adaptation {
   scheduled_at: string | null;
   published_at: string | null;
   published_url: string | null;
+  /** Miniatura como data URL JPEG reducida (D-013). */
+  thumbnail: string | null;
   /** Siempre en el orden de STEPS. */
   steps: AdaptationStep[];
 }
@@ -65,7 +67,7 @@ async function loadAdaptations(where: string, params: unknown[]): Promise<Adapta
   const [rows, stepRows] = await Promise.all([
     db.select<Omit<Adaptation, "steps">[]>(
       `SELECT a.id, a.project_id, p.title AS project_title, a.profile_id, a.format, a.title,
-              a.scheduled_at, a.published_at, a.published_url
+              a.scheduled_at, a.published_at, a.published_url, a.thumbnail
          FROM adaptation a JOIN project p ON p.id = a.project_id
         WHERE ${where} AND a.workspace_id = ${ws}
         ORDER BY a.scheduled_at IS NULL, a.scheduled_at, a.created_at`,
@@ -98,6 +100,11 @@ export function listAdaptations(projectId: string): Promise<Adaptation[]> {
  */
 export function listScheduledBetween(from: string, to: string): Promise<Adaptation[]> {
   return loadAdaptations("a.scheduled_at >= $1 AND a.scheduled_at < $2", [from, to]);
+}
+
+/** Todas las adaptaciones (para la galería de proyectos). */
+export function listAllAdaptations(): Promise<Adaptation[]> {
+  return loadAdaptations("1 = 1", []);
 }
 
 /** Adaptaciones aún no publicadas (en producción), programadas o no. */
@@ -187,6 +194,14 @@ export async function unpublishAdaptation(id: string): Promise<void> {
     `UPDATE adaptation_step SET completed_at = NULL, updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
       WHERE adaptation_id = $1 AND workspace_id = $2 AND step = 'publishing'`,
     [id, WORKSPACE_ID],
+  );
+}
+
+export async function setAdaptationThumbnail(id: string, thumbnail: string | null): Promise<void> {
+  const db = await getDb();
+  await db.execute(
+    `UPDATE adaptation SET thumbnail = $1, updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now') WHERE id = $2 AND workspace_id = $3`,
+    [thumbnail, id, WORKSPACE_ID],
   );
 }
 

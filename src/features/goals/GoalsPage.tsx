@@ -1,3 +1,6 @@
+import { PageTitle } from "../../components/PageTitle";
+import { EmptyState } from "../../components/EmptyState";
+import { Plus } from "lucide-react";
 import { useEffect, useState } from "react";
 import { AccountSnapshot, latestSnapshots } from "../../db/accountSnapshots";
 import { createGoal, deleteGoal, Goal, GoalInput, listGoals, setGoalStatus, updateGoal } from "../../db/goals";
@@ -76,11 +79,8 @@ export function GoalsPage() {
   return (
     <section className="page">
       <header className="page-header">
-        <div>
-          <h1>{es.sections.goals}</h1>
-          <p className="muted">{t.subtitle}</p>
-        </div>
-        {editing === null && <button onClick={() => setEditing("new")}>{t.add}</button>}
+        <PageTitle section="goals" subtitle={t.subtitle} />
+        {editing === null && <button onClick={() => setEditing("new")}><Plus size={16} />{t.add}</button>}
       </header>
 
       {editing !== null && (
@@ -98,9 +98,7 @@ export function GoalsPage() {
       {goals === null ? (
         <p className="muted">{t.loading}</p>
       ) : goals.length === 0 ? (
-        <div className="empty-state">
-          <p>{t.empty}</p>
-        </div>
+        <EmptyState section="goals" text={t.empty} />
       ) : (
         <ul className="goal-list">
           {goals.map((g) => {

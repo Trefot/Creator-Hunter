@@ -1,8 +1,18 @@
 import { FormEvent, useState } from "react";
 import { Platform, PLATFORMS, Profile, ProfileInput } from "../../db/profiles";
 import { es } from "../../i18n/es";
+import { minorToInput, parseMoney } from "../income/money";
 
 const t = es.profiles;
+
+/** Umbrales orientativos (USD) solo como sugerencia: varían por país y cambian; se confirman en cada panel. */
+const SUGGESTED_THRESHOLD: Record<Platform, number> = {
+  youtube: 100,
+  twitch: 50,
+  tiktok: 10,
+  instagram: 100,
+  facebook: 100,
+};
 
 interface Props {
   /** Perfil a editar; sin él, el formulario crea uno nuevo. */
@@ -18,7 +28,11 @@ export function ProfileForm({ profile, onSave, onCancel }: Props) {
     display_name: profile?.display_name ?? "",
     url: profile?.url ?? "",
     is_monetized: profile?.is_monetized ?? false,
+    payout_threshold_minor: profile?.payout_threshold_minor ?? null,
   });
+  const [threshold, setThreshold] = useState(
+    profile?.payout_threshold_minor ? minorToInput(profile.payout_threshold_minor) : "",
+  );
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
 
@@ -31,11 +45,13 @@ export function ProfileForm({ profile, onSave, onCancel }: Props) {
     if (!input.handle.trim()) return setError(t.errors.handleRequired);
     const url = input.url.trim();
     if (url && !/^https?:\/\//i.test(url)) return setError(t.errors.invalidUrl);
+    const thresholdMinor = threshold.trim() === "" ? null : parseMoney(threshold);
+    if (threshold.trim() !== "" && thresholdMinor === null) return setError(t.errors.threshold);
 
     setError("");
     setSaving(true);
     try {
-      await onSave(input);
+      await onSave({ ...input, payout_threshold_minor: thresholdMinor });
     } catch (err) {
       setError(String(err).includes("UNIQUE") ? t.errors.duplicate : `${t.errors.generic} ${err}`);
     } finally {
@@ -81,6 +97,17 @@ export function ProfileForm({ profile, onSave, onCancel }: Props) {
         <label>
           {t.url}
           <input value={input.url} onChange={(e) => set("url", e.target.value)} placeholder={t.urlPlaceholder} />
+        </label>
+
+        <label>
+          {t.payoutThreshold}
+          <input
+            inputMode="decimal"
+            value={threshold}
+            onChange={(e) => setThreshold(e.target.value)}
+            placeholder={t.payoutThresholdPlaceholder(SUGGESTED_THRESHOLD[input.platform])}
+          />
+          <span className="field-hint">{t.payoutThresholdHint}</span>
         </label>
       </div>
 

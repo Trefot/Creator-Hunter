@@ -1,6 +1,16 @@
+import { THUMBNAIL_SIZE } from "../../components/images";
+import { ImagePicker } from "../../components/ImagePicker";
+import { PlatformBadge, PlatformLogo } from "../../components/PlatformBadge";
 import { useState } from "react";
 import { openUrl } from "@tauri-apps/plugin-opener";
-import { Adaptation, AdaptationStep, setStepDone, setStepEnabled, unpublishAdaptation } from "../../db/adaptations";
+import {
+  Adaptation,
+  AdaptationStep,
+  setAdaptationThumbnail,
+  setStepDone,
+  setStepEnabled,
+  unpublishAdaptation,
+} from "../../db/adaptations";
 import { Profile } from "../../db/profiles";
 import { es } from "../../i18n/es";
 import { formatDateTime } from "../../i18n/format";
@@ -68,11 +78,27 @@ export function AdaptationCard({ adaptation, profile, onEdit, onDelete, onChange
 
   return (
     <li className="card adaptation-card">
+      <div className="adaptation-layout">
+      <ImagePicker
+        image={adaptation.thumbnail}
+        size={THUMBNAIL_SIZE}
+        className="thumb-md"
+        placeholder={
+          <span className="thumb-placeholder">
+            {profile ? <PlatformLogo platform={profile.platform} size={34} /> : null}
+          </span>
+        }
+        onChange={async (img) => {
+          await setAdaptationThumbnail(adaptation.id, img);
+          await onChange();
+        }}
+      />
+      <div className="adaptation-body">
       <div className="goal-head">
         <div className="idea-main">
           <div className="chips">
             {profile && (
-              <span className={`platform-badge platform-${profile.platform}`}>{es.platforms[profile.platform]}</span>
+              <PlatformBadge platform={profile.platform} withName />
             )}
             <strong>{t.formats[adaptation.format]}</strong>
             <span className={current ? "pill" : "pill pill-done"}>
@@ -160,6 +186,8 @@ export function AdaptationCard({ adaptation, profile, onEdit, onDelete, onChange
           ))}
       </div>
       <p className="muted small">{configuring ? t.stepsHint : t.stepsInfo}</p>
+      </div>
+      </div>
 
       {panel === "script" && usesScript && <ScriptEditor adaptationId={adaptation.id} />}
       {panel === "publish" && !published && (

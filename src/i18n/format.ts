@@ -14,6 +14,27 @@ export function formatMoney(amountMinor: number, currency: string): string {
   );
 }
 
+const shortDateFormat = new Intl.DateTimeFormat(es.locale, { day: "numeric", month: "short" });
+const monthFormat = new Intl.DateTimeFormat(es.locale, { month: "short" });
+const compactFormat = new Intl.NumberFormat(es.locale, { notation: "compact", maximumFractionDigits: 1 });
+
+/** 'AAAA-MM-DD' → '3 nov'. */
+export function formatShortDate(isoDate: string): string {
+  const [y, m, d] = isoDate.split("-").map(Number);
+  return shortDateFormat.format(new Date(y, m - 1, d));
+}
+
+/** 'AAAA-MM' → 'nov'. */
+export function formatMonth(month: string): string {
+  const [y, m] = month.split("-").map(Number);
+  return monthFormat.format(new Date(y, m - 1, 1)).replace(".", "");
+}
+
+/** 12500 → '12.5 mil'; para ejes de gráficas. */
+export function formatCompact(value: number): string {
+  return compactFormat.format(value);
+}
+
 /** Formatea una fecha 'AAAA-MM-DD' sin desplazarla por la zona horaria. */
 export function formatDate(isoDate: string): string {
   const [y, m, d] = isoDate.split("-").map(Number);

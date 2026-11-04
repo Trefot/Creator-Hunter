@@ -26,3 +26,16 @@ export function totalsByCurrency(incomes: Income[], datePrefix: string): Map<str
   }
   return totals;
 }
+
+/** Total en centavos de cada uno de los últimos `months` meses (en una moneda), del más antiguo a hoy. */
+export function monthlyTotals(incomes: Income[], currency: string, months: number, today: string): { month: string; minor: number }[] {
+  const [y, m] = today.split("-").map(Number);
+  return Array.from({ length: months }, (_, i) => {
+    const d = new Date(y, m - 1 - (months - 1 - i), 1);
+    const month = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+    const minor = incomes
+      .filter((x) => x.currency === currency && x.received_on.startsWith(month))
+      .reduce((sum, x) => sum + x.amount_minor, 0);
+    return { month, minor };
+  });
+}

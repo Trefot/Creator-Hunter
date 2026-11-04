@@ -39,13 +39,13 @@ Todas las tablas incluyen además `id`, `workspace_id`, `created_at` y `updated_
 | Tabla | Campos principales | Notas |
 |---|---|---|
 | `workspace` | name, default_currency (`USD`) | Hoy hay uno solo. |
-| `profile` | platform, handle, display_name, url, is_monetized | `platform` ∈ youtube, twitch, tiktok, instagram, facebook (lista en código, no tabla). Admite varias cuentas por red. |
-| `account_snapshot` | profile_id, recorded_on, followers, watch_hours | Registros fechados; nunca se sobrescriben. |
+| `profile` | platform, handle, display_name, url, is_monetized, avatar?, payout_threshold_minor?, last_payout_on? | `platform` ∈ youtube, twitch, tiktok, instagram, facebook (lista en código, no tabla). Admite varias cuentas por red. Foto (003), umbral de pago (004) y último cobro (005). |
+| `account_snapshot` | profile_id, recorded_on, followers, watch_hours | Registros fechados; nunca se sobrescriben. La columna `pending_minor` (004) existe pero no se usa (D-014). |
 | `goal` | profile_id?, metric, target_value, deadline, status | `metric` ∈ followers, watch_hours, income, views. **El progreso se calcula**, no se guarda. |
 | `income` | profile_id?, source, amount_minor, currency, received_on, note | `source` ∈ platform_ads, twitch_payout, membership, donation, sponsorship, affiliate, other. Los antiguos twitch_subs/bits/ads siguen siendo válidos, pero ya no se ofrecen (migración 002). |
 | `idea` | title, description, tags, status | `status` ∈ new, approved, discarded. `tags` es texto simple en Alpha. |
 | `project` | idea_id?, title, summary | Contenido "madre" que agrupa las adaptaciones. |
-| `adaptation` | project_id, profile_id, format, title, scheduled_at?, published_at?, published_url? | `format` ∈ long_video, short, tiktok, reel, post, live. **El calendario se deriva de `scheduled_at`.** |
+| `adaptation` | project_id, profile_id, format, title, scheduled_at?, published_at?, published_url?, thumbnail? | `format` ∈ long_video, short, tiktok, reel, post, live. **El calendario se deriva de `scheduled_at`.** |
 | `adaptation_step` | adaptation_id, step, enabled, completed_at? | `step` ∈ script, recording, editing, scheduling, publishing, analysis. Cada paso se puede desactivar. **Estado actual = primer paso activo sin completar.** |
 | `script_section` | adaptation_id, kind, position, content, est_seconds | `kind` ∈ hook, body, closing, cta, note. La duración total se calcula sumando. |
 | `result_snapshot` | adaptation_id, recorded_on, views, likes, comments, shares, watch_hours, avg_viewers?, peak_viewers?, duration_min? | Registros fechados (día 1, 7, 30…). Los campos de directo solo se usan con `format = live`. |
@@ -114,6 +114,26 @@ Cuentan lo recibido en USD desde la fecha local de creación de la meta, filtrad
 - Formato: JSON con `format = "trophyhunter-studio-backup"`, `format_version`, `schema_version` (la última migración aplicada), `exported_at` y todas las tablas. Solo se importa una copia con el **mismo** `schema_version`.
 - La importación valida antes de tocar nada (formato, versiones, tablas, columnas reales y tipos de valor), guarda la base actual con `VACUUM INTO` en la carpeta de copias, borra de hijos a padres e inserta de padres a hijos dentro de una transacción, y comprueba `foreign_key_check` antes del commit.
 
+### D-012 · Identidad visual (2026-11-03)
+- **Tokens de tema** en `:root` de `src/App.css` (fondos violeta oscuro, acento `#8b5cf6`, degradado de marca `#8b5cf6 → #c026d3`). Ningún color se escribe fuera de ellos, salvo los de marca de cada red.
+- **Logo original** (trofeo sobre degradado) en `src/components/Logo.tsx` y en `src-tauri/app-icon.svg`, del que salen los iconos de la app con `npx tauri icon src-tauri/app-icon.svg`. No usa nada derivado de Minecraft ni de Faithful.
+- **Gráficas propias en SVG** (`src/components/charts/`): una serie, el color `--chart-1` (validado contra `--surface` en modo oscuro), línea de 2 px, barras con la parte superior redondeada, tooltip al pasar el ratón y sin leyenda (el título nombra la serie).
+- **Dashboard** con distribución fija por áreas (`.dash-grid`): Ingresos alto a la izquierda, Redes y Metas a la derecha y tres listas abajo. Una columna por debajo de 1100 px.
+- Hover de los botones con `filter: brightness`, para no pisar los hover propios de chips, pasos y pestañas.
+
+### D-013 · Imágenes propias dentro de la base de datos (2026-11-03)
+- Foto de perfil (256×256) y miniatura de adaptación (640×360) se recortan y reducen en la interfaz (`src/components/images.ts`) y se guardan como data URL JPEG en `profile.avatar` y `adaptation.thumbnail` (migración 003).
+- **Motivo:** viajan solas en las copias de seguridad, sin archivos sueltos ni permisos de sistema de archivos. Pesan unos 20–60 KB cada una, aceptable para el volumen de un creador.
+- La portada de un proyecto es la miniatura de su primera adaptación que tenga una; si no hay, un degradado estable según el título (`src/components/cover.ts`).
+
+### D-014 · Umbrales de pago (2026-11-03)
+- Cada perfil puede tener `payout_threshold_minor` (en centavos USD). Los valores sugeridos en el formulario son solo orientativos; el usuario los confirma en cada plataforma.
+- **El saldo pendiente se calcula**, nunca se anota: ingresos USD de la red con `received_on` **posterior** a `profile.last_payout_on`. Los del mismo día del cobro se consideran cobrados.
+- **Regla de uso:** los ingresos se registran cuando se ganan; "Marcar como cobrado" solo fija `last_payout_on` y no crea otro ingreso (sin dobles conteos).
+- Avisos al superar el umbral: al guardar el ingreso que lo cruza (Ingresos) y un banner en el Dashboard mientras haya algo por cobrar.
+- `account_snapshot.pending_minor` (migración 004) quedó sin uso al pasar del saldo manual al calculado. SQLite no borra columnas con facilidad, así que se deja vacía.
+- Las copias de seguridad aceptan versiones de esquema desde `MIN_IMPORTABLE_SCHEMA = 1` porque todas las migraciones hasta la 005 solo añaden (D-011).
+
 ## Dependencias
 
 | Dependencia | Para qué |
@@ -123,5 +143,8 @@ Cuentan lo recibido en USD desde la fecha local de creación de la meta, filtrad
 | TypeScript | Tipos |
 | `tauri-plugin-sql` (sqlite) + `@tauri-apps/plugin-sql` | Base de datos local y migraciones (D-006) |
 | `sqlx` 0.8 (sqlite, runtime-tokio) | Transacciones en exportar/importar; misma versión que la del plugin (D-011) |
+| `lucide-react` (ISC) | Iconos coherentes; solo se incluyen los que se usan |
+| `@fontsource-variable/inter` (OFL) | Tipografía Inter incluida en la app, sin depender de internet |
+| `simple-icons` (CC0) | Logos de las cinco redes, solo para identificarlas; solo se incluyen esos cinco |
 
 Las dependencias nuevas se añaden a esta tabla con su justificación.

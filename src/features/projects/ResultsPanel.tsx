@@ -1,7 +1,8 @@
 import { FormEvent, useEffect, useState } from "react";
 import { createResult, deleteResult, listResults, LIVE_FIELDS, RESULT_FIELDS, ResultField, ResultSnapshot } from "../../db/results";
 import { es } from "../../i18n/es";
-import { formatDate, formatNumber, todayIso } from "../../i18n/format";
+import { LineChart } from "../../components/charts/LineChart";
+import { formatCompact, formatDate, formatNumber, formatShortDate, todayIso } from "../../i18n/format";
 
 const t = es.publishing;
 
@@ -59,6 +60,8 @@ export function ResultsPanel({ adaptationId, isLive }: Props) {
     await refresh();
   }
 
+  const viewPoints = results.filter((r) => r.views !== null).map((r) => ({ date: r.recorded_on, value: r.views! }));
+
   return (
     <div className="inline-panel">
       <h3>{t.resultsTitle}</h3>
@@ -83,6 +86,19 @@ export function ResultsPanel({ adaptationId, isLive }: Props) {
       </form>
 
       {error && <p className="error">{error}</p>}
+
+      {viewPoints.length >= 2 && (
+        <>
+          <p className="chart-title">{t.chartTitle}</p>
+          <LineChart
+            points={viewPoints}
+            height={170}
+            formatValue={formatCompact}
+            formatDate={formatShortDate}
+            label={t.chartTitle}
+          />
+        </>
+      )}
 
       {results.length === 0 ? (
         <p className="muted small">{t.empty}</p>

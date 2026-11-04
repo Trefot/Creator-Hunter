@@ -1,3 +1,4 @@
+import { PageTitle } from "../../components/PageTitle";
 import { ChangeEvent, useState } from "react";
 import { revealItemInDir } from "@tauri-apps/plugin-opener";
 import { exportBackup, ExportResult, importBackup, ImportResult, previewBackup } from "../../db/backup";
@@ -65,10 +66,7 @@ export function BackupsPage() {
   return (
     <section className="page">
       <header className="page-header">
-        <div>
-          <h1>{es.sections.backups}</h1>
-          <p className="muted">{t.subtitle}</p>
-        </div>
+        <PageTitle section="backups" subtitle={t.subtitle} />
       </header>
 
       <div className="card backup-block">
