@@ -2,6 +2,8 @@ import { FormEvent, useState } from "react";
 import { openUrl } from "@tauri-apps/plugin-opener";
 import { AlertTriangle, ArrowDown, ArrowUp, Compass, Pencil, Plus, Sparkles, Trash2 } from "lucide-react";
 import { createPhase, deletePhase, Game, swapPhases, Trophy, TrophyPhase, updatePhase } from "../../db/games";
+import type { GuideEntry } from "../../db/guide";
+import { GuideCard } from "./GuideView";
 import { es } from "../../i18n/es";
 import { applyRoadmap } from "./applyRoadmap";
 import { roadmapFor } from "./roadmaps";
@@ -13,6 +15,7 @@ interface Props {
   game: Game;
   trophies: Trophy[];
   phases: TrophyPhase[];
+  guide: GuideEntry[];
   onChanged: () => Promise<void>;
 }
 
@@ -99,7 +102,7 @@ function PhaseHeader({
   );
 }
 
-export function RouteView({ game, trophies, phases, onChanged }: Props) {
+export function RouteView({ game, trophies, phases, guide, onChanged }: Props) {
   const [newPhase, setNewPhase] = useState("");
   const [applying, setApplying] = useState(false);
   const roadmap = roadmapFor(game.np_communication_id);
@@ -179,6 +182,18 @@ export function RouteView({ game, trophies, phases, onChanged }: Props) {
             </>
           ) : (
             <p className="status-on">{t.routeComplete}</p>
+          )}
+          {current && guide.some((g) => g.phase_id === current.id) && (
+            <div className="now-guide">
+              <strong className="small">{t.guideForPhase}</strong>
+              <ul className="guide-grid compact">
+                {guide
+                  .filter((g) => g.phase_id === current.id)
+                  .map((g) => (
+                    <GuideCard key={g.id} entry={g} phases={phases} trophies={trophies} compact />
+                  ))}
+              </ul>
+            </div>
           )}
           {missables.length > 0 && (
             <div className="now-missables">

@@ -187,10 +187,15 @@ Objetivo: el platino de Black Myth: Wukong (y los siguientes juegos) desde Troph
 - [x] Fases editables (crear, renombrar, nota, reordenar, borrar) y plan por trofeo (fase, perdible y nota), que la sincronización con PSN conserva.
 - [x] Prueba del usuario superada.
 
-#### ⬜ G4 · Guía del juego (pedido del usuario: "lo más completa posible") (siguiente)
-Entradas por tipo (jefes, builds, atajos/rutas, puntos de farmeo y más), cada una con capítulo/fase, recomendaciones, debilidades, build sugerida, capturas, notas y enlaces (vídeos propios incluidos), y enlazadas a sus trofeos. Borradores originales de Claude para Wukong, **con enlace a la fuente** y marcados "por verificar" cuando haga falta; nunca copiando guías ajenas ni inventando datos. Incluye el punto de farmeo del Estanque del Jade Quebrado (proyecto TrefotWukong).
+#### ✅ G4 · Guía del juego
+- [x] Migración 008: entradas de guía (jefe, build, atajo/ruta, farmeo y consejo) con fase, resumen, contenido, captura, vídeo, fuente y "comprobado", enlazadas a trofeos.
+- [x] Pestaña "Guía" con filtros por tipo, editor completo y tarjetas; la guía de la fase actual aparece en "Qué hacer ahora".
+- [x] 16 borradores para Wukong: datos comprobados (capítulo, si es secreto y trofeo) y el farmeo real del usuario; las estrategias quedan "por verificar" en vez de inventarlas.
+- [x] Las copias de seguridad incluyen la guía.
+- [x] Prueba del usuario superada.
+- **Cómo crece:** cuando el usuario llegue a un jefe, Claude investiga una guía fiable de ese jefe y redacta un resumen original con la fuente.
 
-#### ⬜ G5 · Detección del juego abierto ("modo juego")
+#### ⬜ G5 · Detección del juego abierto ("modo juego") (siguiente)
 Presencia de PSN (`https://m.np.playstation.com/api/userProfile/v1/internal/users/me/basicPresences?type=primary` → `gameTitleInfoList`, verificado en psn-api): consulta cada ~60 s con la app abierta; si el juego abierto está en la biblioteca, la app abre su ficha (ruta, próximo trofeo y guía). Requiere estado en línea visible en PSN. Más adelante: juegos de PC por proceso en ejecución.
 
 #### ⬜ G6 · Objetivos de juego y enlace con vídeos

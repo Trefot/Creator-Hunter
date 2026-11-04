@@ -54,6 +54,12 @@ fn migrations() -> Vec<Migration> {
             sql: include_str!("../migrations/007_games.sql"),
             kind: MigrationKind::Up,
         },
+        Migration {
+            version: 8,
+            description: "guía del juego",
+            sql: include_str!("../migrations/008_game_guide.sql"),
+            kind: MigrationKind::Up,
+        },
     ]
 }
 

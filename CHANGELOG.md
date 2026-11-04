@@ -2,6 +2,11 @@
 
 ## [Sin publicar]
 
+### 2026-11-04 · G4 Guía del juego
+- Pestaña "Guía" en cada juego: jefes, builds, atajos, farmeo y consejos, con captura, vídeo, fuente, fase y trofeos enlazados.
+- "Qué hacer ahora" muestra la guía de la fase actual.
+- 16 borradores para Black Myth: Wukong; migración 008.
+
 ### 2026-11-04 · G3 Ruta al platino por fases
 - Vista "Ruta al platino" en cada juego: fases con progreso, fase actual y "Qué hacer ahora" con perdibles pendientes.
 - Ruta sugerida para Black Myth: Wukong (9 fases, 7 perdibles, notas por trofeo) con su fuente.

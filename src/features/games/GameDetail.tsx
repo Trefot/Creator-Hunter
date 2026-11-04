@@ -16,6 +16,8 @@ import {
 import { es } from "../../i18n/es";
 import { formatDate } from "../../i18n/format";
 import { refreshFromPsn } from "./importGame";
+import { GuideEntry, listGuide } from "../../db/guide";
+import { GuideView } from "./GuideView";
 import { RouteView } from "./RouteView";
 import { TrophyRow } from "./TrophyRow";
 
@@ -23,7 +25,7 @@ const t = es.games;
 const TYPES: TrophyType[] = ["platinum", "gold", "silver", "bronze"];
 
 type Filter = "all" | "pending" | "earned";
-type View = "route" | "list";
+type View = "route" | "guide" | "list";
 
 interface Props {
   game: Game;
@@ -37,6 +39,7 @@ export function GameDetail({ game, psnConnected, onBack, onChanged }: Props) {
   const [trophies, setTrophies] = useState<Trophy[] | null>(null);
   const [phases, setPhases] = useState<TrophyPhase[]>([]);
   const [view, setView] = useState<View>("route");
+  const [guide, setGuide] = useState<GuideEntry[]>([]);
   const [filter, setFilter] = useState<Filter>("pending");
   const [syncing, setSyncing] = useState(false);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
@@ -44,9 +47,10 @@ export function GameDetail({ game, psnConnected, onBack, onChanged }: Props) {
 
   async function refresh() {
     try {
-      const [tr, ph] = await Promise.all([listTrophies(game.id), listPhases(game.id)]);
+      const [tr, ph, gu] = await Promise.all([listTrophies(game.id), listPhases(game.id), listGuide(game.id)]);
       setTrophies(tr);
       setPhases(ph);
+      setGuide(gu);
     } catch (err) {
       setError(String(err));
     }
@@ -151,7 +155,7 @@ export function GameDetail({ game, psnConnected, onBack, onChanged }: Props) {
       {error && <p className="error">{error}</p>}
 
       <div className="tabs">
-        {(["route", "list"] as View[]).map((v) => (
+        {(["route", "guide", "list"] as View[]).map((v) => (
           <button key={v} className={`tab${view === v ? " active" : ""}`} onClick={() => setView(v)}>
             {t.views[v]}
           </button>
@@ -163,7 +167,9 @@ export function GameDetail({ game, psnConnected, onBack, onChanged }: Props) {
       ) : list.length === 0 ? (
         <p className="muted small">{t.noTrophies}</p>
       ) : view === "route" ? (
-        <RouteView game={game} trophies={list} phases={phases} onChanged={refresh} />
+        <RouteView game={game} trophies={list} phases={phases} guide={guide} onChanged={refresh} />
+      ) : view === "guide" ? (
+        <GuideView game={game} guide={guide} phases={phases} trophies={list} onChanged={refresh} />
       ) : (
         <>
           <div className="tabs">
