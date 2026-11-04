@@ -22,18 +22,13 @@ Ritmo: 2–3 noches por semana, una tarea cerrada y probada por sesión.
 - [x] Iniciar Git y hacer el primer commit.
 - [ ] Repositorio privado en GitHub (lo crea el usuario y lo conectamos).
 
-### ⬜ S2 · Modelo de datos (siguiente)
-Diseñar y revisar con el usuario el esquema: workspace, plataformas/perfiles, metas, métricas, ingresos, ideas, proyectos, adaptaciones, pasos de producción, guiones y publicaciones.
-**Antes, el usuario responde:**
-- ¿Qué métricas registra de cada red?
-- ¿Qué fuentes de ingresos tiene?
-- ¿Cómo imagina Script Studio (texto libre o por secciones con tiempos)?
-- ¿Cuántas ideas y proyectos maneja a la vez?
+### ✅ S2 · Modelo de datos
+- [x] Respuestas del usuario: todas las métricas (seguidores, vistas por publicación, horas, directos); todos los tipos de ingreso; Script Studio por secciones; volumen bajo.
+- [x] Esquema de 11 tablas aprobado y documentado en ARCHITECTURE.md (D-005).
 
-**Terminado cuando:** el esquema está aprobado y documentado en ARCHITECTURE.md.
-
-### ⬜ S3 · SQLite y migraciones
-Base de datos local con la primera migración y prueba de guardado y lectura que sobrevive al cierre de la app.
+### ⬜ S3 · SQLite y migraciones (siguiente)
+Crear la base de datos local con la migración 001 (el esquema de ARCHITECTURE.md) y una prueba de guardado y lectura que sobreviva al cierre de la app.
+**Terminado cuando:** se crea un perfil de prueba, se cierra la app, se vuelve a abrir y el perfil sigue ahí.
 
 ### ⬜ Siguientes (el orden se ajusta tras S2)
 - Estructura de la interfaz: navegación, tema y textos centralizados.

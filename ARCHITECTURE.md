@@ -21,7 +21,38 @@ Todo es local. No hay servidor, cuentas ni red. El backend en la nube aparece en
 - Los importes guardan cantidad y moneda (USD por defecto).
 - La exportación es un archivo autocontenido y versionado que la importación sabe validar.
 
-El esquema concreto se diseña en la **Sesión 2** y se revisa con el usuario antes de construir pantallas.
+## Esquema de datos de Alpha 0.1 (aprobado el 2026-11-03)
+
+```
+workspace
+├── profile ──┬── account_snapshot
+│             └── goal (también puede ser global, sin perfil)
+├── income (perfil opcional)
+└── idea ──(aprobada)──► project
+                           └── adaptation ──┬── adaptation_step
+                                            ├── script_section
+                                            └── result_snapshot
+```
+
+Todas las tablas incluyen además `id`, `workspace_id`, `created_at` y `updated_at`.
+
+| Tabla | Campos principales | Notas |
+|---|---|---|
+| `workspace` | name, default_currency (`USD`) | Hoy hay uno solo. |
+| `profile` | platform, handle, display_name, url, is_monetized | `platform` ∈ youtube, twitch, tiktok, instagram, facebook (lista en código, no tabla). Admite varias cuentas por red. |
+| `account_snapshot` | profile_id, recorded_on, followers, watch_hours | Registros fechados; nunca se sobrescriben. |
+| `goal` | profile_id?, metric, target_value, deadline, status | `metric` ∈ followers, watch_hours, income, views. **El progreso se calcula**, no se guarda. |
+| `income` | profile_id?, source, amount_minor, currency, received_on, note | `source` ∈ platform_ads, twitch_subs, twitch_bits, twitch_ads, membership, donation, sponsorship, affiliate, other. |
+| `idea` | title, description, tags, status | `status` ∈ new, approved, discarded. `tags` es texto simple en Alpha. |
+| `project` | idea_id?, title, summary | Contenido "madre" que agrupa las adaptaciones. |
+| `adaptation` | project_id, profile_id, format, title, scheduled_at?, published_at?, published_url? | `format` ∈ long_video, short, tiktok, reel, post, live. **El calendario se deriva de `scheduled_at`.** |
+| `adaptation_step` | adaptation_id, step, enabled, completed_at? | `step` ∈ script, recording, editing, scheduling, publishing, analysis. Cada paso se puede desactivar. **Estado actual = primer paso activo sin completar.** |
+| `script_section` | adaptation_id, kind, position, content, est_seconds | `kind` ∈ hook, body, closing, cta, note. La duración total se calcula sumando. |
+| `result_snapshot` | adaptation_id, recorded_on, views, likes, comments, shares, watch_hours, avg_viewers?, peak_viewers?, duration_min? | Registros fechados (día 1, 7, 30…). Los campos de directo solo se usan con `format = live`. |
+
+Valores **derivados, nunca almacenados**: estado de producción, progreso de metas, totales de ingresos, duración de guiones, calendario y dashboard.
+
+Las etapas Idea y Aprobación viven en `idea.status`. Al aprobar una idea se crea su `project`.
 
 ## Cómo crecerá el Core
 
@@ -42,6 +73,13 @@ El Core se construye **solo cuando una función real lo necesita**. Orden previs
 
 ### D-004 · Interfaz en español con textos centralizados (2026-11-03)
 **Motivo:** preparar la traducción para el SaaS con un coste mínimo hoy.
+
+### D-005 · Diseño del modelo de datos (2026-11-03)
+- **Los directos son una adaptación** con `format = live`. Así aparecen en el calendario y comparten la tabla de resultados.
+- **Las métricas son registros fechados** (`*_snapshot`), no números que se sobrescriben. Esto permite ver la evolución.
+- **El dinero se guarda en unidades menores enteras** (`amount_minor`, centavos), para evitar errores de redondeo.
+- **Los enumerados viven en el código**, no en tablas, mientras no los edite el usuario.
+- Volumen esperado bajo (menos de 20 ideas y 1–3 proyectos activos): sin paginación ni búsqueda avanzada en Alpha.
 
 ## Dependencias
 
