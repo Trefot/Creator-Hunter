@@ -150,6 +150,16 @@ Cuentan lo recibido en USD desde la fecha local de creación de la meta, filtrad
 - **Resultados por vídeo (S20):** comando `youtube_video_stats(ids, start, end)`. Vistas, likes y comentarios de `videos.list` (bloques de 50, 1 unidad cada uno); compartidos y minutos de Analytics con `dimensions=video`, `filters=video==id1,id2…`, `sort` y `maxResults ≤ 200` (obligatorios en informes por vídeo). Los IDs se validan (11 caracteres `[A-Za-z0-9_-]`) antes de usarlos en filtros. El ID se extrae del enlace publicado (`src/features/profiles/youtubeVideo.ts`).
 - **Dónde se traen los resultados:** en la sincronización general, y además al abrir el panel de Resultados de una publicación con enlace de YouTube (y al publicarla), porque es donde el usuario los espera.
 
+### D-016 · Juegos y conexión NO oficial con PSN (2026-11-04)
+**Decisión del usuario, con los riesgos explicados y aceptados.** Contradice el principio "no depender de métodos que comprometan las cuentas", así que queda acotada:
+- **Solo uso personal y solo lectura.** No va en ninguna versión SaaS sin un acuerdo oficial con Sony.
+- **Riesgos:** va contra los términos de Sony (sanción improbable pero posible); el NPSSO equivale a la contraseña; puede dejar de funcionar si Sony cambia algo; el NPSSO caduca (unos 2 meses).
+- **Mitigaciones:** el usuario pega el NPSSO en la app (nunca en el chat); se canjea una sola vez por tokens y el **refresh token** se guarda en el Administrador de credenciales de Windows (nunca en la base de datos, Git ni registros); pocas consultas; los trofeos quedan **guardados en local** y se pueden marcar a mano si PSN falla.
+- **Flujo (verificado en psn-api, MIT):** NPSSO (de `https://ca.account.sony.com/api/v1/ssocookie` con la sesión de playstation.com abierta) → `GET https://ca.account.sony.com/api/authz/v3/oauth/authorize` (cookie `npsso`, `client_id 09515159-7237-4370-9b40-3806e67c0891`, `redirect_uri com.scee.psxandroid.scecompcall://redirect`, `scope "psn:mobile.v2.core psn:clientapp"`, sin seguir la redirección 302) → `POST …/oauth/token` (Basic de la app móvil, `token_format=jwt`) → access y refresh token. Renovación: `grant_type=refresh_token`.
+- **Endpoints (base `https://m.np.playstation.com/api/trophy`):** `/v1/users/me/trophyTitles` (juegos, progreso, icono, `npCommunicationId`, `npServiceName`); `/v1/npCommunicationIds/{id}/trophyGroups/all/trophies?npServiceName=…` (definición de trofeos); `/v1/users/me/npCommunicationIds/{id}/trophyGroups/all/trophies?npServiceName=…` (ganado, fecha y rareza).
+- **Esquema (migración 007):** `game` (título, plataforma, estado, portada, `np_communication_id` único, `np_service_name`, notas); `trophy` (juego, `psn_trophy_id`, grupo, nombre, detalle, tipo, oculto, icono, `earned_at`, rareza, fase, perdible, nota; único por juego y `psn_trophy_id`); `trophy_phase` (juego, nombre, orden, nota); `game_goal` (juego, título, valor actual y objetivo, unidad, fecha límite, estado); `project.game_id` para enlazar vídeos. El % del platino se **calcula** a partir de los trofeos; con PSN conectado, PSN manda sobre el estado de "ganado".
+- **Orden por capítulos:** PSN no lo da. La agrupación inicial por fases para Wukong la escribe Claude a partir de guías públicas (sin copiar su texto) y el usuario la edita.
+
 ## Dependencias
 
 | Dependencia | Para qué |

@@ -164,6 +164,25 @@ Primeras integraciones automáticas. Todo local, con inicio de sesión OAuth des
 #### Más adelante
 Ingresos estimados (`yt-analytics-monetary.readonly`): solo funciona con el canal en el Programa de Socios; hoy daría error 403.
 
+## Gaming Alpha (adelantado por el usuario el 2026-11-04; antes era la Fase V)
+
+Objetivo: el platino de Black Myth: Wukong (y los siguientes juegos) desde TrophyHunter. Diseño y riesgos en ARCHITECTURE.md (D-016).
+
+#### ✅ G1 · Investigación y diseño
+- [x] Conexión no oficial con PSN verificada en el código de psn-api (MIT): NPSSO → código → tokens; endpoints de juegos, trofeos y trofeos ganados.
+- [x] Riesgos explicados y **aceptados por el usuario**: va contra los términos de Sony (solo lectura, uso personal) y el NPSSO equivale a la contraseña. **Nunca irá en el SaaS** sin un acuerdo oficial.
+- [x] Esquema diseñado (migración 007).
+
+#### ⬜ G2 · Biblioteca de juegos y conexión con PSN (siguiente)
+Sección "Juegos": pegar el NPSSO (guardado en el Administrador de credenciales de Windows), importar tus juegos con su progreso y sus trofeos (ganados, fecha, rareza e icono). Juegos manuales para plataformas sin conexión.
+**Terminado cuando:** Black Myth: Wukong aparece con su % y sus trofeos iguales a los de la consola.
+
+#### ⬜ G3 · Ruta al platino por fases
+Agrupar los trofeos por fase o capítulo (propuesta inicial escrita para Wukong, editable), perdibles, notas por trofeo y "qué hacer ahora".
+
+#### ⬜ G4 · Objetivos de juego y enlace con vídeos
+Objetivos con progreso (nivel, XP farmeada…) y proyectos del Creator Studio enlazados al juego.
+
 ## Ideas aparcadas
 Las ideas nuevas se anotan aquí y no interrumpen la fase actual.
 - Revisar el código de Firebot (open source) como referencia para Live Studio.
