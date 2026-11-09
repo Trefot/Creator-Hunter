@@ -1,7 +1,8 @@
-import { FormEvent, useEffect, useState } from "react";
+import { ChangeEvent, FormEvent, useEffect, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
-import { Check, ChevronDown, Copy, Minus, MonitorPlay, Pencil, Plus, RotateCcw, Trash2, X } from "lucide-react";
+import { Check, ChevronDown, Copy, ImagePlus, Minus, MonitorPlay, Pencil, Plus, RotateCcw, Trash2, X } from "lucide-react";
+import { fitPng } from "../../components/images";
 import { EmptyState } from "../../components/EmptyState";
 import { PageTitle } from "../../components/PageTitle";
 import {
@@ -21,13 +22,26 @@ const t = es.live;
 
 export const COUNTER_ICONS = ["💀", "⚔️", "📦", "🏆", "👑", "❤️", "⭐", "🎯", "🔥", "💎", "👥", "🎮"];
 export const COUNTER_COLORS = ["#8b5cf6", "#ef4444", "#f59e0b", "#22c55e", "#38bdf8", "#ec4899", "#f97316", "#eab308"];
+export const BG_COLORS = ["#0e0c14", "#000000", "#1e1b4b", "#3b0764", "#450a0a", "#052e16", "#ffffff"];
+
+/** Fondo de la tarjeta (color + opacidad) como en el overlay de OBS. */
+export function cardBackground(color: string, opacity: number): string {
+  const n = parseInt(color.slice(1), 16);
+  return `rgba(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}, ${opacity / 100})`;
+}
+
+/** El icono del contador: su PNG propio o el emoji. */
+export function CounterIcon({ counter }: { counter: Pick<Counter, "icon" | "image"> }) {
+  return <span className="counter-icon">{counter.image ? <img src={counter.image} alt="" /> : counter.icon}</span>;
+}
 
 /** Contadores rápidos para empezar con un clic. */
+const STYLE = { image: null, bg_color: "#0e0c14", bg_opacity: 85 };
 const TEMPLATES: CounterInput[] = [
-  { name: "Muertes", icon: "💀", color: "#ef4444", step: 1, game_id: null },
-  { name: "Jefes vencidos", icon: "⚔️", color: "#8b5cf6", step: 1, game_id: null },
-  { name: "Cofres abiertos", icon: "📦", color: "#f59e0b", step: 1, game_id: null },
-  { name: "Victorias", icon: "👑", color: "#eab308", step: 1, game_id: null },
+  { name: "Muertes", icon: "💀", color: "#ef4444", step: 1, game_id: null, ...STYLE },
+  { name: "Jefes vencidos", icon: "⚔️", color: "#8b5cf6", step: 1, game_id: null, ...STYLE },
+  { name: "Cofres abiertos", icon: "📦", color: "#f59e0b", step: 1, game_id: null, ...STYLE },
+  { name: "Victorias", icon: "👑", color: "#eab308", step: 1, game_id: null, ...STYLE },
 ];
 
 interface LiveInfo {
@@ -67,7 +81,20 @@ function CounterForm({
   onCancel: () => void;
 }) {
   const [form, setForm] = useState<CounterInput>(initial);
+  const [imageError, setImageError] = useState("");
   const set = (patch: Partial<CounterInput>) => setForm((f) => ({ ...f, ...patch }));
+
+  async function onImage(e: ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    try {
+      setImageError("");
+      set({ image: await fitPng(file) });
+    } catch {
+      setImageError(es.images.error);
+    }
+  }
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
@@ -77,9 +104,16 @@ function CounterForm({
 
   return (
     <form className="card counter-form" onSubmit={onSubmit}>
-      <div className="counter-form-preview" style={{ ["--c" as string]: form.color }}>
-        <span className="counter-icon">{form.icon}</span>
-        <strong>{form.name || t.namePlaceholder}</strong>
+      {/* Vista previa tal cual se verá en OBS (sobre un fondo de tablero para notar la transparencia) */}
+      <div className="counter-preview-stage">
+        <span className="small muted">{t.preview}</span>
+        <div className="overlay-card" style={{ ["--c" as string]: form.color, background: cardBackground(form.bg_color, form.bg_opacity) }}>
+          <span className="overlay-icon">{form.image ? <img src={form.image} alt="" /> : form.icon}</span>
+          <span className="overlay-text">
+            <span className="overlay-name">{form.name || t.namePlaceholder}</span>
+            <span className="overlay-value">27</span>
+          </span>
+        </div>
       </div>
       <label>
         {t.name}
@@ -88,12 +122,31 @@ function CounterForm({
       <div className="counter-form-row">
         <span className="small muted">{t.icon}</span>
         <div className="counter-picks">
+          <label className={`counter-pick counter-upload${form.image ? " on" : ""}`} title={t.uploadPng}>
+            {form.image ? <img src={form.image} alt="" /> : <ImagePlus size={18} />}
+            <input type="file" accept="image/png,image/webp,image/gif,image/jpeg" onChange={onImage} hidden />
+          </label>
           {COUNTER_ICONS.map((icon) => (
-            <button type="button" key={icon} className={`counter-pick${form.icon === icon ? " on" : ""}`} onClick={() => set({ icon })}>
+            <button
+              type="button"
+              key={icon}
+              className={`counter-pick${!form.image && form.icon === icon ? " on" : ""}`}
+              onClick={() => set({ icon, image: null })}
+            >
               {icon}
             </button>
           ))}
         </div>
+        <span className="muted small">
+          {form.image ? (
+            <button type="button" className="link-button small" onClick={() => set({ image: null })}>
+              {t.removePng}
+            </button>
+          ) : (
+            t.pngHint
+          )}
+        </span>
+        {imageError && <span className="error small">{imageError}</span>}
       </div>
       <div className="counter-form-row">
         <span className="small muted">{t.color}</span>
@@ -109,6 +162,25 @@ function CounterForm({
             />
           ))}
         </div>
+      </div>
+      <div className="counter-form-row">
+        <span className="small muted">{t.background}</span>
+        <div className="counter-picks">
+          {BG_COLORS.map((color) => (
+            <button
+              type="button"
+              key={color}
+              className={`counter-swatch bg${form.bg_color === color ? " on" : ""}`}
+              style={{ background: color }}
+              onClick={() => set({ bg_color: color })}
+              aria-label={color}
+            />
+          ))}
+        </div>
+        <label className="counter-opacity">
+          <span className="small muted">{t.opacity(form.bg_opacity)}</span>
+          <input type="range" min={0} max={100} step={5} value={form.bg_opacity} onChange={(e) => set({ bg_opacity: Number(e.target.value) })} />
+        </label>
       </div>
       <div className="counter-form-grid">
         <label>
@@ -235,7 +307,7 @@ export function LivePage() {
 
       {creating && (
         <CounterForm
-          initial={{ name: "", icon: COUNTER_ICONS[0], color: COUNTER_COLORS[0], step: 1, game_id: null }}
+          initial={{ name: "", icon: COUNTER_ICONS[0], color: COUNTER_COLORS[0], step: 1, game_id: null, ...STYLE }}
           games={games}
           onCancel={() => setCreating(false)}
           onSave={async (input) => {
@@ -275,7 +347,7 @@ export function LivePage() {
               ) : (
                 <article key={c.id} className="card counter-card" style={{ ["--c" as string]: c.color }}>
                   <div className="counter-top">
-                    <span className="counter-icon">{c.icon}</span>
+                    <CounterIcon counter={c} />
                     <span className="counter-name">
                       <strong>{c.name}</strong>
                       {gameName(c.game_id) && <span className="muted small">{gameName(c.game_id)}</span>}

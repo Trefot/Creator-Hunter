@@ -2,6 +2,13 @@
 
 ## [Sin publicar]
 
+## [0.2.1] · 2026-11-08 · Contadores a tu gusto y copia antes de migrar
+
+- Cada contador puede llevar tu propia imagen PNG (con transparencia, sin recortar) en lugar del emoji.
+- Fondo del contador en OBS: color y opacidad de 0 % (transparente) a 100 % (sólido), con vista previa tal cual se verá.
+- La app hace una copia completa de los datos en Documentos\TrophyHunter\Copias antes de aplicar cambios de base de datos al actualizarse (D-020).
+- Migración 013.
+
 ## [0.2.0] · 2026-11-08 · Alpha 0.2: YouTube, Gaming y Live Studio
 
 ### 2026-11-08 · Live Studio fase 1: contadores

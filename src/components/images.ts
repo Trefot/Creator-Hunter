@@ -22,3 +22,21 @@ export async function resizeImage(file: File, size: { width: number; height: num
   bitmap.close();
   return canvas.toDataURL("image/jpeg", 0.82);
 }
+
+/**
+ * Para iconos con transparencia (contadores del Live Studio): reduce la imagen para que quepa
+ * en `max`×`max` sin recortarla y la guarda como PNG, conservando el fondo transparente.
+ */
+export async function fitPng(file: File, max = 256): Promise<string> {
+  const bitmap = await createImageBitmap(file);
+  const scale = Math.min(1, max / Math.max(bitmap.width, bitmap.height));
+  const canvas = document.createElement("canvas");
+  canvas.width = Math.round(bitmap.width * scale);
+  canvas.height = Math.round(bitmap.height * scale);
+  const ctx = canvas.getContext("2d");
+  if (!ctx) throw new Error("No se pudo procesar la imagen.");
+  ctx.imageSmoothingQuality = "high";
+  ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+  bitmap.close();
+  return canvas.toDataURL("image/png");
+}

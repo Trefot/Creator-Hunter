@@ -4079,3 +4079,125 @@ button.muted-link {
   color: #111;
   background: var(--warning);
 }
+
+/* Live Studio: imagen propia, fondo ajustable y vista previa como en OBS */
+
+.counter-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.counter-icon:has(img) {
+  background: transparent;
+}
+
+.counter-upload {
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  color: var(--accent-hover);
+  border-style: dashed !important;
+}
+
+.counter-upload img {
+  width: 30px;
+  height: 30px;
+  object-fit: contain;
+}
+
+.counter-swatch.bg {
+  border: 2px solid var(--border-strong);
+}
+
+.counter-opacity {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-width: 360px;
+}
+
+.counter-opacity input[type="range"] {
+  accent-color: var(--accent);
+  padding: 0;
+}
+
+/* Fondo de tablero de ajedrez para ver la transparencia, como en un editor de imágenes */
+.counter-preview-stage {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 14px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background-color: #2a2a35;
+  background-image: linear-gradient(45deg, #3a3a48 25%, transparent 25%), linear-gradient(-45deg, #3a3a48 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #3a3a48 75%), linear-gradient(-45deg, transparent 75%, #3a3a48 75%);
+  background-size: 20px 20px;
+  background-position: 0 0, 0 10px, 10px -10px, -10px 0;
+}
+
+.counter-preview-stage > .small {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+}
+
+/* Copia del diseño del overlay (src-tauri/overlay/counters.html) */
+.overlay-card {
+  --c: #8b5cf6;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 22px 12px 14px;
+  border-radius: 18px;
+  border: 2px solid var(--c);
+  box-shadow: 0 0 22px color-mix(in srgb, var(--c) 45%, transparent), 0 8px 24px rgba(0, 0, 0, 0.45);
+  color: #fff;
+}
+
+.overlay-icon {
+  display: grid;
+  place-items: center;
+  width: 58px;
+  height: 58px;
+  border-radius: 14px;
+  font-size: 34px;
+  background: color-mix(in srgb, var(--c) 30%, transparent);
+}
+
+.overlay-icon:has(img) {
+  width: 64px;
+  height: 64px;
+  background: transparent;
+}
+
+.overlay-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.overlay-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.05;
+}
+
+.overlay-name {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--c) 55%, #fff);
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
+}
+
+.overlay-value {
+  font-size: 46px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 3px 10px rgba(0, 0, 0, 0.7);
+}

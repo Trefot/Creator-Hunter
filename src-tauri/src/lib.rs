@@ -2,6 +2,7 @@ use tauri_plugin_sql::{Migration, MigrationKind};
 
 mod backup;
 mod live;
+mod premigrate;
 mod psn;
 mod youtube;
 
@@ -86,6 +87,12 @@ fn migrations() -> Vec<Migration> {
             sql: include_str!("../migrations/012_counters.sql"),
             kind: MigrationKind::Up,
         },
+        Migration {
+            version: 13,
+            description: "aspecto de los contadores",
+            sql: include_str!("../migrations/013_counter_style.sql"),
+            kind: MigrationKind::Up,
+        },
     ]
 }
 
@@ -102,6 +109,13 @@ pub fn run() {
         .manage(psn::PsnState::default())
         .manage(live::LiveState::default())
         .setup(|app| {
+            // D-020: copia de los datos antes de aplicar migraciones nuevas (el frontend aún no abrió la base).
+            let latest = migrations().iter().map(|m| m.version).max().unwrap_or(0);
+            match premigrate::backup_if_pending(app.handle(), latest) {
+                Ok(Some(path)) => eprintln!("Copia antes de migrar: {path}"),
+                Ok(None) => {}
+                Err(e) => eprintln!("Aviso: {e}"),
+            }
             // D-019: la versión de pruebas se distingue a simple vista.
             #[cfg(debug_assertions)]
             if let Some(window) = tauri::Manager::get_webview_window(app, "main") {

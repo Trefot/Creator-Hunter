@@ -8,14 +8,19 @@ export interface Counter {
   value: number;
   step: number;
   game_id: string | null;
+  /** PNG propio (data URL); si hay, sustituye al emoji. */
+  image: string | null;
+  bg_color: string;
+  /** Opacidad del fondo en OBS: 0 transparente, 100 sólido. */
+  bg_opacity: number;
 }
 
-export type CounterInput = Pick<Counter, "name" | "icon" | "color" | "step" | "game_id">;
+export type CounterInput = Pick<Counter, "name" | "icon" | "color" | "step" | "game_id" | "image" | "bg_color" | "bg_opacity">;
 
 export async function listCounters(): Promise<Counter[]> {
   const db = await getDb();
   return db.select<Counter[]>(
-    "SELECT id, name, icon, color, value, step, game_id FROM counter WHERE workspace_id = $1 ORDER BY position, created_at",
+    "SELECT id, name, icon, color, value, step, game_id, image, bg_color, bg_opacity FROM counter WHERE workspace_id = $1 ORDER BY position, created_at",
     [WORKSPACE_ID],
   );
 }
@@ -27,18 +32,19 @@ export async function createCounter(input: CounterInput): Promise<void> {
     [WORKSPACE_ID],
   );
   await db.execute(
-    "INSERT INTO counter (id, workspace_id, name, icon, color, step, game_id, position) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)",
-    [newId(), WORKSPACE_ID, input.name.trim(), input.icon, input.color, input.step, input.game_id, next],
+    `INSERT INTO counter (id, workspace_id, name, icon, color, step, game_id, image, bg_color, bg_opacity, position)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
+    [newId(), WORKSPACE_ID, input.name.trim(), input.icon, input.color, input.step, input.game_id, input.image, input.bg_color, input.bg_opacity, next],
   );
 }
 
 export async function updateCounter(id: string, input: CounterInput): Promise<void> {
   const db = await getDb();
   await db.execute(
-    `UPDATE counter SET name = $1, icon = $2, color = $3, step = $4, game_id = $5,
-            updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
-      WHERE id = $6 AND workspace_id = $7`,
-    [input.name.trim(), input.icon, input.color, input.step, input.game_id, id, WORKSPACE_ID],
+    `UPDATE counter SET name = $1, icon = $2, color = $3, step = $4, game_id = $5, image = $6, bg_color = $7,
+            bg_opacity = $8, updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
+      WHERE id = $9 AND workspace_id = $10`,
+    [input.name.trim(), input.icon, input.color, input.step, input.game_id, input.image, input.bg_color, input.bg_opacity, id, WORKSPACE_ID],
   );
 }
 

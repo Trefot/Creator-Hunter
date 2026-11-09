@@ -72,7 +72,7 @@ pub(crate) async fn pool(app: &AppHandle) -> Result<Pool<Sqlite>, String> {
 }
 
 /// Carpeta de copias: Documentos\TrophyHunter\Copias.
-fn backup_dir(app: &AppHandle) -> Result<PathBuf, String> {
+pub(crate) fn backup_dir(app: &AppHandle) -> Result<PathBuf, String> {
     let dir = app
         .path()
         .document_dir()

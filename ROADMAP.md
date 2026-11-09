@@ -220,7 +220,8 @@ Objetivos con progreso (nivel, XP farmeada…) y proyectos del Creator Studio en
 #### ✅ L1 · Contadores con overlay de OBS y Stream Deck
 - [x] Contadores (migración 012) con plantillas rápidas, icono, color, paso y juego.
 - [x] Servidor local (127.0.0.1) con overlay para OBS y URLs del Stream Deck con clave local.
-- [ ] Prueba del usuario en OBS y con el Stream Deck.
+- [x] Prueba del usuario en OBS y con el Stream Deck (funciona).
+- [x] Imagen PNG propia y fondo ajustable (color y opacidad), pedido del usuario.
 
 #### ⬜ L2 · Seguidores y suscriptores automáticos
 YouTube (ya conectado) y Twitch (EventSub, pendiente de Alpha 0.2) como contadores de origen automático.

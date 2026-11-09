@@ -6,6 +6,7 @@
 //!
 //! - `GET /overlay[?c=id1,id2&layout=row|column]`: página para la "Fuente de navegador" de OBS.
 //! - `GET /api/counters`: los contadores en JSON.
+//! - `GET /api/counters/{id}/image`: el PNG propio del contador (el overlay lo pide solo cuando cambia).
 //! - `GET /api/counters/{id}/{inc|dec|reset}?key=…`: para el Stream Deck ("Sitio web" en segundo plano).
 
 use std::fs;
@@ -114,6 +115,19 @@ fn handle_request(app: &AppHandle, key: &str, request: Request) {
             Ok(list) => respond_json(request, 200, list),
             Err(e) => respond_json(request, 503, json!({ "error": e })),
         },
+        ["api", "counters", id, "image"] => {
+            let id = id.to_string();
+            match tauri::async_runtime::block_on(counter_image(app, &id)) {
+                Ok(Some((mime, bytes))) => {
+                    let response = Response::from_data(bytes)
+                        .with_header(header("Content-Type", &mime))
+                        .with_header(header("Cache-Control", "max-age=31536000"));
+                    let _ = request.respond(response);
+                }
+                Ok(None) => respond_json(request, 404, json!({ "error": "Ese contador no tiene imagen." })),
+                Err(e) => respond_json(request, 400, json!({ "error": e })),
+            }
+        }
         ["api", "counters", id, action] => {
             if query_key.as_deref() != Some(key) {
                 return respond_json(request, 403, json!({ "error": "Falta la clave local o no es correcta." }));
@@ -134,7 +148,11 @@ fn handle_request(app: &AppHandle, key: &str, request: Request) {
 
 async fn list_counters(app: &AppHandle) -> Result<serde_json::Value, String> {
     let pool = crate::backup::pool(app).await?;
-    let rows = sqlx::query("SELECT id, name, icon, color, value FROM counter ORDER BY position, created_at")
+    let rows = sqlx::query(
+        "SELECT id, name, icon, color, value, bg_color, bg_opacity, image IS NOT NULL AS has_image,
+                COALESCE(length(image) || '-' || substr(image, -24), '') AS image_version
+           FROM counter ORDER BY position, created_at",
+    )
         .fetch_all(&pool)
         .await
         .map_err(|e| e.to_string())?;
@@ -147,6 +165,11 @@ async fn list_counters(app: &AppHandle) -> Result<serde_json::Value, String> {
                 "icon": r.get::<String, _>("icon"),
                 "color": r.get::<String, _>("color"),
                 "value": r.get::<i64, _>("value"),
+                "bg_color": r.get::<String, _>("bg_color"),
+                "bg_opacity": r.get::<i64, _>("bg_opacity"),
+                "has_image": r.get::<bool, _>("has_image"),
+                // Solo cambia si cambia la imagen: el overlay la vuelve a pedir únicamente entonces.
+                "image_version": r.get::<String, _>("image_version"),
             })
         })
         .collect();
@@ -171,4 +194,25 @@ async fn change_counter(app: &AppHandle, id: &str, action: &str) -> Result<i64, 
         .await
         .map_err(|e| e.to_string())?;
     Ok(row.get::<i64, _>("value"))
+}
+
+/// El PNG propio de un contador, decodificado de su data URL.
+async fn counter_image(app: &AppHandle, id: &str) -> Result<Option<(String, Vec<u8>)>, String> {
+    use base64::Engine;
+    let pool = crate::backup::pool(app).await?;
+    let row = sqlx::query("SELECT image FROM counter WHERE id = $1")
+        .bind(id)
+        .fetch_optional(&pool)
+        .await
+        .map_err(|e| e.to_string())?;
+    let Some(data_url) = row.and_then(|r| r.get::<Option<String>, _>("image")) else {
+        return Ok(None);
+    };
+    let (meta, b64) = data_url.split_once(',').ok_or("Imagen no válida.")?;
+    let mime = meta.trim_start_matches("data:").trim_end_matches(";base64").to_string();
+    if !mime.starts_with("image/") {
+        return Err("Imagen no válida.".into());
+    }
+    let bytes = base64::engine::general_purpose::STANDARD.decode(b64).map_err(|e| e.to_string())?;
+    Ok(Some((mime, bytes)))
 }

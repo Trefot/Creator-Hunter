@@ -186,6 +186,11 @@ Cuentan lo recibido en USD desde la fecha local de creación de la meta, filtrad
 - Lo comprobado se commitea y se sube **sin preguntar**; las versiones se publican con instalador y etiqueta.
 - **Ojo, Claude corre dentro del paquete de la app de Claude:** lo que arranca (Python, `tauri dev`) tiene AppData **redirigido** a `%LOCALAPPDATA%\Packages\Claude_…\LocalCache\Roaming` (copia al escribir). Sus pruebas nunca tocan los datos reales, pero lo que lee con Python puede ser esa copia y no el archivo real. Para comprobar datos, mirar dentro de la propia app; la prueba final se hace en la app instalada del usuario.
 
+### D-020 · Copia automática antes de migrar (2026-11-08)
+- Al arrancar, antes de que el frontend abra la base, `premigrate.rs` lee la versión del esquema (solo lectura). Si hay migraciones pendientes, guarda una copia completa con `VACUUM INTO` en `Documentos\TrophyHunter\Copias\antes-de-migrar-vX-a-vY-<segundos>.db`.
+- Motivo: con D-019 los datos reales solo los toca la app instalada, y Claude no puede leerlos (ver la nota de D-019). Así cada actualización protege los datos sola, cumpliendo el paso 1 de D-007 sin intervención.
+- Si la copia falla, se avisa en el registro y la app sigue (no bloquea el arranque).
+
 ## Dependencias
 
 | Dependencia | Para qué |
