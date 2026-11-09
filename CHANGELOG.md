@@ -2,6 +2,12 @@
 
 ## [Sin publicar]
 
+## [0.2.2] · 2026-11-08 · Actualización automática
+
+- La app se actualiza sola: al abrirla, si hay una versión nueva en Documentos\TrophyHunter\Instaladores, muestra «Actualizando…», la instala en silencio y se vuelve a abrir (D-021).
+- Con la app abierta, solo avisa con «Actualizar ahora»; nunca se reinicia a mitad de un stream.
+- Esta es la última versión que hay que instalar a mano.
+
 ## [0.2.1] · 2026-11-08 · Contadores a tu gusto y copia antes de migrar
 
 - Cada contador puede llevar tu propia imagen PNG (con transparencia, sin recortar) en lugar del emoji.

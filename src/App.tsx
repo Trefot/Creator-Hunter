@@ -1,3 +1,4 @@
+import { UpdateLayer } from "./features/update/UpdateLayer";
 import { LivePage } from "./features/live/LivePage";
 import { useEffect, useState } from "react";
 import { ComingSoon } from "./components/ComingSoon";
@@ -127,6 +128,7 @@ function App() {
           <ComingSoon title={es.sections[section]} />
         )}
       </main>
+      <UpdateLayer />
       {notice && (
         <div className={`toast${notice.error ? " toast-error" : ""}`} role="status">
           {notice.text}

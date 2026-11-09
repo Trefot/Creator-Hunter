@@ -3,6 +3,7 @@ use tauri_plugin_sql::{Migration, MigrationKind};
 mod backup;
 mod live;
 mod premigrate;
+mod updater;
 mod psn;
 mod youtube;
 
@@ -142,6 +143,8 @@ pub fn run() {
             psn::psn_now_playing,
             youtube::youtube_disconnect,
             live::live_status,
+            updater::update_check,
+            updater::update_apply,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

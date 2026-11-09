@@ -2,7 +2,7 @@
 export const es = {
   appName: "TrophyHunter",
   appTagline: "Creator Studio",
-  version: "Alpha 0.2 · v0.2.1",
+  version: "Alpha 0.2 · v0.2.2",
   /** Marca de la versión de pruebas (D-019). */
   devBadge: "PRUEBAS",
   games: {
@@ -139,6 +139,13 @@ export const es = {
     lost: "Ya lo perdí → NG+",
     lostHelp: "Lo pasa a la fase NG+ y deja de avisarte como perdible. Lo que ya tengas de ese trofeo se conserva en el nuevo ciclo.",
     kinds: { phase: "Fase", guide: "Guía", missable: "Perdible", farm: "Farmeo", custom: "Tuyo" },
+  },
+  update: {
+    installing: (v: string) => `Actualizando TrophyHunter a la versión ${v}…`,
+    installingHint: "Se cierra y se vuelve a abrir sola en unos segundos. Tus datos se conservan.",
+    available: (v: string) => `Hay una versión nueva lista (${v}).`,
+    now: "Actualizar ahora",
+    failed: (e: string) => `No se pudo actualizar: ${e}`,
   },
   live: {
     subtitle: "Contadores para tu stream: muertes, jefes, cofres… Súmalos con el Stream Deck y muéstralos en OBS.",

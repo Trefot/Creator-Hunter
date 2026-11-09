@@ -191,6 +191,15 @@ Cuentan lo recibido en USD desde la fecha local de creación de la meta, filtrad
 - Motivo: con D-019 los datos reales solo los toca la app instalada, y Claude no puede leerlos (ver la nota de D-019). Así cada actualización protege los datos sola, cumpliendo el paso 1 de D-007 sin intervención.
 - Si la copia falla, se avisa en el registro y la app sigue (no bloquea el arranque).
 
+### D-021 · Actualización automática desde la carpeta de instaladores (2026-11-08)
+**Pedido del usuario: no instalar actualizaciones a mano.**
+- La app instalada busca en `Documentos\TrophyHunter\Instaladores` un `TrophyHunter_X.Y.Z_x64-setup.exe` mayor que su versión (`updater.rs`, con tests).
+- **Al abrirla:** si lo hay, muestra «Actualizando…», se cierra y un `cmd` oculto espera ~2 s, ejecuta el instalador con `/S` (silencioso; instalación por usuario, sin administrador) y vuelve a abrir la app.
+- **Con la app abierta:** comprueba cada 10 min y solo avisa con «Actualizar ahora» (no reinicia a mitad de un stream).
+- La versión de pruebas nunca se actualiza sola.
+- **Por qué así y no el plugin oficial de actualización:** el repositorio es privado (el plugin necesita un servidor público o con token) y el usuario usa un solo PC; la carpeta ya existía y Claude no puede instalar por el usuario (sus procesos tienen AppData redirigido, ver D-019).
+- **Riesgo aceptado:** se ejecuta lo que haya en esa carpeta del propio usuario con el nombre esperado. Si algún día se distribuye la app, pasar al plugin oficial con firma.
+
 ## Dependencias
 
 | Dependencia | Para qué |
