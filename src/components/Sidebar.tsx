@@ -6,6 +6,7 @@ import {
   LayoutDashboard,
   Lightbulb,
   LucideIcon,
+  Radio,
   Target,
   UsersRound,
   Wallet,
@@ -23,6 +24,7 @@ export const SECTION_ICONS: Record<Section, LucideIcon> = {
   calendar: CalendarDays,
   income: Wallet,
   games: Gamepad2,
+  live: Radio,
   backups: DatabaseBackup,
 };
 
@@ -30,6 +32,7 @@ export const SECTION_ICONS: Record<Section, LucideIcon> = {
 const GROUPS: { label: string; sections: Section[] }[] = [
   { label: es.nav.studio, sections: ["dashboard", "ideas", "projects", "calendar"] },
   { label: es.nav.growth, sections: ["profiles", "goals", "income"] },
+  { label: es.nav.live, sections: ["live"] },
   { label: es.nav.gaming, sections: ["games"] },
 ];
 
@@ -70,7 +73,10 @@ export function Sidebar({ current, onSelect }: Props) {
         ))}
       </div>
       <ul>{item("backups")}</ul>
-      <p className="sidebar-footer">{es.version}</p>
+      <p className="sidebar-footer">
+        {es.version}
+        {import.meta.env.DEV && <span className="dev-badge">{es.devBadge}</span>}
+      </p>
     </nav>
   );
 }

@@ -13,8 +13,9 @@ Lee esto al inicio de cada sesión. Para el contexto, consulta:
 1. Al empezar, revisa el estado: `git status`, la tarea activa en ROADMAP.md y la última entrada de CHANGELOG.md.
 2. **Una tarea principal por sesión.** Debe terminar probada por el usuario en la app real.
 3. Una función no está terminada solo porque su interfaz se vea bien. Tiene que guardar, recargar y sobrevivir al cierre de la app.
-4. Al terminar: marca la tarea en ROADMAP.md, añade la entrada en CHANGELOG.md y haz un commit.
+4. Al terminar: marca la tarea en ROADMAP.md, añade la entrada en CHANGELOG.md, haz el commit y súbelo (`git push`) **sin preguntar**, una vez comprobado (compila, tests y prueba en la app de pruebas). Preguntar solo antes de algo destructivo o fuera del flujo normal (D-019).
 5. El usuario aprende mirando: explica en español qué haces y por qué, sin jerga innecesaria.
+6. **Dos entornos (D-019):** el usuario usa la app **instalada** (datos reales, `studio.db`, puerto 7878). Claude prueba **solo** con la versión de pruebas (`npm run tauri dev`: `studio-dev.db`, puerto 7879, título «PRUEBAS»). Nunca se prueba sobre los datos reales. Cuando algo está listo, se sube la versión y se genera el instalador para que el usuario actualice.
 
 ## Reglas
 
@@ -30,7 +31,8 @@ Lee esto al inicio de cada sesión. Para el contexto, consulta:
 
 ```bash
 npm install          # dependencias del frontend
-npm run tauri dev    # abrir la app en modo desarrollo
+npm run tauri dev    # versión de PRUEBAS (base studio-dev.db, puerto 7879)
+npm run tauri build  # instalador de la versión para el usuario (src-tauri/target/release/bundle/nsis)
 npm run build        # comprobar tipos y compilar el frontend
 ```
 
@@ -46,5 +48,5 @@ Requisitos en Windows: Node.js LTS, Rust (rustup, toolchain MSVC estable), Visua
   - `src/i18n/es.ts`: todos los textos visibles.
 - `src-tauri/`: aplicación de escritorio (Rust, Tauri 2).
   - `src-tauri/migrations/`: migraciones SQL numeradas. **Nunca se edita una ya aplicada**; los cambios van en una nueva, registrada en `src-tauri/src/lib.rs`.
-- Datos del usuario: `%APPDATA%\com.trefotg.studio\studio.db`. Nunca se borra ni se sobrescribe sin una copia de seguridad. **Antes de cualquier migración nueva, sigue D-007 en ARCHITECTURE.md** (copia con la API de backup y prueba sobre una copia).
-- `Abrir TrophyHunter.bat`: abre la app con doble clic.
+- Datos del usuario: `%APPDATA%\com.trefotg.studio\studio.db` (solo la app instalada). La de pruebas usa `studio-dev.db` en la misma carpeta; para refrescarla con datos reales, se copia `studio.db` con la API de backup de SQLite (nunca al revés). Los datos reales nunca se borran ni se sobrescriben sin una copia de seguridad. **Antes de cualquier migración nueva, sigue D-007 en ARCHITECTURE.md** (copia con la API de backup y prueba sobre una copia).
+- `Probar TrophyHunter (pruebas).bat`: abre la versión de pruebas con doble clic. La app diaria del usuario es la instalada (menú Inicio).

@@ -16,7 +16,7 @@ use tauri_plugin_sql::{DbInstances, DbPool};
 use crate::DB_URL;
 
 /// Tablas de datos, de padres a hijos (orden de inserción; el borrado va al revés).
-const TABLES: [&str; 21] = [
+const TABLES: [&str; 22] = [
     "workspace",
     "profile",
     "account_snapshot",
@@ -33,6 +33,7 @@ const TABLES: [&str; 21] = [
     "session_objective",
     "collection_item",
     "trophy_task",
+    "counter",
     "game_goal",
     "project",
     "adaptation",
@@ -61,7 +62,7 @@ pub struct ImportResult {
     safety_copy: String,
 }
 
-async fn pool(app: &AppHandle) -> Result<Pool<Sqlite>, String> {
+pub(crate) async fn pool(app: &AppHandle) -> Result<Pool<Sqlite>, String> {
     let instances = app.state::<DbInstances>();
     let map = instances.0.read().await;
     match map.get(DB_URL) {

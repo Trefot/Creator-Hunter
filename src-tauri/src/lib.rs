@@ -1,12 +1,14 @@
 use tauri_plugin_sql::{Migration, MigrationKind};
 
 mod backup;
+mod live;
 mod psn;
 mod youtube;
 
 /// Archivo de la base de datos, dentro de la carpeta de datos de la app.
 /// El frontend la abre con la misma cadena (ver src/db/database.ts).
-pub(crate) const DB_URL: &str = "sqlite:studio.db";
+/// D-019: la versión de desarrollo usa su propia base de pruebas y nunca toca los datos reales.
+pub(crate) const DB_URL: &str = if cfg!(debug_assertions) { "sqlite:studio-dev.db" } else { "sqlite:studio.db" };
 
 /// Migraciones de esquema, en orden. Una migración aplicada nunca se edita:
 /// los cambios van siempre en una migración nueva.
@@ -78,6 +80,12 @@ fn migrations() -> Vec<Migration> {
             sql: include_str!("../migrations/011_trophy_tasks.sql"),
             kind: MigrationKind::Up,
         },
+        Migration {
+            version: 12,
+            description: "contadores del Live Studio",
+            sql: include_str!("../migrations/012_counters.sql"),
+            kind: MigrationKind::Up,
+        },
     ]
 }
 
@@ -92,6 +100,16 @@ pub fn run() {
         )
         .manage(youtube::YouTubeState::default())
         .manage(psn::PsnState::default())
+        .manage(live::LiveState::default())
+        .setup(|app| {
+            // D-019: la versión de pruebas se distingue a simple vista.
+            #[cfg(debug_assertions)]
+            if let Some(window) = tauri::Manager::get_webview_window(app, "main") {
+                let _ = window.set_title("TrophyHunter · PRUEBAS");
+            }
+            live::start(app.handle().clone());
+            Ok(())
+        })
         .invoke_handler(tauri::generate_handler![
             backup::export_backup,
             backup::import_backup,
@@ -109,6 +127,7 @@ pub fn run() {
             psn::psn_download_image,
             psn::psn_now_playing,
             youtube::youtube_disconnect,
+            live::live_status,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

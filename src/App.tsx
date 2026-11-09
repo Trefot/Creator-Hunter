@@ -1,3 +1,4 @@
+import { LivePage } from "./features/live/LivePage";
 import { useEffect, useState } from "react";
 import { ComingSoon } from "./components/ComingSoon";
 import { Sidebar } from "./components/Sidebar";
@@ -118,6 +119,8 @@ function App() {
           <IncomePage />
         ) : section === "games" ? (
           <GamesPage key={gameToOpen ?? "list"} initialOpenId={gameToOpen} initialView={gameView} gameMode={gameMode} />
+        ) : section === "live" ? (
+          <LivePage />
         ) : section === "backups" ? (
           <BackupsPage />
         ) : (

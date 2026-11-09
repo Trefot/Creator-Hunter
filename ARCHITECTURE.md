@@ -172,6 +172,20 @@ Cuentan lo recibido en USD desde la fecha local de creación de la meta, filtrad
 - **El plan de hoy lo arma el usuario** (decisión del usuario: las sugerencias automáticas no le servían). Se reutilizan `play_session` y `session_objective` (migración 009); la app solo recomienda el siguiente trofeo de la ruta.
 - **"Ya lo perdí → NG+"** mueve el trofeo a la fase cuyo nombre contiene "NG+", quita la marca de perdible y lo anota en su nota.
 
+### D-018 · Live Studio: servidor local para OBS y Stream Deck (2026-11-08)
+- **Servidor HTTP mínimo (`tiny_http`) en un hilo**, solo en `127.0.0.1` (nunca en la red). Sirve el overlay (`/overlay`) y la lista de contadores (`/api/counters`); el overlay pregunta cada 0,6 s.
+- **Cambios con clave local:** `/api/counters/{id}/{inc|dec|reset}?key=…`. La clave se genera una vez (`live-key.txt` en la carpeta de datos). Sin ella, cualquier web abierta en el navegador podría tocar los contadores pidiendo a `127.0.0.1`.
+- **Stream Deck sin plugins:** la acción «Sitio web» en segundo plano hace un GET; por eso los cambios son GET con clave.
+- El servidor escribe con el mismo pool de SQLite que la app y avisa a la interfaz con el evento `counters-changed`.
+- `counter.source` ya admite `youtube_subscribers`, `twitch_followers` y `screen` para las fases L2 y L3 sin reconstruir la tabla.
+
+### D-019 · App instalada para el usuario, app de pruebas para Claude (2026-11-08)
+**Decisión del usuario, siguiendo cómo funciona Lumen.** Motivo: el usuario usaba la versión de desarrollo sobre sus datos reales; dos copias abiertas chocaron y una migración se aplicó sola al guardar `lib.rs`.
+- **Instalada (release):** `studio.db`, puerto 7878. Es la que usa el usuario a diario; se actualiza con el instalador de cada versión.
+- **Pruebas (`tauri dev`, `debug_assertions`):** `studio-dev.db`, puerto 7879, clave `live-key-dev.txt`, título «TrophyHunter · PRUEBAS» y marca en el menú. Se rellena copiando `studio.db` con la API de backup (nunca al revés).
+- Lo comprobado se commitea y se sube **sin preguntar**; las versiones se publican con instalador y etiqueta.
+- **Ojo, Claude corre dentro del paquete de la app de Claude:** lo que arranca (Python, `tauri dev`) tiene AppData **redirigido** a `%LOCALAPPDATA%\Packages\Claude_…\LocalCache\Roaming` (copia al escribir). Sus pruebas nunca tocan los datos reales, pero lo que lee con Python puede ser esa copia y no el archivo real. Para comprobar datos, mirar dentro de la propia app; la prueba final se hace en la app instalada del usuario.
+
 ## Dependencias
 
 | Dependencia | Para qué |
@@ -187,5 +201,7 @@ Cuentan lo recibido en USD desde la fecha local de creación de la meta, filtrad
 | `reqwest` 0.13 (native-tls, json, form, query) | Llamadas HTTPS a Google y YouTube (D-015); ya estaba en el árbol de dependencias |
 | `keyring` 3 (windows-native) | Guardar el refresh token en el Administrador de credenciales de Windows |
 | `sha2`, `base64`, `rand`, `url` | PKCE, `state` aleatorio y construcción de URLs del OAuth; ya estaban en el árbol |
+
+| `tiny_http` 0.12 | Servidor HTTP local y pequeño para el overlay de OBS y el Stream Deck (D-018) |
 
 Las dependencias nuevas se añaden a esta tabla con su justificación.

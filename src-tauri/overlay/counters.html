@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>TrophyHunter · Contadores</title>
+<style>
+  /* Overlay para la "Fuente de navegador" de OBS: fondo transparente. */
+  html, body { margin: 0; background: transparent; overflow: hidden; }
+  body {
+    font-family: "Inter", "Segoe UI", system-ui, sans-serif;
+    color: #fff;
+    padding: 12px;
+  }
+  #list { display: flex; gap: 14px; flex-wrap: wrap; align-items: flex-start; }
+  #list.column { flex-direction: column; }
+  .counter {
+    --c: #8b5cf6;
+    display: flex; align-items: center; gap: 14px;
+    padding: 12px 22px 12px 14px;
+    border-radius: 18px;
+    background: linear-gradient(135deg, rgba(14, 12, 20, 0.88), rgba(14, 12, 20, 0.72));
+    border: 2px solid var(--c);
+    box-shadow: 0 0 22px color-mix(in srgb, var(--c) 45%, transparent), 0 8px 24px rgba(0, 0, 0, 0.45);
+    animation: enter 400ms ease-out;
+  }
+  .icon {
+    display: grid; place-items: center;
+    width: 58px; height: 58px; border-radius: 14px;
+    font-size: 34px;
+    background: color-mix(in srgb, var(--c) 30%, transparent);
+  }
+  .text { display: flex; flex-direction: column; line-height: 1.05; }
+  .name {
+    font-size: 15px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+    color: color-mix(in srgb, var(--c) 55%, #fff);
+    text-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
+  }
+  .value {
+    font-size: 46px; font-weight: 800; font-variant-numeric: tabular-nums;
+    text-shadow: 0 3px 10px rgba(0, 0, 0, 0.7);
+  }
+  .bump .value { animation: bump 450ms ease-out; }
+  .bump .icon { animation: shake 450ms ease-out; }
+  @keyframes bump {
+    0% { transform: scale(1); }
+    35% { transform: scale(1.35); color: var(--c); }
+    100% { transform: scale(1); }
+  }
+  @keyframes shake {
+    0%, 100% { transform: rotate(0); }
+    25% { transform: rotate(-14deg) scale(1.1); }
+    60% { transform: rotate(10deg) scale(1.1); }
+  }
+  @keyframes enter { from { opacity: 0; transform: translateY(10px); } }
+</style>
+</head>
+<body>
+<div id="list"></div>
+<script>
+  // Parámetros: ?c=id1,id2 (qué contadores; vacío = todos) y ?layout=row|column.
+  const params = new URLSearchParams(location.search);
+  const only = (params.get("c") || "").split(",").filter(Boolean);
+  const list = document.getElementById("list");
+  if (params.get("layout") === "column") list.classList.add("column");
+  const last = new Map();
+
+  function render(counters) {
+    const shown = only.length ? counters.filter((c) => only.includes(c.id)) : counters;
+    const ids = new Set(shown.map((c) => c.id));
+    for (const el of [...list.children]) if (!ids.has(el.dataset.id)) el.remove();
+    shown.forEach((c, i) => {
+      let el = list.querySelector(`[data-id="${c.id}"]`);
+      if (!el) {
+        el = document.createElement("div");
+        el.className = "counter";
+        el.dataset.id = c.id;
+        el.innerHTML = '<span class="icon"></span><span class="text"><span class="name"></span><span class="value"></span></span>';
+      }
+      if (list.children[i] !== el) list.insertBefore(el, list.children[i] || null);
+      el.style.setProperty("--c", c.color);
+      el.querySelector(".icon").textContent = c.icon;
+      el.querySelector(".name").textContent = c.name;
+      el.querySelector(".value").textContent = c.value.toLocaleString("es-MX");
+      if (last.has(c.id) && last.get(c.id) !== c.value) {
+        el.classList.remove("bump");
+        void el.offsetWidth; // reinicia la animación
+        el.classList.add("bump");
+      }
+      last.set(c.id, c.value);
+    });
+  }
+
+  async function tick() {
+    try {
+      const res = await fetch("/api/counters", { cache: "no-store" });
+      if (res.ok) render(await res.json());
+    } catch (_) {
+      /* la app está cerrada: se reintenta */
+    }
+    setTimeout(tick, 600);
+  }
+  tick();
+</script>
+</body>
+</html>

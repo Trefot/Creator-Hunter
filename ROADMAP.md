@@ -215,6 +215,19 @@ Objetivo: el platino de Black Myth: Wukong (y los siguientes juegos) desde Troph
 #### ⬜ G6 · Objetivos de juego y enlace con vídeos (siguiente)
 Objetivos con progreso (nivel, XP farmeada…) y proyectos del Creator Studio enlazados al juego.
 
+### Live Studio (adelantado por el usuario el 2026-11-08)
+
+#### ✅ L1 · Contadores con overlay de OBS y Stream Deck
+- [x] Contadores (migración 012) con plantillas rápidas, icono, color, paso y juego.
+- [x] Servidor local (127.0.0.1) con overlay para OBS y URLs del Stream Deck con clave local.
+- [ ] Prueba del usuario en OBS y con el Stream Deck.
+
+#### ⬜ L2 · Seguidores y suscriptores automáticos
+YouTube (ya conectado) y Twitch (EventSub, pendiente de Alpha 0.2) como contadores de origen automático.
+
+#### ⬜ L3 · Detección automática por imagen
+Muertes y jefes de Wukong desde la captura (como TrefotWukong); después, experimento con los cofres de Fortnite. Solo se lee la imagen, nunca la memoria del juego (antitrampas).
+
 ## Ideas aparcadas
 Las ideas nuevas se anotan aquí y no interrumpen la fase actual.
 - Revisar el código de Firebot (open source) como referencia para Live Studio.

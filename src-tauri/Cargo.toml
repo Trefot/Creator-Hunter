@@ -1,6 +1,6 @@
 [package]
 name = "studio"
-version = "0.1.0"
+version = "0.2.0"
 description = "Creator Studio (nombre de trabajo: TrophyHunter)"
 authors = ["TrefotG"]
 edition = "2024"
@@ -32,6 +32,8 @@ base64 = "0.22"
 rand = "0.8"
 url = "2"
 keyring = { version = "3", features = ["windows-native"] }
+# Servidor HTTP local y pequeño para el overlay de OBS y el Stream Deck (D-018).
+tiny_http = "0.12"
 
 
 # Read the optimization guideline for more details: https://tauri.app/concept/size/#cargo-configuration

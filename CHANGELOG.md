@@ -2,6 +2,18 @@
 
 ## [Sin publicar]
 
+## [0.2.0] · 2026-11-08 · Alpha 0.2: YouTube, Gaming y Live Studio
+
+### 2026-11-08 · Live Studio fase 1: contadores
+- Nueva sección «Live Studio»: contadores para el stream (muertes, jefes, cofres, victorias…) con icono, color, paso y juego.
+- Overlay para OBS («Fuente de navegador») con fondo transparente y animación al sumar.
+- URLs para el Stream Deck (acción «Sitio web» en segundo plano): sumar, restar y reiniciar, protegidas con una clave local.
+- Servidor local solo en 127.0.0.1; migración 012.
+
+### 2026-11-08 · App instalada y app de pruebas separadas
+- La versión de pruebas usa su propia base de datos y otro puerto, y se ve marcada como «PRUEBAS»: nunca toca los datos reales.
+- La app diaria es la instalada (v0.2.0).
+
 ### 2026-11-04 · Lista de calabazas, bebidas e infusiones de Wukong
 - «Refrescante abundancia»: 11 calabazas, 9 bebidas y 27 infusiones con ubicación, compras al Mono Shen por capítulo, aleatorias, perdible y objetos de NG+.
 
