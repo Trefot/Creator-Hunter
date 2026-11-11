@@ -11,15 +11,15 @@ El producto es exclusivamente personal (PRODUCT.md). Las fases históricas de ab
 - [x] Probar con datos temporales exportación/restauración de las 22 tablas, reapertura, rollback y migraciones con datos existentes.
 - [x] Corregir errores de actualización que se mostraban como «al día» y clics duplicados al instalar.
 - [x] Comprobar recuperación y vista previa aislada del overlay en Chromium con comandos nativos simulados.
-- [ ] Ejecutar y revisar la compilación y tests nativos en Windows.
+- [x] Ejecutar y revisar la compilación y tests nativos en Windows (GitHub Actions).
 - [ ] Confirmar en la app de PRUEBAS la persistencia, el audio en WebView2 y la separación de conexiones.
-- [ ] Solo después, preparar una versión e instalador para la app diaria.
+- [x] Preparar y publicar la actualización autorizada 0.2.10; revisión de uso real pendiente.
 
 Resultados y límites en VALIDACION.md. Propuestas investigadas de uso en RECOMENDACIONES.md; ninguna función nueva se considera implementada por figurar allí.
 
 ## Automatización del trabajo creativo (autorizada por el usuario)
 
-Diseño y orden de entrega en AUTOMATIZACION.md. Se mantiene pendiente la validación de Windows anterior.
+Diseño y orden de entrega en AUTOMATIZACION.md. La compilación y pruebas nativas de Windows pasaron; se mantiene pendiente la revisión de uso real.
 
 - [x] Implementar sincronización periódica de YouTube con la app abierta, consultas compartidas y reintentos sin avisos repetidos del mismo error.
 - [x] Refrescar métricas sin desmontar formularios y probar que un borrador sobrevive a la sincronización.
@@ -32,13 +32,13 @@ Diseño y orden de entrega en AUTOMATIZACION.md. Se mantiene pendiente la valida
 
 - [x] Aplicar tema grafito/violeta/dorado y rediseñar la portada y los accesos del dashboard usando funciones y datos existentes.
 - [x] Comprobar estados con datos de ejemplo, sin datos, navegación, formulario de Ideas y vista previa del overlay a distintos tamaños en Chromium.
-- [ ] Validar apariencia y uso en WebView2/Windows antes de publicar el instalador.
+- [ ] Validar apariencia y uso en WebView2 en el PC del usuario.
 
 ## Identidad definitiva · Nexus Studio
 
 - [x] Emblema B aprobado por el usuario: compañero sosteniendo el farol; preparar original transparente y tamaños de escritorio/Stream Deck.
 - [x] Aplicar nombre y símbolo en la interfaz, favicon y título de ventana sin cambiar datos ni credenciales.
-- [ ] Verificar icono y título en Windows, actualización desde la versión instalada y cambio del nombre de empaquetado. No publicar hasta completar la validación.
+- [ ] Verificar icono, título y actualización desde la versión instalada en el PC del usuario. Se conserva el nombre técnico de empaquetado.
 
 ## Entrega 0.2.10 · actualización autorizada
 
@@ -46,11 +46,12 @@ Diseño y orden de entrega en AUTOMATIZACION.md. Se mantiene pendiente la valida
 - [x] Preparar workflow Windows con pruebas, instalador NSIS, artefacto descargable y publicación compatible en releases sin force-push.
 - [x] Preparar archivo BAT para compilar localmente en Windows y metadatos de origen en el ZIP.
 - [x] Validar configuración de versión, tests del empaquetado y esquema YAML localmente.
-- [ ] Resolver HTTP 403 de escritura de GitHub; subir el código y ejecutar el workflow.
-- [ ] Compilar el ejecutable Windows y revisar el resultado de las pruebas nativas.
-- [ ] Publicar el instalador y comprobar la actualización desde 0.2.9.
+- [x] Resolver HTTP 403 de escritura de GitHub; subir el código y ejecutar el workflow.
+- [x] Compilar el ejecutable Windows y revisar el resultado de las pruebas nativas.
+- [x] Publicar el instalador y comprobar manifiesto, integridad y coincidencia del canal de actualización.
+- [ ] Confirmar la instalación desde 0.2.9 en el PC del usuario.
 
-El canal remoto sigue en 0.2.9; una fuente 0.2.10 preparada no equivale a un instalador publicado. Estado e instrucciones en ACTUALIZACION.md.
+La release 0.2.10 y el canal remoto están publicados y verificados. Estado e instrucciones en ACTUALIZACION.md.
 
 ## Fases
 

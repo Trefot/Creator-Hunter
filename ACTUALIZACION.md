@@ -1,6 +1,10 @@
-# Nexus Studio 0.2.10 · Preparación de la actualización
+# Nexus Studio 0.2.10 · Actualización publicada
 
-Estado: fuente de la versión preparada localmente. No hay un instalador 0.2.10 compilado ni publicado todavía. Git y la integración de GitHub rechazan las escrituras con HTTP 403; el canal remoto comprobado sigue en 0.2.9.
+Estado: publicada el 2026-11-11. [Descargar instalador Windows](https://github.com/Trefot/Creator-Hunter/releases/download/v0.2.10/Nexus-Studio_0.2.10_x64-setup.exe) · [Release y novedades](https://github.com/Trefot/Creator-Hunter/releases/tag/v0.2.10).
+
+En la app instalada: «Buscar actualizaciones» → «Actualizar ahora». El canal `releases` anuncia 0.2.10. La descarga manual y el instalador del canal son idénticos: 3.156.785 bytes, SHA-256 `0bbd99c5f37c7684db5b5e4685358ba841b4ef2f43dd0712ef23080020c4e615`.
+
+La ejecución [43046894264](https://github.com/Trefot/Creator-Hunter/actions/runs/43046894264) terminó correctamente: pruebas, compilación nativa, instalador NSIS y publicación. Origen: `d6694f2da1008a292b96d49b24e977a5cd8a774a`. Sigue pendiente comprobar la instalación y el uso en el PC del usuario.
 
 ## Compilar en tu Windows sin depender de la subida a GitHub
 
@@ -17,7 +21,7 @@ Si falta algún requisito o falla una prueba, el archivo se detiene mostrando el
 
 Requiere una conexión con permisos reales de escritura sobre el contenido y los workflows de `Trefot/Creator-Hunter`. La cuenta puede tener acceso de administrador y aun así la integración devolver 403. No se deben pegar tokens en el chat.
 
-Una vez disponible ese acceso:
+El acceso quedó habilitado al instalar ChatGPT Codex Connector en GitHub. Para futuras versiones:
 
 1. Subir el código preparado a una rama `release/**` (por ejemplo `release/nexus-studio-0.2.10`). Eso activa `.github/workflows/publicar-windows.yml`. También puede ejecutarse manualmente desde Actions cuando el workflow esté disponible en la rama principal.
 2. El trabajo Windows comprueba versiones, ejecuta los tests de frontend, datos y núcleo nativo, y compila el instalador NSIS. Si algo falla, no se ejecuta la publicación.

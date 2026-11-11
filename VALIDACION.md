@@ -1,12 +1,12 @@
 # Validación de estabilidad · 2026-11-11
 
-Rama de trabajo: `fix/personal-app-reliability`, basada en `1d77f07` (0.2.9). Cambios sin publicar; no se ha generado ni instalado una versión nueva en el equipo del usuario.
+Versión 0.2.10, preparada desde `1d77f07` (0.2.9). El instalador ya se ha compilado en GitHub Actions para Windows; la instalación y revisión en el equipo del usuario siguen pendientes.
 
 ## Preparación de la actualización 0.2.10
 
 La versión preparada pasa la comprobación de versiones y novedades, 13 tests de frontend y 6 del helper de publicación. Los 8 tests de datos también pasan. Compilación frontend, sintaxis del script Bash y análisis YAML correctos. Los tests nuevos comprueban orden numérico de versiones, novedades por sección, rechazo de retrocesos/reemplazos, cabecera de ejecutable y metadatos del ZIP sin .git. No se usa un archivo de ejemplo como instalador real.
 
-Bloqueo confirmado en esta entrega: git push devuelve «Permission ... denied» (403) y create_branch de la integración devuelve «Resource not accessible by integration» (403). No hay ejecución del workflow, artefacto Windows ni publicación nueva en el canal remoto. El archivo BAT, el workflow y la compatibilidad de actualización requieren ejecución en Windows; no se presentan como pruebas ya superadas.
+El bloqueo inicial HTTP 403 quedó resuelto al instalar ChatGPT Codex Connector en GitHub. La ejecución [43044969968](https://github.com/Trefot/Creator-Hunter/actions/runs/43044969968) pasó 13 pruebas de frontend, 6 de publicación, 8 de datos y 14 del núcleo nativo en Windows. Compiló la aplicación optimizada y el instalador NSIS. Falló después, al recoger la carpeta oculta `.release`; se corrigió `include-hidden-files` y se inició la ejecución [43046894264](https://github.com/Trefot/Creator-Hunter/actions/runs/43046894264). La segunda ejecución terminó correctamente y publicó tanto la release `v0.2.10` como el canal `releases`. Se descargaron ambos instaladores y se comprobó que son idénticos al del canal, con cabecera PE válida, tamaño de 3.156.785 bytes y SHA-256 `0bbd99c5f37c7684db5b5e4685358ba841b4ef2f43dd0712ef23080020c4e615`. La ejecución del archivo BAT local no se ha probado aquí.
 
 ## Resultado local
 
@@ -24,13 +24,13 @@ Se generó el emblema elegido B con fondo transparente y se verificó RGBA y ran
 
 Pasan de nuevo las 13 pruebas de frontend, las 8 de datos y la compilación frontend. En Chromium se comprobó el título Nexus Studio, la carga del logo con texto alternativo, estados con y sin datos, navegación, formulario y overlay a 1440/1280/960 píxeles. Las capturas contienen datos de ejemplo.
 
-El título nativo y los iconos están preparados en el código; su apariencia en Windows y la actualización desde TrophyHunter siguen pendientes. No se cambió `productName` del paquete ni se publicó instalador. Se conservaron identificador, archivos de datos, credenciales y protocolo de copias.
+El título nativo y los iconos están incluidos en el instalador compilado; su apariencia en el equipo del usuario y la actualización desde TrophyHunter siguen pendientes de revisión de uso. Se conservaron `productName`, identificador, archivos de datos, credenciales y protocolo de copias.
 
 ## Interfaz híbrida
 
 Se comprobó el dashboard con adaptaciones, perfiles y registros simulados, y también sin datos. Navegación a Ideas y Live Studio, edición de un formulario y renderizado del overlay dentro del iframe. Ventanas 1440×1040, 1280×800 y 960×640 sin desbordamiento horizontal del contenido ni errores JavaScript. Las cifras y títulos de las capturas son ejemplos de prueba, no métricas privadas del usuario. La compilación del frontend y las 13 pruebas pasan después del cambio visual; no se modificaron migraciones ni operaciones SQLite.
 
-La comprobación nativa en Windows continúa pendiente; no hay instalador publicado de este diseño.
+La compilación nativa en Windows pasó; la revisión visual y de interacción en WebView2 continúa pendiente.
 
 ## Qué prueban los tests de datos
 
@@ -47,9 +47,9 @@ La comprobación nativa en Windows continúa pendiente; no hay instalador public
 
 Se instaló Rust en el espacio de trabajo y se intentó `cargo check --locked --manifest-path src-tauri/Cargo.toml`. La compilación completa de escritorio se detuvo en `glib-sys`: faltan los archivos de desarrollo de GLib/GTK (`glib-2.0.pc`) del entorno Linux. Esto no valida el adaptador Tauri ni el instalador de Windows.
 
-El workflow `.github/workflows/checks.yml` prepara comprobaciones de frontend y datos en Linux, y tests nativos/debug más comprobación release en Windows. Su existencia no significa que se haya ejecutado ni pasado.
+El workflow `.github/workflows/checks.yml` prepara comprobaciones de frontend y datos en Linux, y tests nativos/debug más comprobación release en Windows. El workflow de publicación ejecutó las pruebas de datos y núcleo nativo, compilación frontend y build release NSIS en Windows, como se detalla arriba.
 
-Antes de publicar una versión, comprobar en Windows:
+Comprobaciones técnicas y revisión de uso en Windows:
 
 - `npm ci`, `npm test`, `npm run build`, `cargo test --locked --manifest-path src-tauri/Cargo.toml` y `cargo check --locked --release --manifest-path src-tauri/Cargo.toml`.
 - Abrir `npm run tauri dev`: confirmar título PRUEBAS, base `studio-dev.db` y puerto 7879.
@@ -62,4 +62,4 @@ Antes de publicar una versión, comprobar en Windows:
 
 ## Pendientes deliberados
 
-No se cambiaron las migraciones existentes ni el identificador de la aplicación. No se ha implementado firma de actualizaciones, ni una CSP completa, ni cambios de rendimiento en la carga de secciones. Tampoco se ha cambiado la publicación automática desde `releases`: hace falta validar Windows antes de publicar un instalador que afecte a la app diaria.
+No se cambiaron las migraciones existentes ni el identificador de la aplicación. No se ha implementado firma de actualizaciones, ni una CSP completa, ni cambios de rendimiento en la carga de secciones. Se conserva el canal `releases`; el nuevo workflow automatiza su publicación después de las pruebas y compilación de Windows. Las comprobaciones en CI no acreditan audio, OBS, Stream Deck ni instalación sobre el equipo real del usuario.

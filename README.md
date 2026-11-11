@@ -1,6 +1,6 @@
 # Nexus Studio
 
-Estudio personal de creación de contenido de TrefotG. Versión preparada: **v0.2.10** (aún sin instalador publicado).
+Estudio personal de creación de contenido de TrefotG. Versión publicada: **[v0.2.10](https://github.com/Trefot/Creator-Hunter/releases/tag/v0.2.10)**. Actualiza desde «Buscar actualizaciones» o descarga el instalador de la release.
 
 Aplicación de escritorio para Windows, construida con React, TypeScript, Tauri 2 y SQLite. Incluye Creator Studio, conexión con YouTube, biblioteca de juegos con trofeos de PSN y contadores para OBS y Stream Deck. Twitch sigue pendiente.
 
@@ -39,7 +39,7 @@ Empieza por [CLAUDE.md](CLAUDE.md) (reglas y comandos) y [PRODUCT.md](PRODUCT.md
 
 La [revisión inicial](REVISION-INICIAL.md) recoge las comprobaciones del 2026-11-11, sus límites y las primeras correcciones propuestas.
 
-[VALIDACION.md](VALIDACION.md) documenta las pruebas y la comprobación pendiente en Windows. [RECOMENDACIONES.md](RECOMENDACIONES.md) propone mejoras para el uso personal, los directos y el contenido.
+[VALIDACION.md](VALIDACION.md) documenta las pruebas y las comprobaciones de Windows y la revisión pendiente en el PC del usuario. [RECOMENDACIONES.md](RECOMENDACIONES.md) propone mejoras para el uso personal, los directos y el contenido.
 
 El [plan de automatización](AUTOMATIZACION.md) organiza las siguientes entregas con Stream Deck, OBS y el asistente de IA.
 
@@ -57,4 +57,4 @@ La versión de pruebas necesita configurar sus propias conexiones de YouTube y P
 
 ## Identidad
 
-Nombre definitivo: **Nexus Studio**. Emblema elegido: el compañero violeta sosteniendo el farol (concepto B); lema «Tu espacio para crear». Recursos y regeneración de iconos en [IDENTIDAD.md](IDENTIDAD.md). El nombre anterior TrophyHunter se conserva en rutas y claves compatibles; no se han migrado los datos ni publicado un instalador con la nueva marca.
+Nombre definitivo: **Nexus Studio**. Emblema elegido: el compañero violeta sosteniendo el farol (concepto B); lema «Tu espacio para crear». Recursos y regeneración de iconos en [IDENTIDAD.md](IDENTIDAD.md). El nombre anterior TrophyHunter se conserva en rutas y claves compatibles; el instalador 0.2.10 incluye la nueva identidad visual y conserva el nombre técnico para actualizar la instalación existente.

@@ -228,7 +228,7 @@ Cuentan lo recibido en USD desde la fecha local de creación de la meta, filtrad
 - El error de comprobar GitHub se propaga a la búsqueda manual si tampoco hay instalador local. Los fallos de las comprobaciones automáticas no interrumpen el uso. Se conserva la actualización automática solicitada en D-021/D-023.
 - El overlay de vista previa se ejecuta en un iframe con `sandbox="allow-scripts"`, sin acceso al origen de la app. Su animación y renderizado se comprobaron en Chromium; audio en WebView2 pendiente.
 - Las pruebas de `tests/data-safety` compilan el mismo `data_safety.rs` con SQLx, no una réplica. Tokio solo es dependencia directa de pruebas para ejecutarlas sin GTK/WebView. No se añade una dependencia de ejecución a la aplicación.
-- Los cambios quedan sin publicar hasta verificar Windows. La firma del actualizador y la CSP completa siguen pendientes; no se afirma que estén resueltas por el aislamiento del iframe.
+- La compilación y pruebas nativas de Windows se verificaron antes de publicar 0.2.10; la revisión de uso en el PC del usuario sigue pendiente. La firma del actualizador y la CSP completa siguen pendientes; no se afirma que estén resueltas por el aislamiento del iframe.
 
 ### D-025 · Automatizaciones periódicas sin interrumpir la creación (2026-11-11)
 - `startYouTubeAutoSync` comprueba al iniciar y cada diez minutos, después de terminar la comprobación anterior. Respeta el intervalo de tres horas desde la última sincronización correcta y solo funciona con la app abierta.
@@ -262,7 +262,7 @@ Cuentan lo recibido en USD desde la fecha local de creación de la meta, filtrad
 - El helper impide retroceder de versión o reemplazar una versión por contenido distinto en el canal. Se preserva el formato compatible del manifiesto; sus campos adicionales se ignoran en clientes antiguos.
 - El ZIP exportado contiene el commit declarado mediante `.release-source.json` y export-subst, para que la preparación pueda ejecutarse sin carpeta .git. No representa una firma ni garantiza integridad del código si se modifica la copia.
 - El archivo BAT permite preparar el instalador en el PC del usuario con las herramientas del proyecto, sin instalar ni publicar por sí mismo. No añade dependencias.
-- Estado bloqueado de publicación: tanto git push como create_branch de la integración devuelven HTTP 403. El código y el workflow están preparados localmente, pero todavía no se han ejecutado en GitHub ni generado el instalador. Instrucciones vigentes en ACTUALIZACION.md.
+- Publicación desbloqueada al instalar ChatGPT Codex Connector en GitHub. La ejecución 43046894264 compiló, probó y publicó 0.2.10 desde d6694f2. Se verificaron descarga y canal `releases` con instaladores idénticos por SHA-256. `upload-artifact` requiere `include-hidden-files: true` para recoger `.release`. Instrucciones vigentes en ACTUALIZACION.md.
 
 ## Dependencias
 
