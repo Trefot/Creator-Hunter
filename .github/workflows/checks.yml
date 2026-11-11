@@ -20,6 +20,7 @@ jobs:
       - run: npm test
       - run: npm run build
       - run: cargo test --locked --manifest-path tests/data-safety/Cargo.toml
+      - run: cargo test --locked --manifest-path tests/obs-protocol/Cargo.toml
   windows-native:
     runs-on: windows-latest
     steps:

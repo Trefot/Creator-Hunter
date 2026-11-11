@@ -226,3 +226,11 @@ test('activity requests never overlap and cleanup suppresses navigation and time
   await settle();f.mode.selectManualGame(null);await settle();assert.equal(f.pcCalls,1);
   f.dispose();finish([{name:'Fortnite'}]);await settle();assert.equal(f.starts.length,0);assert.equal(f.timers.size,0);
 });
+
+test('OBS moments keep separate recording and stream times and never invent a file',()=>{
+  const {obsTime,momentsText}=load('src/db/obs.ts',{'@tauri-apps/api/core':{}});
+  assert.equal(obsTime(123450),'00:02:03');assert.equal(obsTime(3661000),'01:01:01');
+  for(const bad of [null,NaN,-1,Infinity])assert.equal(obsTime(bad),'—');
+  const text=momentsText([{created_at:'2026-11-11',game_title:'Fortnite',title:'Jugada',record_ms:123450,stream_ms:45000,output_path:null}]);
+  assert.match(text,/Grabación: 00:02:03/);assert.match(text,/Directo: 00:00:45/);assert.match(text,/No confirmado por OBS/);
+});

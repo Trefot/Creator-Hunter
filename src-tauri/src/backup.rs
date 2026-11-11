@@ -96,18 +96,28 @@ pub async fn import_backup(
     content: String,
     stamp: String,
 ) -> Result<ImportResult, String> {
-    check_stamp(&stamp)?;
-    let pool = pool(&app).await?;
-    data_safety::validate(&pool, &content).await?;
-    let safety = backup_dir(&app)?.join(format!("antes-de-importar-{stamp}.db"));
-    sqlx::query("VACUUM INTO ?")
-        .bind(safety.to_string_lossy().as_ref())
-        .execute(&pool)
-        .await
-        .map_err(|e| format!("No se pudo crear la copia previa: {e}"))?;
-    let total = data_safety::restore(&pool, &content).await?;
-    Ok(ImportResult {
-        rows: total,
-        safety_copy: safety.display().to_string(),
+    tauri::async_runtime::spawn_blocking(move || {
+        // Las marcas y el monitor no deben escribir durante la restauración.
+        let state = app.state::<crate::obs::ObsState>();
+        let _guard = state.operation.lock().map_err(|e| e.to_string())?;
+        tauri::async_runtime::block_on(async {
+            check_stamp(&stamp)?;
+            let pool = pool(&app).await?;
+            data_safety::validate(&pool, &content).await?;
+            let safety = backup_dir(&app)?.join(format!("antes-de-importar-{stamp}.db"));
+            sqlx::query("VACUUM INTO ?")
+                .bind(safety.to_string_lossy().as_ref())
+                .execute(&pool)
+                .await
+                .map_err(|e| format!("No se pudo crear la copia previa: {e}"))?;
+            let total = data_safety::restore(&pool, &content).await?;
+            crate::obs::reset_after_restore(&app);
+            Ok(ImportResult {
+                rows: total,
+                safety_copy: safety.display().to_string(),
+            })
+        })
     })
+    .await
+    .map_err(|e| e.to_string())?
 }

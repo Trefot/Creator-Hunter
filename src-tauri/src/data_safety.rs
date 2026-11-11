@@ -138,6 +138,7 @@ pub fn introduced_in(table: &str) -> i64 {
         "collection_item" => 10,
         "trophy_task" => 11,
         "counter" => 12,
+        "obs_session" | "obs_marker" => 16,
         _ => 1,
     }
 }
@@ -146,7 +147,7 @@ use serde_json::{Map, Value};
 use sqlx::{Pool, Sqlite};
 use std::collections::HashSet;
 
-pub const TABLES: [&str; 22] = [
+pub const TABLES: [&str; 24] = [
     "workspace",
     "profile",
     "account_snapshot",
@@ -170,6 +171,8 @@ pub const TABLES: [&str; 22] = [
     "adaptation_step",
     "script_section",
     "result_snapshot",
+    "obs_session",
+    "obs_marker",
 ];
 
 const FORMAT: &str = "trophyhunter-studio-backup";

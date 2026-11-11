@@ -152,6 +152,15 @@ fn handle_request(app: &AppHandle, key: &str, request: Request) {
     let query = |name: &str| url.query_pairs().find(|(k, _)| k == name).map(|(_, v)| v.to_string());
 
     match segments.iter().map(String::as_str).collect::<Vec<_>>().as_slice() {
+        ["api", "moments", "mark"] => {
+            if query("key").as_deref() != Some(key) {
+                return respond_json(request, 403, json!({ "error": "Falta la clave local o no es correcta." }));
+            }
+            match crate::obs::mark(app, query("title")) {
+                Ok(marker) => respond_json(request, 200, marker),
+                Err(error) => respond_json(request, 409, json!({"error":error})),
+            }
+        }
         ["overlay"] | ["overlay", ""] => {
             let response = Response::from_string(OVERLAY_HTML)
                 .with_header(header("Content-Type", "text/html; charset=utf-8"))

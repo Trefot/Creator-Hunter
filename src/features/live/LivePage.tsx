@@ -19,6 +19,7 @@ import {
 } from "../../db/counters";
 import { Game, listGames } from "../../db/games";
 import { es } from "../../i18n/es";
+import { ObsPanel } from "./ObsPanel";
 
 const t = es.live;
 
@@ -432,6 +433,7 @@ export function LivePage() {
       </header>
 
       {/* Conexión con OBS y el Stream Deck */}
+      <ObsPanel markUrl={info?.running ? `http://127.0.0.1:${info.port}/api/moments/mark?key=${encodeURIComponent(info.key)}` : null} />
       <section className={`card live-connect${info?.running ? " on" : ""}`}>
         <div className="live-connect-head">
           <MonitorPlay size={22} />

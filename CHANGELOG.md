@@ -2,6 +2,13 @@
 
 ## [Sin publicar]
 
+## [0.2.12] · 2026-11-11 · OBS y momentos
+
+- Conexión local con OBS WebSocket v5: estado de grabación, pausa y directo, reconexión automática y contraseña en las credenciales de Windows.
+- Marcar momentos desde Live Studio o Stream Deck con tiempos consultados en OBS y el juego actual; no inicia ni detiene grabaciones o emisiones.
+- Historial de los últimos 200 momentos y copia de la lista para editar contenido; guarda la ruta del archivo cuando OBS la confirma al finalizar la grabación.
+- Sesiones y marcas incluidas en las copias de seguridad, con migración protegida y compatibilidad con copias de versiones anteriores.
+
 ## [0.2.11] - 2026-11-11
 
 - Detección de Fortnite abierto en Windows sin depender de PSN; comprueba el proceso del juego cada 15 segundos.

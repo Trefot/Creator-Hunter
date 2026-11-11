@@ -1,4 +1,5 @@
 import { UpdateLayer } from "./features/update/UpdateLayer";
+import { invoke } from "@tauri-apps/api/core";
 import { LivePage } from "./features/live/LivePage";
 import { useEffect, useState } from "react";
 import { ComingSoon } from "./components/ComingSoon";
@@ -35,6 +36,10 @@ function App() {
 
   // Modo juego: al empezar a jugar en la PS5 un juego de la biblioteca, la app abre su ficha.
   const gameMode = useGameMode((game) => openGame(game.id, "today"));
+  useEffect(() => { invoke("obs_initialize").catch(console.error); }, []);
+  useEffect(() => {
+    invoke("obs_context", { gameId: gameMode.playing?.id ?? null }).catch(console.error);
+  }, [gameMode.playing?.id]);
 
   // Skin del juego: mientras se juega, la app toma los colores y el arte de su portada.
   const playingCover = gameMode.playing?.cover ?? null;

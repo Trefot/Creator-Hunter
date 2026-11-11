@@ -2,7 +2,7 @@ use sqlx::sqlite::{SqliteConnectOptions, SqlitePoolOptions};
 use std::path::{Path, PathBuf};
 use studio_data_safety::{TABLES, backup_if_pending, restore, snapshot, validate};
 
-const MIGRATIONS: [&str; 15] = [
+const MIGRATIONS: [&str; 16] = [
     include_str!("../../../src-tauri/migrations/001_initial.sql"),
     include_str!("../../../src-tauri/migrations/002_twitch_payout.sql"),
     include_str!("../../../src-tauri/migrations/003_images.sql"),
@@ -18,6 +18,7 @@ const MIGRATIONS: [&str; 15] = [
     include_str!("../../../src-tauri/migrations/013_counter_style.sql"),
     include_str!("../../../src-tauri/migrations/014_counter_fx.sql"),
     include_str!("../../../src-tauri/migrations/015_counter_text.sql"),
+    include_str!("../../../src-tauri/migrations/016_obs_moments.sql"),
 ];
 
 struct Temp(PathBuf);
@@ -90,16 +91,20 @@ async fn populate(pool: &sqlx::SqlitePool) {
       INSERT INTO result_snapshot(id,workspace_id,adaptation_id,recorded_on,views) VALUES('result','W','adaptation','2026-11-11',987);
     ".replace("'W'", "'00000000-0000-4000-8000-000000000001'");
     sqlx::raw_sql(&sql).execute(pool).await.unwrap();
+    let version: i64=sqlx::query_scalar("SELECT MAX(version) FROM _sqlx_migrations").fetch_one(pool).await.unwrap();
+    if version>=16 {
+        sqlx::raw_sql("INSERT INTO obs_session(id,workspace_id,kind,game_id) VALUES('obs-session','00000000-0000-4000-8000-000000000001','recording','game'); INSERT INTO obs_marker(id,workspace_id,session_id,title,record_ms,game_id,game_title) VALUES('obs-marker','00000000-0000-4000-8000-000000000001','obs-session','Buena jugada 🎮',123450,'game','Juego');").execute(pool).await.unwrap();
+    }
 }
 
 #[tokio::test]
 async fn round_trip_all_tables_survives_reopen() {
     let temp = Temp::new();
     let path = temp.0.join("test.db");
-    let pool = database(&path, 15).await;
+    let pool = database(&path, 16).await;
     populate(&pool).await;
     let (original, count) = snapshot(&pool, &TABLES, "20261111-120000").await.unwrap();
-    assert_eq!(count, 22);
+    assert_eq!(count, 24);
     sqlx::query("UPDATE counter SET value=999")
         .execute(&pool)
         .await
@@ -130,7 +135,7 @@ async fn round_trip_all_tables_survives_reopen() {
 #[tokio::test]
 async fn failed_import_rolls_back_deletes_and_inserts() {
     let temp = Temp::new();
-    let pool = database(&temp.0.join("db"), 15).await;
+    let pool = database(&temp.0.join("db"), 16).await;
     populate(&pool).await;
     let (original, _) = snapshot(&pool, &TABLES, "stamp").await.unwrap();
     let mut broken = original.clone();
@@ -143,7 +148,7 @@ async fn failed_import_rolls_back_deletes_and_inserts() {
 #[tokio::test]
 async fn rejects_missing_workspace_required_tables_and_malformed_rows() {
     let temp = Temp::new();
-    let pool = database(&temp.0.join("db"), 15).await;
+    let pool = database(&temp.0.join("db"), 16).await;
     populate(&pool).await;
     let (original, _) = snapshot(&pool, &TABLES, "stamp").await.unwrap();
     for mode in 0..6 {
@@ -187,7 +192,7 @@ async fn imports_actual_schema_one_backup() {
         .filter(|t| studio_data_safety::introduced_in(t) == 1)
         .collect::<Vec<_>>();
     let (backup, _) = snapshot(&old, &old_tables, "stamp").await.unwrap();
-    let current = database(&temp.0.join("current"), 15).await;
+    let current = database(&temp.0.join("current"), 16).await;
     restore(&current, &backup.to_string()).await.unwrap();
     let title: String = sqlx::query_scalar("SELECT title FROM idea")
         .fetch_one(&current)
@@ -202,14 +207,15 @@ async fn imports_actual_schema_one_backup() {
 async fn backup_before_migration_is_valid_and_failure_preserves_source() {
     let temp = Temp::new();
     let path = temp.0.join("db");
-    let pool = database(&path, 14).await;
+    let pool = database(&path, 15).await;
     populate(&pool).await;
-    let (before, _) = snapshot(&pool, &TABLES, "stamp").await.unwrap();
+    let old_tables: Vec<_> = TABLES.iter().copied().filter(|t| studio_data_safety::introduced_in(t) <= 15).collect();
+    let (before, _) = snapshot(&pool, &old_tables, "stamp").await.unwrap();
     let blocked = temp.0.join("not-a-directory");
     std::fs::write(&blocked, "blocked").unwrap();
-    assert!(backup_if_pending(&path, &blocked, 15).await.is_err());
-    assert_eq!(snapshot(&pool, &TABLES, "stamp").await.unwrap().0, before);
-    let copy = backup_if_pending(&path, &temp.0.join("Copias con ' comilla"), 15)
+    assert!(backup_if_pending(&path, &blocked, 16).await.is_err());
+    assert_eq!(snapshot(&pool, &old_tables, "stamp").await.unwrap().0, before);
+    let copy = backup_if_pending(&path, &temp.0.join("Copias con ' comilla"), 16)
         .await
         .unwrap()
         .unwrap();
@@ -218,7 +224,7 @@ async fn backup_before_migration_is_valid_and_failure_preserves_source() {
         .connect_with(SqliteConnectOptions::new().filename(copy).read_only(true))
         .await
         .unwrap();
-    assert_eq!(snapshot(&backup, &TABLES, "stamp").await.unwrap().0, before);
+    assert_eq!(snapshot(&backup, &old_tables, "stamp").await.unwrap().0, before);
     backup.close().await;
     pool.close().await;
 }
@@ -229,15 +235,15 @@ async fn no_backup_for_first_install_or_current_schema() {
     let path = temp.0.join("db");
     let copies = temp.0.join("copies");
     assert!(
-        backup_if_pending(&path, &copies, 15)
+        backup_if_pending(&path, &copies, 16)
             .await
             .unwrap()
             .is_none()
     );
     assert!(!path.exists());
-    let pool = database(&path, 15).await;
+    let pool = database(&path, 16).await;
     assert!(
-        backup_if_pending(&path, &copies, 15)
+        backup_if_pending(&path, &copies, 16)
             .await
             .unwrap()
             .is_none()
@@ -263,7 +269,7 @@ async fn existing_database_without_history_is_backed_up() {
         .await
         .unwrap();
     assert!(
-        backup_if_pending(&path, &temp.0.join("copies"), 15)
+        backup_if_pending(&path, &temp.0.join("copies"), 16)
             .await
             .unwrap()
             .unwrap()
@@ -285,7 +291,7 @@ async fn migrations_preserve_populated_schema_one() {
         .collect::<Vec<_>>();
     let (before, _) = snapshot(&pool, &old_tables, "stamp").await.unwrap();
     assert!(
-        backup_if_pending(&path, &temp.0.join("copies"), 15)
+        backup_if_pending(&path, &temp.0.join("copies"), 16)
             .await
             .unwrap()
             .is_some()
@@ -318,5 +324,38 @@ async fn migrations_preserve_populated_schema_one() {
             .unwrap()
             .is_empty()
     );
+    pool.close().await;
+}
+
+#[path="../../../src-tauri/src/obs_store.rs"]
+mod obs_store;
+
+#[tokio::test]
+async fn imports_schema_fifteen_and_preserves_new_obs_tables_on_roundtrip() {
+    let temp=Temp::new();
+    let old=database(&temp.0.join("old"),15).await;populate(&old).await;
+    let tables:Vec<_>=TABLES.iter().copied().filter(|t|studio_data_safety::introduced_in(t)<=15).collect();
+    let (doc,_) = snapshot(&old,&tables,"old").await.unwrap();
+    let current=database(&temp.0.join("new"),16).await;
+    restore(&current,&doc.to_string()).await.unwrap();
+    let count:i64=sqlx::query_scalar("SELECT COUNT(*) FROM obs_marker").fetch_one(&current).await.unwrap();assert_eq!(count,0);
+    obs_store::open_session(&current,"session","recording",Some("game")).await.unwrap();
+    obs_store::insert_marker(&current,"mark","session","Jugada",Some(123450),Some(89000),Some("game")).await.unwrap();
+    obs_store::close_session(&current,"session","stopped",Some("D:/Vídeos/Fortnite.mkv")).await.unwrap();
+    let markers=obs_store::list_markers(&current).await.unwrap();assert_eq!(markers[0]["record_ms"],123450);assert_eq!(markers[0]["stream_ms"],89000);assert_eq!(markers[0]["output_path"],"D:/Vídeos/Fortnite.mkv");
+    let (backup,_) = snapshot(&current,&TABLES,"new").await.unwrap();restore(&current,&backup.to_string()).await.unwrap();
+    assert_eq!(markers,obs_store::list_markers(&current).await.unwrap());
+    old.close().await;current.close().await;
+}
+
+#[tokio::test]
+async fn obs_marks_require_active_session_and_confirmed_time() {
+    let temp=Temp::new();let pool=database(&temp.0.join("db"),16).await;
+    obs_store::open_session(&pool,"s","recording",None).await.unwrap();
+    assert!(obs_store::insert_marker(&pool,"a","s","Momento",None,None,None).await.is_err());
+    assert!(obs_store::insert_marker(&pool,"b","s","Momento",Some(-1),None,None).await.is_err());
+    obs_store::close_session(&pool,"s","connection_lost",None).await.unwrap();
+    assert!(obs_store::insert_marker(&pool,"c","s","Momento",Some(1200),None,None).await.is_err());
+    assert_eq!(obs_store::list_markers(&pool).await.unwrap().as_array().unwrap().len(),0);
     pool.close().await;
 }

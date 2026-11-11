@@ -2,6 +2,9 @@ use tauri_plugin_sql::{Migration, MigrationKind};
 
 mod backup;
 mod live;
+mod obs;
+mod obs_protocol;
+mod obs_store;
 mod premigrate;
 mod data_safety;
 mod updater;
@@ -108,6 +111,12 @@ fn migrations() -> Vec<Migration> {
             sql: include_str!("../migrations/015_counter_text.sql"),
             kind: MigrationKind::Up,
         },
+        Migration {
+            version: 16,
+            description: "sesiones y marcas de OBS",
+            sql: include_str!("../migrations/016_obs_moments.sql"),
+            kind: MigrationKind::Up,
+        },
     ]
 }
 
@@ -123,6 +132,7 @@ pub fn run() {
         .manage(youtube::YouTubeState::default())
         .manage(psn::PsnState::default())
         .manage(live::LiveState::default())
+        .manage(obs::ObsState::default())
         .manage(premigrate::Preparation::default())
         .setup(|app| {
             if let Some(window) = tauri::Manager::get_webview_window(app, "main") {
@@ -156,6 +166,13 @@ pub fn run() {
             psn::psn_now_playing,
             pc_games::pc_now_playing,
             youtube::youtube_disconnect,
+            obs::obs_initialize,
+            obs::obs_status,
+            obs::obs_configure,
+            obs::obs_disconnect,
+            obs::obs_context,
+            obs::obs_mark,
+            obs::obs_markers,
             live::live_status,
             live::live_notify,
             updater::update_check,

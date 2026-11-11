@@ -2,7 +2,7 @@
 export const es = {
   appName: "Nexus Studio",
   appTagline: "Tu espacio para crear",
-  version: "Alpha 0.2 · v0.2.11",
+  version: "Alpha 0.2 · v0.2.12",
   /** Marca de la versión de pruebas (D-019). */
   devBadge: "PRUEBAS",
   startup: {
@@ -175,6 +175,30 @@ export const es = {
     available: (v: string) => `Hay una versión nueva lista (${v}).`,
     now: "Actualizar ahora",
     failed: (e: string) => `No se pudo actualizar: ${e}`,
+  },
+  obs: {
+    title: "OBS · Sesiones y momentos",
+    subtitle: "Guarda jugadas con el tiempo de tu grabación o directo, sin salir del juego.",
+    setup: "Configurar OBS",
+    connected: "OBS conectado",
+    reconnecting: "Conectando con OBS…",
+    disconnected: "OBS sin conectar",
+    recording: "Grabando", paused: "Grabación en pausa", streaming: "En directo",
+    notRecording: "Sin grabación", notStreaming: "Sin emisión",
+    port: "Puerto WebSocket", password: "Contraseña de OBS",
+    passwordHint: "La de OBS; déjalo vacío para conservar la guardada",
+    credentialsHint: "Solo se conecta a OBS en este equipo. La contraseña se guarda en las credenciales de Windows; no va en las URLs ni en las copias.",
+    steps: ["En OBS 28 o posterior: Herramientas → Ajustes del servidor WebSocket.", "Activa el servidor WebSocket. Mantén la autenticación y consulta su puerto y contraseña (habitualmente 4455).", "Introduce esos datos aquí y pulsa Conectar. Nexus recordará la conexión y volverá a intentarlo si cierras OBS."],
+    connect: "Conectar", disconnect: "Desconectar de OBS", connecting: "Configuración guardada. Conectando con OBS…",
+    momentTitle: "Nombre del momento (opcional)", mark: "Marcar momento", saving: "Un momento…",
+    markHint: "Conecta OBS y comienza una grabación o un directo. Nexus no los inicia ni los detiene.",
+    saved: (time:string) => `Momento guardado · ${time}`,
+    copied: "¡Copiado!", deck: "Botón de Stream Deck", copyMarkUrl: "Copiar URL para marcar momento",
+    deckSteps: "En Stream Deck añade Sistema → Sitio web, pega la URL copiada y activa la opción de solicitarla en segundo plano. Ponle «Marcar momento». Nexus y OBS deben estar abiertos; el botón no crea un clip de vídeo.",
+    deckFeedback: "Las marcas aparecerán aquí. La acción Sitio web no confirma en el botón si OBS estaba disponible; comprueba aquí la primera pulsación. No compartas la URL: lleva tu clave local.",
+    localUnavailable: "El servidor local de Nexus debe estar disponible para copiar la URL.",
+    moments: "Últimos 200 momentos", copyMoments: "Copiar lista", empty: "Todavía no hay momentos guardados.",
+    recordingTime: "Grabación", streamTime: "Directo", filePending: "Archivo sin confirmar por OBS; la marca conserva su tiempo. La ruta puede llegar al detener la grabación mientras Nexus siga conectado.",
   },
   live: {
     subtitle: "Contadores para tu stream: muertes, jefes, cofres… Súmalos con el Stream Deck y muéstralos en OBS.",
@@ -635,6 +659,8 @@ export const es = {
       guide_entry_trophy: "Enlaces guía-trofeo",
       play_session: "Partidas",
       session_objective: "Objetivos de partida",
+      obs_session: "Sesiones de OBS",
+      obs_marker: "Momentos de contenido",
     } as Record<string, string>,
   },
   dashboard: {
