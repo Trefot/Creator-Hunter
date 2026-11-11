@@ -1,6 +1,6 @@
 # Nexus Studio
 
-Estudio personal de creación de contenido de TrefotG. Versión publicada: **[v0.2.13](https://github.com/Trefot/Creator-Hunter/releases/tag/v0.2.13)**. Actualiza desde «Buscar actualizaciones» o descarga el instalador de la release.
+Estudio personal de creación de contenido de TrefotG. Versión publicada: **[v0.2.14](https://github.com/Trefot/Creator-Hunter/releases/tag/v0.2.14)**. Actualiza desde «Buscar actualizaciones» o descarga el instalador de la release.
 
 Aplicación de escritorio para Windows, construida con React, TypeScript, Tauri 2 y SQLite. Incluye Creator Studio, conexión con YouTube, biblioteca de juegos con trofeos de PSN y contadores para OBS y Stream Deck. Twitch sigue pendiente.
 
@@ -66,3 +66,7 @@ Con Fortnite abierto, entra en Juegos y pulsa «Añadir Fortnite para PC» una v
 ## OBS y Stream Deck
 
 Live Studio permite conectar OBS WebSocket v5 y marcar momentos con los tiempos de grabación/directo y el juego actual. Tiene un historial con copia de lista y URL para el botón de Stream Deck. Configuración inicial y límites en [OBS.md](OBS.md). Desde 0.2.13 también guarda clips del Replay Buffer por pulsación explícita, con archivo confirmado e historial. No inicia ni detiene salidas por su cuenta.
+
+## Juegos y creación
+
+Biblioteca con búsqueda y plataformas. Fortnite y juegos sin trofeos tienen plan diario, notas y portada editable. Cada juego reúne clips, momentos, ideas y proyectos; una captura se convierte en idea sin duplicarse y conserva su juego al aprobarse como proyecto. PlayStation mantiene sus trofeos, ruta y guía. Detalles y pruebas en [JUEGOS.md](JUEGOS.md).

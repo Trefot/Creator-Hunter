@@ -330,3 +330,14 @@ Guardar Replay Buffer se implementa en 0.2.13; recortar/editar vídeo sigue pend
 - [x] Pruebas de protocolo e interfaz sin mostrar guardados falsos.
 - [x] Publicar y verificar Windows desde 0.2.12 (43074073595).
 - [ ] Probar un clip real del Replay Buffer del usuario.
+
+## Entrega 0.2.14 · Juegos y creación
+
+- [x] Biblioteca con búsqueda/filtro, portada y sin trofeos/progreso vacíos.
+- [x] Ficha creativa sin trofeos con objetivos diarios, notas e historial.
+- [x] Portada editable y notas generales conservadas en game.
+- [x] Contenido por juego: capturas, ideas y proyectos; conversión idempotente y aprobación conservando contexto.
+- [x] Relación idea.game_id y origen único (migración 018); copias y prueba de esquema anterior.
+- [x] Prueba de interfaz con SQLite real, recarga y navegación de trofeos de PSN.
+- [x] Publicar y verificar Windows desde 0.2.13 (43080516190).
+- [ ] Revisar el uso de Fortnite/PSN en el equipo del usuario.

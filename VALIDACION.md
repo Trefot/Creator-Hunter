@@ -1,6 +1,14 @@
 # Validación de estabilidad · 2026-11-11
 
-Versión actual 0.2.13, preparada desde `1d77f07` (0.2.9). El instalador ya se ha compilado en GitHub Actions para Windows; la instalación y revisión en el equipo del usuario siguen pendientes.
+Versión actual 0.2.14, preparada desde `1d77f07` (0.2.9). El instalador ya se ha compilado en GitHub Actions para Windows; la instalación y revisión en el equipo del usuario siguen pendientes.
+
+## 0.2.14 · Biblioteca y fichas de juego
+
+- 19 pruebas frontend y 6 de publicación pasan; TypeScript/Vite y versiones coherentes.
+- 13 pruebas de datos con 18 migraciones y 25 tablas: importación del esquema 17, nuevas relaciones idea→game y clave de captura, roundtrip y rechazo de duplicados. Se corrigió la reutilización de metadatos de SELECT * tras ALTER TABLE en una misma conexión.
+- Chromium con SQLite real en memoria y servicios nativos simulados: biblioteca sin 0/0, plan diario guardado, check manual, notas y portada JPEG, clips por ID de juego, conversión repetida sin duplicados, asociación de proyecto y aprobación de idea conservando game_id. Recarga completa con objetivos/notas conservados; navegación PSN a ruta/lista y trofeo real de prueba. Sin errores JS ni desbordamiento a 1280/960 píxeles.
+- Prueba reproducible opcional en tests/games-browser.py; todas las filas son ficticias y no se conecta al OBS/PSN del usuario.
+- La primera ejecución 43079969316 falló creando una base temporal por bloqueo; se reforzó la unicidad de rutas de prueba con un contador atómico. La ejecución [43080516190](https://github.com/Trefot/Creator-Hunter/actions/runs/43080516190) pasó 19 pruebas frontend, 6 de publicación, 13 de datos y 21 del núcleo nativo, build NSIS y actualización desde 0.2.13. Release y canal verificados: instaladores idénticos, 3.363.815 bytes, SHA-256 `e5cce87928afca54f6317ff61bc46e591c6ae8c9782dd814d3908fa5d1c694a6`, origen `2f93606581aeb6ccd5e732691f504ab89b13de08`. Uso real de las nuevas fichas pendiente de revisión del usuario.
 
 ## 0.2.13 · Clips del Replay Buffer
 

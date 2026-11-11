@@ -1,5 +1,13 @@
 # Actualizaciones de Nexus Studio
 
+## 0.2.14 publicada
+
+[Descargar instalador 0.2.14](https://github.com/Trefot/Creator-Hunter/releases/download/v0.2.14/Nexus-Studio_0.2.14_x64-setup.exe) o «Buscar actualizaciones» → «Actualizar ahora».
+
+Nueva biblioteca y fichas de juegos sin trofeos: plan diario, portada/notas y contenido por juego. Las capturas se convierten en ideas sin duplicarse y sus proyectos conservan el contexto. Se mantienen las funciones de trofeos de PlayStation. Uso en [JUEGOS.md](JUEGOS.md).
+
+La ejecución 43080516190 pasó pruebas, compilación NSIS y actualización desde 0.2.13. Descarga y canal verificados: 3.363.815 bytes, SHA-256 `e5cce87928afca54f6317ff61bc46e591c6ae8c9782dd814d3908fa5d1c694a6`, origen `2f93606581aeb6ccd5e732691f504ab89b13de08`. Migración 018 protegida por copia previa; 25 tablas en las copias y compatibilidad con esquema 17. Revisión en el PC del usuario pendiente.
+
 ## 0.2.13 publicada
 
 [Descargar instalador 0.2.13](https://github.com/Trefot/Creator-Hunter/releases/download/v0.2.13/Nexus-Studio_0.2.13_x64-setup.exe) o «Buscar actualizaciones» → «Actualizar ahora».
@@ -26,7 +34,7 @@ Detección de Fortnite en PC, selección manual del juego e iconos/accesos de Wi
 
 Estado: publicada el 2026-11-11. [Descargar instalador Windows](https://github.com/Trefot/Creator-Hunter/releases/download/v0.2.10/Nexus-Studio_0.2.10_x64-setup.exe) · [Release y novedades](https://github.com/Trefot/Creator-Hunter/releases/tag/v0.2.10).
 
-En la app instalada: «Buscar actualizaciones» → «Actualizar ahora». El canal `releases` anunció 0.2.10; ahora anuncia 0.2.13. La descarga manual y el instalador del canal son idénticos: 3.156.785 bytes, SHA-256 `0bbd99c5f37c7684db5b5e4685358ba841b4ef2f43dd0712ef23080020c4e615`.
+En la app instalada: «Buscar actualizaciones» → «Actualizar ahora». El canal `releases` anunció 0.2.10; ahora anuncia 0.2.14. La descarga manual y el instalador del canal son idénticos: 3.156.785 bytes, SHA-256 `0bbd99c5f37c7684db5b5e4685358ba841b4ef2f43dd0712ef23080020c4e615`.
 
 La ejecución [43046894264](https://github.com/Trefot/Creator-Hunter/actions/runs/43046894264) terminó correctamente: pruebas, compilación nativa, instalador NSIS y publicación. Origen: `d6694f2da1008a292b96d49b24e977a5cd8a774a`. Sigue pendiente comprobar la instalación y el uso en el PC del usuario.
 
