@@ -223,6 +223,7 @@ Objetivos con progreso (nivel, XP farmeada…) y proyectos del Creator Studio en
 - [x] Prueba del usuario en OBS y con el Stream Deck (funciona).
 - [x] Imagen PNG propia y fondo ajustable (color y opacidad), pedido del usuario.
 - [x] Estilo gamer, animación, sonido y reacción instantánea (referencia: overlay de cofres de un streamer de Fortnite).
+- [x] Sonido confirmado por el usuario en OBS (2026-11-10). Con «Controlar audio mediante OBS» hay que poner la fuente en «Monitorizar y emitir» y elegir el dispositivo de monitorización (el usuario usa Elgato Wave Link).
 
 - [x] Actualización automática desde GitHub como Lumen (v0.2.4), confirmada por el usuario el 2026-11-10.
 
