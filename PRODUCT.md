@@ -15,6 +15,7 @@ Es una herramienta **exclusivamente personal** para gestionar TrefotG. Decisión
 - Integraciones oficiales siempre que sea posible. Nunca métodos que pongan en riesgo las cuentas del usuario.
 - No construir nada antes de necesitarlo. La estabilidad va antes que la velocidad.
 - Priorizar datos seguros, preparación de directos, aprovechamiento de grabaciones y una rutina breve de planificación y revisión. No añadir infraestructura de varios usuarios ni permisos de organización.
+- **Automatización máxima útil:** Stream Deck como control rápido, OBS como fuente de eventos y un asistente de IA que prepara ideas y borradores con contexto. El objetivo es reducir tareas repetitivas y tiempo de gestión para dedicarlo a crear contenido. Implementación por etapas en AUTOMATIZACION.md.
 - **Autonomía híbrida:** lo rutinario se automatiza. Publicar, gastar dinero o tomar decisiones sensibles requiere aprobación.
 - La IA es transparente: no se hace pasar por una persona, no inventa respuestas y no genera actividad falsa.
 

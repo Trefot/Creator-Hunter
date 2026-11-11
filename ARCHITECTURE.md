@@ -230,6 +230,14 @@ Cuentan lo recibido en USD desde la fecha local de creación de la meta, filtrad
 - Las pruebas de `tests/data-safety` compilan el mismo `data_safety.rs` con SQLx, no una réplica. Tokio solo es dependencia directa de pruebas para ejecutarlas sin GTK/WebView. No se añade una dependencia de ejecución a la aplicación.
 - Los cambios quedan sin publicar hasta verificar Windows. La firma del actualizador y la CSP completa siguen pendientes; no se afirma que estén resueltas por el aislamiento del iframe.
 
+### D-025 · Automatizaciones periódicas sin interrumpir la creación (2026-11-11)
+- `startYouTubeAutoSync` comprueba al iniciar y cada diez minutos, después de terminar la comprobación anterior. Respeta el intervalo de tres horas desde la última sincronización correcta y solo funciona con la app abierta.
+- `runYouTubeSync` comparte una promesa entre peticiones simultáneas, manuales y automáticas; las comprobaciones automáticas también comparten la consulta de conexión. Se libera al terminar o fallar. No se crean tablas ni dependencias nuevas.
+- Las marcas de tiempo locales inválidas o futuras no bloquean la sincronización. Un fallo no actualiza la fecha de éxito; se reintenta en la siguiente comprobación. El mismo error no genera avisos repetidos hasta que cambie o haya una sincronización correcta.
+- La limpieza detiene nuevas comprobaciones y notificaciones. Una operación ya iniciada puede completar su guardado; no se interrumpe a mitad de la persistencia.
+- Se elimina el `key` de refresco de todo el contenido de App: desmontaba los formularios. Dashboard, Perfiles y Metas reciben una versión de datos para recargar sus consultas conservando su estado de edición. Otras secciones consultan datos al abrirse; no se afirma refresco automático de todos sus paneles internos.
+- Los IDs de vídeo se consultan sin duplicados, conservando el guardado de resultados en cada adaptación enlazada.
+
 ## Dependencias
 
 | Dependencia | Para qué |

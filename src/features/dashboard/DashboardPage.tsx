@@ -42,6 +42,7 @@ interface Data {
 }
 
 interface Props {
+  dataVersion?: number;
   onNavigate: (section: Section) => void;
   onOpenProject: (projectId: string) => void;
 }
@@ -97,7 +98,7 @@ function Block({ title, onOpen, children, area }: { title: string; onOpen: () =>
   );
 }
 
-export function DashboardPage({ onNavigate, onOpenProject }: Props) {
+export function DashboardPage({ onNavigate, onOpenProject, dataVersion = 0 }: Props) {
   const [data, setData] = useState<Data | null>(null);
   const [error, setError] = useState("");
   const [confirmingPaid, setConfirmingPaid] = useState<string | null>(null);
@@ -121,7 +122,7 @@ export function DashboardPage({ onNavigate, onOpenProject }: Props) {
       .catch((err) => setError(String(err)));
   }
 
-  useEffect(load, []);
+  useEffect(load, [dataVersion]);
 
   async function onMarkPaid(profileId: string) {
     try {

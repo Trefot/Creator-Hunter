@@ -17,7 +17,7 @@ const t = es.goals;
 /** Qué muestra el formulario: nada, una meta nueva o la edición de una existente. */
 type Editing = null | "new" | Goal;
 
-export function GoalsPage() {
+export function GoalsPage({ dataVersion = 0 }: { dataVersion?: number }) {
   const [goals, setGoals] = useState<Goal[] | null>(null);
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [latest, setLatest] = useState<Map<string, AccountSnapshot>>(new Map());
@@ -48,7 +48,7 @@ export function GoalsPage() {
 
   useEffect(() => {
     refresh();
-  }, []);
+  }, [dataVersion]);
 
   async function onSave(input: GoalInput) {
     if (editing === "new") await createGoal(input);

@@ -15,7 +15,7 @@ import { IdeasPage } from "./features/ideas/IdeasPage";
 import { IncomePage } from "./features/income/IncomePage";
 import { ProjectsPage } from "./features/projects/ProjectsPage";
 import { ProfilesPage } from "./features/profiles/ProfilesPage";
-import { autoSyncYouTube } from "./features/profiles/youtubeSync";
+import { startYouTubeAutoSync } from "./features/profiles/youtubeSync";
 import { es } from "./i18n/es";
 import { Section } from "./sections";
 import "./App.css";
@@ -24,7 +24,7 @@ function App() {
   const [section, setSection] = useState<Section>("dashboard");
   /** Proyecto que Proyectos debe abrir al entrar (por ejemplo, desde el calendario). */
   const [projectToOpen, setProjectToOpen] = useState<string | null>(null);
-  /** Cambia cuando llegan datos nuevos de fuera (sincronización) para recargar la sección visible. */
+  /** Cambia cuando llegan datos nuevos de fuera (sincronización) para refrescar las vistas de métricas sin reiniciar su estado. */
   const [dataVersion, setDataVersion] = useState(0);
   const [notice, setNotice] = useState<{ text: string; error: boolean } | null>(null);
   /** Juego que Juegos debe abrir al entrar (modo juego o banner). */
@@ -50,19 +50,17 @@ function App() {
     };
   }, [playingCover]);
 
-  // Sincronización automática de YouTube al abrir (como mucho cada 3 horas).
-  useEffect(() => {
-    autoSyncYouTube()
-      .then((data) => {
-        if (!data) return;
-        setDataVersion((v) => v + 1);
-        setNotice({
-          text: data.warning ? es.youtube.syncedWithWarning : es.youtube.synced(data.videosSynced),
-          error: !!data.warning,
-        });
-      })
-      .catch((err) => setNotice({ text: `${es.youtube.syncFailed} ${err}`, error: true }));
-  }, []);
+  // Actualiza datos sin desmontar formularios ni interrumpir la edición.
+  useEffect(() => startYouTubeAutoSync(
+    (data) => {
+      setDataVersion((v) => v + 1);
+      setNotice({
+        text: data.warning ? es.youtube.syncedWithWarning : es.youtube.synced(data.videosSynced),
+        error: !!data.warning,
+      });
+    },
+    (err) => setNotice({ text: `${es.youtube.syncFailed} ${err}`, error: true }),
+  ), []);
 
   useEffect(() => {
     if (!notice) return;
@@ -90,7 +88,7 @@ function App() {
   return (
     <div className="layout">
       <Sidebar current={section} onSelect={select} />
-      <main className="content" key={dataVersion}>
+      <main className="content">
         {gameMode.playing && (
           <div className="now-playing">
             <Gamepad2 size={18} />
@@ -105,11 +103,11 @@ function App() {
           </div>
         )}
         {section === "dashboard" ? (
-          <DashboardPage onNavigate={select} onOpenProject={openProject} />
+          <DashboardPage dataVersion={dataVersion} onNavigate={select} onOpenProject={openProject} />
         ) : section === "profiles" ? (
-          <ProfilesPage />
+          <ProfilesPage dataVersion={dataVersion} />
         ) : section === "goals" ? (
-          <GoalsPage />
+          <GoalsPage dataVersion={dataVersion} />
         ) : section === "ideas" ? (
           <IdeasPage />
         ) : section === "projects" ? (

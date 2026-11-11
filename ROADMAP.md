@@ -17,6 +17,17 @@ El producto es exclusivamente personal (PRODUCT.md). Las fases históricas de ab
 
 Resultados y límites en VALIDACION.md. Propuestas investigadas de uso en RECOMENDACIONES.md; ninguna función nueva se considera implementada por figurar allí.
 
+## Automatización del trabajo creativo (autorizada por el usuario)
+
+Diseño y orden de entrega en AUTOMATIZACION.md. Se mantiene pendiente la validación de Windows anterior.
+
+- [x] Implementar sincronización periódica de YouTube con la app abierta, consultas compartidas y reintentos sin avisos repetidos del mismo error.
+- [x] Refrescar métricas sin desmontar formularios y probar que un borrador sobrevive a la sincronización.
+- [ ] Validar sincronización periódica con la conexión real de YouTube en Windows.
+- [ ] Conectar eventos de OBS y registrar sesiones; vincular marcas y Replay Buffer con Stream Deck.
+- [ ] Preparar el contexto y acciones del manager de IA; elegir proveedor/modelo y límites de uso antes de realizar llamadas de pago.
+- [ ] Probar el ciclo preparación → directo → marcas → borradores → revisión con sesiones reales.
+
 ## Fases
 
 | Fase | Contenido | Estado |

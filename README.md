@@ -37,6 +37,8 @@ La [revisión inicial](REVISION-INICIAL.md) recoge las comprobaciones del 2026-1
 
 [VALIDACION.md](VALIDACION.md) documenta las pruebas y la comprobación pendiente en Windows. [RECOMENDACIONES.md](RECOMENDACIONES.md) propone mejoras para el uso personal, los directos y el contenido.
 
+El [plan de automatización](AUTOMATIZACION.md) organiza las siguientes entregas con Stream Deck, OBS y el asistente de IA.
+
 ## Comprobar cambios
 
 ```bash

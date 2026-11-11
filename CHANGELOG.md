@@ -2,6 +2,13 @@
 
 ## [Sin publicar]
 
+### 2026-11-11 · Primera automatización continua (pendiente de prueba nativa)
+
+- YouTube se vuelve a sincronizar mientras la app permanece abierta: se comprueba cada diez minutos si han pasado tres horas desde la última sincronización correcta.
+- Los botones y la tarea automática comparten una sincronización en curso para evitar consultas y guardados duplicados. Un fallo permite reintentar, sin repetir el mismo aviso en cada comprobación.
+- La actualización automática refresca dashboard, perfiles y metas sin desmontar el resto de la interfaz ni descartar lo que estés escribiendo.
+- Plan de automatización con Stream Deck, OBS y manager de IA en AUTOMATIZACION.md. La integración de IA y de OBS sigue pendiente.
+
 ### 2026-11-11 · Estabilidad para uso personal (pendiente de prueba nativa en Windows)
 
 - La app espera a una copia previa válida antes de abrir la base y aplicar migraciones. Si falla, muestra el problema y permite reintentar.

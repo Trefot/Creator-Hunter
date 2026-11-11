@@ -39,7 +39,7 @@ const t = es.profiles;
 /** Qué muestra el formulario: nada, un perfil nuevo o la edición de uno existente. */
 type Editing = null | "new" | Profile;
 
-export function ProfilesPage() {
+export function ProfilesPage({ dataVersion = 0 }: { dataVersion?: number }) {
   const [profiles, setProfiles] = useState<Profile[] | null>(null);
   const [editing, setEditing] = useState<Editing>(null);
   const [confirmingId, setConfirmingId] = useState<string | null>(null);
@@ -59,7 +59,7 @@ export function ProfilesPage() {
 
   useEffect(() => {
     refresh();
-  }, []);
+  }, [dataVersion]);
 
   async function onSave(input: ProfileInput) {
     if (editing === "new") await createProfile(input);

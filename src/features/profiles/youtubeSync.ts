@@ -14,12 +14,18 @@ export interface SyncResult extends YouTubeSyncData {
 /** Sincronización automática como mucho cada 3 horas (D-015). */
 const AUTO_SYNC_INTERVAL_MS = 3 * 60 * 60 * 1000;
 const LAST_SYNC_KEY = "youtube-last-sync";
+/** Comprobación local periódica; no obliga a consultar YouTube si los datos siguen recientes. */
+const AUTO_CHECK_MS = 10 * 60 * 1000;
+let syncRequest: Promise<SyncResult> | null = null;
+let autoRequest: Promise<SyncResult | null> | null = null;
 
 /** Momento de la última sincronización correcta, o null. Guardado solo en este equipo. */
 export function lastYouTubeSync(): Date | null {
   try {
     const value = localStorage.getItem(LAST_SYNC_KEY);
-    return value ? new Date(value) : null;
+    if (!value) return null;
+    const date = new Date(value);
+    return Number.isFinite(date.getTime()) ? date : null;
   } catch {
     return null;
   }
@@ -29,7 +35,12 @@ export function lastYouTubeSync(): Date | null {
  * Sincroniza el canal y guarda el registro del día con origen 'api'.
  * Las horas son las de los últimos 365 días, la cuenta que se usa para las 4.000 h.
  */
-export async function runYouTubeSync(): Promise<SyncResult> {
+export function runYouTubeSync(): Promise<SyncResult> {
+  syncRequest ??= performSync().finally(() => { syncRequest = null; });
+  return syncRequest;
+}
+
+async function performSync(): Promise<SyncResult> {
   const today = todayIso();
   const data = await syncYouTubeData(addDays(today, -364), today);
   await upsertApiSnapshot(data.profile_id, today, {
@@ -65,7 +76,7 @@ export async function syncPublishedVideos(onlyAdaptationId?: string): Promise<{ 
     .map((x) => x.adaptation.published_at?.slice(0, 10) ?? today)
     .reduce((a, b) => (a < b ? a : b));
   const stats = await fetchVideoStats(
-    published.map((x) => x.videoId),
+    [...new Set(published.map((x) => x.videoId))],
     earliest,
     today,
   );
@@ -79,11 +90,57 @@ export async function syncPublishedVideos(onlyAdaptationId?: string): Promise<{ 
   return { synced, warning: stats.warning };
 }
 
-/** Sincroniza al abrir la app si YouTube está conectado y hace más de 3 horas de la última vez. */
-export async function autoSyncYouTube(): Promise<SyncResult | null> {
+/** La misma actualización sirve a botones y tareas automáticas simultáneas. */
+export function autoSyncYouTube(): Promise<SyncResult | null> {
+  autoRequest ??= checkAutoSync().finally(() => { autoRequest = null; });
+  return autoRequest;
+}
+
+function recentlySynced(): boolean {
   const last = lastYouTubeSync();
-  if (last && Date.now() - last.getTime() < AUTO_SYNC_INTERVAL_MS) return null;
+  if (!last) return false;
+  const age = Date.now() - last.getTime();
+  return age >= 0 && age < AUTO_SYNC_INTERVAL_MS;
+}
+
+async function checkAutoSync(): Promise<SyncResult | null> {
+  if (syncRequest) return syncRequest;
+  if (recentlySynced()) return null;
   const status = await youtubeStatus();
   if (!status.connected || !status.connection) return null;
+  // Un botón pudo completar una sincronización mientras se comprobaba la conexión.
+  if (syncRequest) return syncRequest;
+  if (recentlySynced()) return null;
   return runYouTubeSync();
+}
+
+/** Funciona solo con la app abierta; un fallo se reintenta en la próxima comprobación. */
+export function startYouTubeAutoSync(
+  onSynced: (data: SyncResult) => void,
+  onError: (error: unknown) => void,
+): () => void {
+  let stopped = false;
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  let reportedError: string | null = null;
+  async function check() {
+    try {
+      const data = await autoSyncYouTube();
+      if (!stopped && data) {
+        reportedError = null;
+        onSynced(data);
+      }
+    } catch (error) {
+      if (!stopped && String(error) !== reportedError) {
+        reportedError = String(error);
+        onError(error);
+      }
+    } finally {
+      if (!stopped) timer = setTimeout(check, AUTO_CHECK_MS);
+    }
+  }
+  void check();
+  return () => {
+    stopped = true;
+    clearTimeout(timer);
+  };
 }

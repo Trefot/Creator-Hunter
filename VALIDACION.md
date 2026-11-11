@@ -4,11 +4,13 @@ Rama de trabajo: `fix/personal-app-reliability`, basada en `1d77f07` (0.2.9). Ca
 
 ## Resultado local
 
-- `npm test`: 4 pruebas pasan. Apertura única después de preparación, bloqueo de SQLite si falla la copia, recuperación tras fallo de apertura y rechazo de vistas previas de copias malformadas.
+- `npm test`: 13 pruebas pasan. Incluyen las cuatro de protección de apertura/copias y nueve de sincronización: peticiones compartidas, intervalo de tres horas, reintento tras fallo, ciclo periódico, limpieza, avisos de error sin repetición, fechas inválidas/futuras, desconexión y un vídeo enlazado a varias adaptaciones.
 - `npm run build`: TypeScript y Vite pasan. Se mantiene el aviso de tamaño del JavaScript; no es un fallo de compilación.
 - `cargo test --locked --manifest-path tests/data-safety/Cargo.toml`: 8 pruebas pasan sobre el código Rust/SQLx que usa la aplicación. Incluyen las 15 migraciones y bases temporales.
 - Chromium con comandos Tauri simulados: pantalla de error de copia, ausencia de apertura SQLite mientras falla, reintento correcto, montaje del dashboard, contador dentro del iframe aislado y animación al probarlo. La búsqueda manual informa de un fallo simulado de GitHub sin mostrar «última versión». Sin errores JavaScript tras completar la simulación de los eventos nativos.
 - `git diff --check`: sin errores de espacios.
+
+La comprobación adicional en Chromium con YouTube simulado confirmó una sola sincronización durante StrictMode y la conservación del formulario de Ideas y su texto sin guardar al finalizar la actualización. No se ha probado el servicio real de YouTube en este entorno.
 
 ## Qué prueban los tests de datos
 
