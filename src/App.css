@@ -4369,3 +4369,14 @@ button.muted-link {
   opacity: 0;
   cursor: pointer;
 }
+
+/* La vista previa toma el tamaño real del contador y se encoge si no cabe */
+.counter-preview-fit {
+  width: 100%;
+  overflow: hidden;
+}
+
+.counter-preview-fit .counter-preview-frame {
+  max-width: none;
+  transform-origin: top left;
+}

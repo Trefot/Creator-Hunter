@@ -91,12 +91,18 @@ function CopyButton({ text, label }: { text: string; label: string }) {
  */
 function OverlayPreview({ form }: { form: CounterInput }) {
   const frame = useRef<HTMLIFrameElement>(null);
+  const stage = useRef<HTMLDivElement>(null);
   const [ready, setReady] = useState(false);
   const [value, setValue] = useState(27);
+  /** Tamaño real del contador dentro del overlay (cambia con el icono, el estilo y el texto). */
+  const [size, setSize] = useState({ width: 400, height: 150 });
+  const [stageWidth, setStageWidth] = useState(600);
 
   useEffect(() => {
     const onMessage = (e: MessageEvent) => {
-      if (e.source === frame.current?.contentWindow && e.data?.overlayReady) setReady(true);
+      if (e.source !== frame.current?.contentWindow) return;
+      if (e.data?.overlayReady) setReady(true);
+      if (e.data?.previewSize) setSize(e.data.previewSize);
     };
     window.addEventListener("message", onMessage);
     return () => window.removeEventListener("message", onMessage);
@@ -117,8 +123,19 @@ function OverlayPreview({ form }: { form: CounterInput }) {
     frame.current?.contentWindow?.postMessage({ counters: [counter] }, "*");
   }, [ready, form, value]);
 
+  // Ancho disponible para la vista previa (para encogerla si el contador no cabe).
+  useEffect(() => {
+    if (!stage.current) return;
+    const observer = new ResizeObserver(([entry]) => setStageWidth(entry.contentRect.width));
+    observer.observe(stage.current);
+    return () => observer.disconnect();
+  }, []);
+
+  // Si el contador es más ancho que el editor, se muestra entero pero más pequeño.
+  const scale = Math.min(1, stageWidth / Math.max(size.width, 1));
+
   return (
-    <div className="counter-preview-stage">
+    <div className="counter-preview-stage" ref={stage}>
       <div className="counter-preview-head">
         <span className="small muted">{t.preview}</span>
         <button
@@ -133,14 +150,18 @@ function OverlayPreview({ form }: { form: CounterInput }) {
           <Play size={13} /> {t.testFx}
         </button>
       </div>
-      <iframe
-        ref={frame}
-        className="counter-preview-frame"
-        srcDoc={overlayHtml}
-        title={t.preview}
-        allow="autoplay"
-        onLoad={() => setReady(true)}
-      />
+      <div className="counter-preview-fit" style={{ height: size.height * scale }}>
+        <iframe
+          ref={frame}
+          className="counter-preview-frame"
+          srcDoc={overlayHtml}
+          title={t.preview}
+          allow="autoplay"
+          onLoad={() => setReady(true)}
+          style={{ width: size.width, height: size.height, transform: `scale(${scale})` }}
+        />
+      </div>
+      {scale < 1 && <span className="muted small">{t.previewScaled(Math.round(scale * 100))}</span>}
     </div>
   );
 }

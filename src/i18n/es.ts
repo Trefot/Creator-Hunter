@@ -2,7 +2,7 @@
 export const es = {
   appName: "TrophyHunter",
   appTagline: "Creator Studio",
-  version: "Alpha 0.2 · v0.2.7",
+  version: "Alpha 0.2 · v0.2.8",
   /** Marca de la versión de pruebas (D-019). */
   devBadge: "PRUEBAS",
   games: {
@@ -200,6 +200,7 @@ export const es = {
     color: "Color del borde",
     preview: "Así se verá en OBS",
     testFx: "Probar animación y sonido",
+    previewScaled: (n: number) => `Vista previa al ${n} % para que quepa entera (en OBS sale a tamaño real).`,
     style: "Estilo",
     styles: {
       gamer: { name: "Gamer", hint: "Icono grande y número gigante con contorno" },

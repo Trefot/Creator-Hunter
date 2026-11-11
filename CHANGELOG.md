@@ -2,6 +2,12 @@
 
 ## [Sin publicar]
 
+## [0.2.8] · 2026-11-10 · Vista previa a medida
+
+- La vista previa del editor se ajusta al tamaño del contador: al agrandar el icono ya no se corta.
+- Si el contador es más grande que el editor, se ve entero en pequeño (en OBS sale a tamaño real).
+- El texto del contador ya nunca salta debajo del icono.
+
 ## [0.2.7] · 2026-11-10 · Icono más grande y colores de texto
 
 - Nuevo control «Tamaño del icono» para hacer tu PNG (o el emoji) más grande, hasta el triple.
