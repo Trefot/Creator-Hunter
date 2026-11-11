@@ -1,10 +1,17 @@
 {
-  "version": "0.2.9",
-  "date": "2026-11-11",
+  "version": "0.2.10",
   "notes": [
-    "Nuevo botón «Buscar actualizaciones» abajo en el menú, como en Lumen.",
-    "Si hay versión nueva, te enseña las novedades y con «Actualizar ahora» se instala y TrophyHunter se vuelve a abrir solo: ya no hace falta cerrarlo.",
-    "Si no hay nada nuevo, te dice qué versión tienes."
+    "Nueva identidad Nexus Studio, con el compañero violeta y su farol, e interfaz grafito con acentos violeta y dorado.",
+    "Dashboard centrado en tu próximo directo, contenido en producción y accesos a Ideas y Live Studio.",
+    "YouTube se sincroniza con la app abierta sin descartar lo que estés escribiendo ni duplicar consultas simultáneas.",
+    "La app espera a una copia previa válida antes de aplicar migraciones y permite reintentar si falla.",
+    "Conexiones y copias de pruebas separadas de producción; exportaciones consistentes e importaciones con validación más estricta.",
+    "La búsqueda manual de actualizaciones informa de los fallos de conexión y evita instalaciones duplicadas por clics repetidos.",
+    "Se conservan tus datos, conexiones y rutas de TrophyHunter; el nombre técnico del instalador se mantiene para actualizar la versión existente."
   ],
-  "installer": "TrophyHunter-setup.exe"
+  "date": "2026-11-11",
+  "installer": "TrophyHunter-setup.exe",
+  "source_commit": "d6694f2da1008a292b96d49b24e977a5cd8a774a",
+  "sha256": "0bbd99c5f37c7684db5b5e4685358ba841b4ef2f43dd0712ef23080020c4e615",
+  "size": 3156785
 }
