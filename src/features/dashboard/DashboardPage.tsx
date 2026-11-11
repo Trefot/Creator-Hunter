@@ -1,8 +1,8 @@
 import { PlatformBadge } from "../../components/PlatformBadge";
-import { BadgeCheck, CalendarDays, Clock, Eye, FolderKanban, LucideIcon, PartyPopper, UsersRound, Wallet } from "lucide-react";
+import { ArrowUpRight, BadgeCheck, CalendarDays, ChevronRight, Clock, Eye, Film, FolderKanban, Lightbulb, LucideIcon, PartyPopper, Radio, UsersRound, Wallet } from "lucide-react";
 import { ProgressRing } from "../../components/charts/ProgressRing";
 import { ReactNode, useEffect, useState } from "react";
-import { Logo } from "../../components/Logo";
+import studioLandscape from "../../assets/studio-landscape.svg";
 import { BarChart } from "../../components/charts/BarChart";
 import { LineChart } from "../../components/charts/LineChart";
 import { AccountSnapshot, latestSnapshots, listAllSnapshots } from "../../db/accountSnapshots";
@@ -165,6 +165,9 @@ export function DashboardPage({ onNavigate, onOpenProject, dataVersion = 0 }: Pr
   const activeGoals = data.goals.filter((g) => g.status === "active");
   const upcoming = data.upcoming.filter((a) => a.published_at === null);
   const viewsOf = new Map(data.views.map((v) => [v.adaptation_id, v.views]));
+  const nextLive = upcoming.find((a) => a.format === "live" && a.scheduled_at && new Date(a.scheduled_at).getTime() >= Date.now());
+  const focus = data.production.find((a) => a.format !== "live") ?? data.production[0];
+  const focusStep = focus ? currentStep(focus) : null;
   const totalFollowers = [...data.latest.values()].reduce((sum, s) => sum + (s.followers ?? 0), 0);
 
   // Producción agrupada por paso actual; las que tienen todos sus pasos hechos, "listas para publicar".
@@ -177,16 +180,56 @@ export function DashboardPage({ onNavigate, onOpenProject, dataVersion = 0 }: Pr
 
   return (
     <section className="page page-wide">
-      <header className="dash-hero">
-        <div className="dash-hero-text">
-          <span className="dash-hero-date">{formatLongDate(today)}</span>
-          <h1>{t.hello(greetingFor(new Date().getHours()))}</h1>
-          <p>{t.subtitle}</p>
-        </div>
-        <div className="dash-hero-logo">
-          <Logo size={96} />
-        </div>
+      <header className="studio-header">
+        <div><span className="studio-eyebrow">{t.studioLabel}</span><p>{t.hello(greetingFor(new Date().getHours()))}</p></div>
+        <span className="studio-date"><CalendarDays size={15} />{formatLongDate(today)}</span>
       </header>
+
+      <div className="studio-hero">
+        <img className="studio-landscape" src={studioLandscape} alt="" />
+        <div className="studio-hero-copy">
+          <span className="studio-eyebrow">{t.studioIntro}</span>
+          <h1>{t.studioTitle}</h1>
+          <span className="studio-gold-line" aria-hidden="true" />
+          <div className="studio-hero-actions">
+            <button onClick={() => onNavigate("projects")}><FolderKanban size={16} />{es.sections.projects}<ArrowUpRight size={16} /></button>
+            <button className="ghost" onClick={() => onNavigate("calendar")}><CalendarDays size={16} />{es.sections.calendar}</button>
+          </div>
+        </div>
+        <article className="studio-next-live">
+          {nextLive?.thumbnail && <img className="studio-live-art" src={nextLive.thumbnail} alt="" />}
+          <span className="studio-eyebrow"><Radio size={14} />{t.nextLive}</span>
+          <h2>{nextLive?.title ?? t.noLiveTitle}</h2>
+          <p>{nextLive ? formatDateTime(nextLive.scheduled_at!) : t.noLiveBody}</p>
+          <button className="studio-text-action" onClick={() => nextLive ? onOpenProject(nextLive.project_id) : onNavigate("projects")}>
+            {nextLive ? t.openProject : t.prepareLive}<ArrowUpRight size={16} />
+          </button>
+          <span className="studio-live-window">{t.liveWindow}</span>
+        </article>
+      </div>
+
+      <div className="studio-section-heading"><h2>{t.createToday}</h2><span className="muted small">{t.workbenchHint}</span></div>
+      <div className="studio-workbench">
+        <button className="studio-focus-card" onClick={() => focus ? onOpenProject(focus.project_id) : onNavigate("ideas")}>
+          <div className="studio-focus-art">{focus?.thumbnail ? <img src={focus.thumbnail} alt="" /> : <Film size={36} strokeWidth={1.2} />}</div>
+          <div className="studio-focus-body">
+            <span className="studio-eyebrow">{t.focus}</span>
+            <h3>{focus?.title ?? t.noFocusTitle}</h3>
+            <p>{focus ? `${t.nextStep} · ${focusStep ? tp.stepNames[focusStep.step] : t.readyToPublish}` : t.noFocusBody}</p>
+          </div>
+          <ChevronRight size={18} />
+        </button>
+        <button className="studio-shortcut" onClick={() => onNavigate("ideas")}>
+          <span className="studio-shortcut-icon"><Lightbulb size={22} /></span>
+          <strong>{t.ideasTitle}</strong><span className="muted small">{t.ideasBody}</span>
+          <span className="studio-shortcut-action">{t.openIdeas}<ArrowUpRight size={16} /></span>
+        </button>
+        <button className="studio-shortcut studio-shortcut-live" onClick={() => onNavigate("live")}>
+          <span className="studio-shortcut-icon"><Radio size={22} /></span>
+          <strong>{t.liveTitle}</strong><span className="muted small">{t.liveBody}</span>
+          <span className="studio-shortcut-action">{t.openLive}<ArrowUpRight size={16} /></span>
+        </button>
+      </div>
 
       {readyPayouts.length > 0 && (
         <div className="payout-alert">
@@ -200,6 +243,7 @@ export function DashboardPage({ onNavigate, onOpenProject, dataVersion = 0 }: Pr
         </div>
       )}
 
+      <div className="studio-section-heading"><h2>{t.overview}</h2></div>
       <div className="kpi-grid">
         <Kpi icon={UsersRound} label={t.kpiFollowers} value={formatNumber(totalFollowers)} onClick={() => onNavigate("profiles")} />
         <Kpi

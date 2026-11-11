@@ -48,7 +48,7 @@ export function Sidebar({ current, onSelect }: Props) {
     const Icon = SECTION_ICONS[section];
     return (
       <li key={section}>
-        <button className={`nav-item${section === current ? " active" : ""}`} onClick={() => onSelect(section)}>
+        <button className={`nav-item${section === current ? " active" : ""}`} aria-current={section === current ? "page" : undefined} onClick={() => onSelect(section)}>
           <Icon size={18} strokeWidth={2} />
           {es.sections[section]}
           {!READY_SECTIONS.includes(section) && <span className="nav-soon" aria-hidden>·</span>}

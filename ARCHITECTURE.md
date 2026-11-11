@@ -238,6 +238,15 @@ Cuentan lo recibido en USD desde la fecha local de creación de la meta, filtrad
 - Se elimina el `key` de refresco de todo el contenido de App: desmontaba los formularios. Dashboard, Perfiles y Metas reciben una versión de datos para recargar sus consultas conservando su estado de edición. Otras secciones consultan datos al abrirse; no se afirma refresco automático de todos sus paneles internos.
 - Los IDs de vídeo se consultan sin duplicados, conservando el guardado de resultados en cada adaptación enlazada.
 
+### D-026 · Interfaz híbrida de estudio y gaming (2026-11-11)
+- El usuario eligió el estilo híbrido de la comparativa: base grafito, acento violeta y dorado puntual, con ambientación contenida dentro de la portada.
+- Tokens globales en App.css; la composición visual se concentra en `src/styles/hybrid.css`, importado después de los estilos existentes. Se conservan secciones, datos y controles reales. No hay dependencias nuevas.
+- Ilustración vectorial original y decorativa en `src/assets/studio-landscape.svg`; funciona sin red. Las miniaturas reales del usuario se muestran cuando existen.
+- El próximo directo se deriva de las adaptaciones programadas y no publicadas en los siguientes siete días, excluyendo horarios ya pasados. La mesa de trabajo usa una adaptación en producción y su paso calculado; no pretende ser una priorización de IA ni una lista de tareas nueva.
+- Se conservan los bloques de métricas, ingresos y confirmación de cobros; se colocan después de los accesos de creación. El estado activo de navegación se identifica también con `aria-current`.
+- No se muestra un manager de IA ni un estado de conexión con OBS simulado. Esas funciones continúan en el plan de automatización.
+- Validado en Chromium a 1440×1040, 1280×800 y 960×640 con datos simulados y sin ellos. La validación de WebView2 en Windows sigue pendiente.
+
 ## Dependencias
 
 | Dependencia | Para qué |

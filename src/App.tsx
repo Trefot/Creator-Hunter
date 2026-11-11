@@ -19,6 +19,7 @@ import { startYouTubeAutoSync } from "./features/profiles/youtubeSync";
 import { es } from "./i18n/es";
 import { Section } from "./sections";
 import "./App.css";
+import "./styles/hybrid.css";
 
 function App() {
   const [section, setSection] = useState<Section>("dashboard");

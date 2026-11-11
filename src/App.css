@@ -1,21 +1,23 @@
 /* Tema de marca (D-012). Todos los colores salen de estos tokens. */
 :root {
-  --bg: #0e0c14;
-  --sidebar: #13101b;
-  --surface: #1a1625;
-  --surface-hover: #221d30;
-  --border: #2b2540;
-  --border-strong: #3d3459;
-  --text: #eeebf6;
-  --muted: #9d96b5;
-  --accent: #8b5cf6;
-  --accent-hover: #9d74f8;
+  --bg: #111116;
+  --sidebar: #15151c;
+  --surface: #1b1b24;
+  --surface-hover: #24232e;
+  --border: #30303d;
+  --border-strong: #484457;
+  --text: #f2f0f6;
+  --muted: #aaa5b6;
+  --accent: #8050ca;
+  --accent-hover: #bd99f4;
   --accent-soft: rgba(139, 92, 246, 0.16);
-  --brand-gradient: linear-gradient(135deg, #8b5cf6 0%, #c026d3 100%);
+  --brand-gradient: linear-gradient(135deg, #9464e8 0%, #6d4db8 100%);
+  --gold: #e9bc77;
+  --gold-soft: rgba(233, 188, 119, 0.1);
   --success: #4ade80;
   --danger: #f87171;
   --warning: #fbbf24;
-  --radius: 12px;
+  --radius: 16px;
   --shadow: 0 1px 2px rgba(0, 0, 0, 0.35), 0 8px 24px rgba(0, 0, 0, 0.2);
   --ease: 160ms ease;
   color-scheme: dark;

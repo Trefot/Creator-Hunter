@@ -28,6 +28,12 @@ Diseño y orden de entrega en AUTOMATIZACION.md. Se mantiene pendiente la valida
 - [ ] Preparar el contexto y acciones del manager de IA; elegir proveedor/modelo y límites de uso antes de realizar llamadas de pago.
 - [ ] Probar el ciclo preparación → directo → marcas → borradores → revisión con sesiones reales.
 
+## Interfaz híbrida elegida por el usuario
+
+- [x] Aplicar tema grafito/violeta/dorado y rediseñar la portada y los accesos del dashboard usando funciones y datos existentes.
+- [x] Comprobar estados con datos de ejemplo, sin datos, navegación, formulario de Ideas y vista previa del overlay a distintos tamaños en Chromium.
+- [ ] Validar apariencia y uso en WebView2/Windows antes de publicar el instalador.
+
 ## Fases
 
 | Fase | Contenido | Estado |

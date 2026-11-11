@@ -12,6 +12,12 @@ Rama de trabajo: `fix/personal-app-reliability`, basada en `1d77f07` (0.2.9). Ca
 
 La comprobación adicional en Chromium con YouTube simulado confirmó una sola sincronización durante StrictMode y la conservación del formulario de Ideas y su texto sin guardar al finalizar la actualización. No se ha probado el servicio real de YouTube en este entorno.
 
+## Interfaz híbrida
+
+Se comprobó el dashboard con adaptaciones, perfiles y registros simulados, y también sin datos. Navegación a Ideas y Live Studio, edición de un formulario y renderizado del overlay dentro del iframe. Ventanas 1440×1040, 1280×800 y 960×640 sin desbordamiento horizontal del contenido ni errores JavaScript. Las cifras y títulos de las capturas son ejemplos de prueba, no métricas privadas del usuario. La compilación del frontend y las 13 pruebas pasan después del cambio visual; no se modificaron migraciones ni operaciones SQLite.
+
+La comprobación nativa en Windows continúa pendiente; no hay instalador publicado de este diseño.
+
 ## Qué prueban los tests de datos
 
 1. Exportación y restauración de datos relacionados en las 22 tablas, incluyendo texto Unicode, importes, valores opcionales, imagen y sonido. Igualdad del documento exportado después de cerrar y reabrir la base.

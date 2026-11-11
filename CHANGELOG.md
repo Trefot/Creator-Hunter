@@ -2,6 +2,13 @@
 
 ## [Sin publicar]
 
+### 2026-11-11 · Interfaz híbrida (pendiente de prueba en Windows)
+
+- Tema grafito con acentos violeta y dorado, navegación más definida y formularios con controles de mayor contraste.
+- Nueva portada del dashboard con ilustración original incluida en la app, próximo directo programado en los siguientes siete días y accesos a Proyectos y Calendario.
+- Mesa de trabajo con una adaptación en producción, su siguiente paso calculado y accesos a Ideas y Live Studio. Las métricas se conservan debajo.
+- Estados vacíos con acciones útiles, sin mostrar conexiones ni funciones de IA que todavía no existen. Diseño comprobado en Chromium a 1440, 1280 y 960 píxeles.
+
 ### 2026-11-11 · Primera automatización continua (pendiente de prueba nativa)
 
 - YouTube se vuelve a sincronizar mientras la app permanece abierta: se comprueba cada diez minutos si han pasado tres horas desde la última sincronización correcta.

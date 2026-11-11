@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 720" fill="none">
+  <defs>
+    <linearGradient id="sky" x2="1" y2="1"><stop stop-color="#151322"/><stop offset=".55" stop-color="#393044"/><stop offset="1" stop-color="#8a6853"/></linearGradient>
+    <radialGradient id="glow"><stop stop-color="#f4d6a0" stop-opacity=".55"/><stop offset="1" stop-color="#c5a3aa" stop-opacity="0"/></radialGradient>
+    <linearGradient id="mist" x2="0" y2="1"><stop stop-color="#b1a0b8" stop-opacity=".16"/><stop offset="1" stop-color="#17151f" stop-opacity="0"/></linearGradient>
+    <linearGradient id="ridge" x2="1" y2="1"><stop stop-color="#514457"/><stop offset="1" stop-color="#25212f"/></linearGradient>
+    <filter id="soft"><feGaussianBlur stdDeviation="22"/></filter>
+    <filter id="texture"><feTurbulence baseFrequency=".65" numOctaves="3" seed="12" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/></filter>
+  </defs>
+  <path fill="url(#sky)" d="M0 0h1440v720H0z"/>
+  <ellipse cx="1040" cy="190" rx="500" ry="380" fill="url(#glow)"/>
+  <circle cx="1045" cy="175" r="65" fill="#f2d8b1" opacity=".6"/>
+  <path d="M0 400 190 280 260 329 405 198 560 350 662 286 780 359 920 263 1040 315 1205 174 1440 335V720H0z" fill="#6f6073" opacity=".35"/>
+  <path d="m0 500 230-123 145 73 200-155 160 145 142-92 102 31 150-110 120 142 191-113v422H0z" fill="url(#ridge)"/>
+  <path d="m575 295 66 110 94 35-82-81-78-64m454-26-28 115 94-38-66-77" fill="#baa18a" opacity=".16"/>
+  <ellipse cx="780" cy="449" rx="750" ry="66" fill="url(#mist)" filter="url(#soft)"/>
+  <path d="m0 589 187-50 162 62 164-121 139 78 198-115 142 63 208-114 240 127v201H0z" fill="#24202d"/>
+  <path d="m850 443 53 57 89 6 66-36 142-78-128 108-85 36-90-21z" fill="#ab8e74" opacity=".15"/>
+  <path d="m0 654 224-60 173 79 229-83 173 28 160-77 186 31 295-97v245H0z" fill="#14131d"/>
+  <g stroke="#c8ac82" stroke-opacity=".17"><path d="m934 566 70-34 130 22 178-59"/><path d="m922 581 88-28 135 21 195-51"/></g>
+  <path d="M0 0h1440v720H0z" filter="url(#texture)" opacity=".035" style="mix-blend-mode:soft-light"/>
+</svg>
