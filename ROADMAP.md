@@ -60,8 +60,9 @@ La release 0.2.10 y el canal remoto están publicados y verificados. Estado e in
 - [x] Icono explícito de ventana y accesos Nexus Studio con icono dedicado.
 - [x] Probar la actualización desde 0.2.10 en Windows: ejecutable, accesos, iconos, registro y versión.
 - [x] Publicar y verificar descarga, manifiesto y coincidencia del canal.
-- [ ] Confirmar Fortnite real e icono anclado en el PC del usuario.
-- [ ] Conectar el estado de grabación/emisión de OBS; todavía no está implementado.
+- [x] Usuario confirma la franja «Fortnite · PC · detectado» en su PC.
+- [ ] Confirmar el icono anclado en el PC del usuario.
+- [x] Implementar conexión local al estado de grabación/emisión de OBS en 0.2.12; publicada, uso real pendiente.
 
 ## Fases
 
@@ -307,3 +308,15 @@ Las ideas nuevas se anotan aquí y no interrumpen la fase actual.
 - Revisar el código de Firebot (open source) como referencia para Live Studio.
 - Elegir la marca definitiva (verificando marca registrada y dominio).
 - Metas de ingresos por periodo (por ejemplo, "$100 cada mes"). Requiere una columna de periodo en `goal`.
+
+## Entrega 0.2.12 · OBS y marcas para Stream Deck
+
+- [x] Cliente WebSocket local v5 con contraseña en credenciales de Windows, consulta de salidas y reconexión.
+- [x] Marcas con juego y tiempos consultados en OBS desde la interfaz o la URL local protegida.
+- [x] Historial y copia de lista; ruta de archivo cuando OBS la confirma.
+- [x] Migración 016 y copias de las 24 tablas; compatibilidad con esquema 15 y escritura serializada durante restauración.
+- [x] Pruebas de protocolo, SQLite e interfaz con servicios simulados.
+- [x] Publicación Windows y descarga verificadas (43068021591).
+- [ ] Configurar y probar con OBS y Stream Deck reales del usuario.
+
+Guardar Replay Buffer y generar clips siguen pendientes; una marca no es un archivo de vídeo.

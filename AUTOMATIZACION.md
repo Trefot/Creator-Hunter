@@ -7,8 +7,8 @@ Decisión del usuario: uso exclusivamente personal, aprovechar Stream Deck y red
 | Orden | Resultado | Qué hará automáticamente | Interacción que queda | Estado |
 |---|---|---|---|---|
 | 1 | Datos actualizados | Sincronizar YouTube con la app abierta, compartir consultas simultáneas y reintentar fallos | Conectar la cuenta; el botón manual sigue disponible | Implementado localmente; pruebas de servicio simulado pasan, Windows real pendiente |
-| 2 | Sesiones de directo | Leer eventos de OBS, detectar inicio/fin de emisión y grabación, duración y archivos | Configurar OBS una vez y elegir objetivo/juego cuando no sea inequívoco | Pendiente |
-| 3 | Momentos aprovechables | Asociar marcas de Stream Deck a sesión y archivo; guardar Replay Buffer si está activo | Pulsar «Marcar momento» o «Guardar clip» | Pendiente |
+| 2 | Sesiones de directo | Leer estado de OBS, detectar grabación/emisión, tiempos y archivo confirmado | Configurar OBS una vez; elegir el juego cuando no se detecte | Publicado en 0.2.12; pruebas Windows superadas, configuración y uso real pendientes |
+| 3 | Momentos aprovechables | Guardar marcas con sesión, juego y tiempos de OBS | Pulsar «Marcar momento» | Marcas implementadas en 0.2.12; Replay Buffer pendiente |
 | 4 | Manager de contenido con IA | Leer el contexto permitido, proponer prioridades, títulos, ganchos, guiones y borradores | Elegir dirección creativa y revisar qué se publica | Pendiente: proveedor/modelo y presupuesto sin decidir |
 | 5 | Cierre y aprovechamiento | Preparar resumen de sesión y convertir momentos seleccionados en borradores enlazados | Corregir o descartar lo que no sirve | Pendiente |
 | 6 | Revisión de resultados | Recoger métricas disponibles, comparar formatos/antigüedad y sugerir un experimento | Elegir qué probar la próxima semana | Parcial: ya existe recogida de métricas; el análisis asistido sigue pendiente |
@@ -50,3 +50,5 @@ Antes de activar llamadas reales hay que elegir modelo local o API, definir qué
 ## Criterios para comprobar utilidad
 
 En sesiones reales, observar tiempo de preparación, facilidad para encontrar momentos y proporción de momentos elegidos que llegan a una adaptación publicada. Cada automatización debe reducir una tarea concreta. Si pide más pasos de los que elimina, se simplifica o se descarta.
+
+Configuración y límites de la conexión inicial en [OBS.md](OBS.md). La marca no corta vídeo ni implica que haya un archivo confirmado.

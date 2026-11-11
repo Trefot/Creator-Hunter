@@ -1,5 +1,13 @@
 # Actualizaciones de Nexus Studio
 
+## 0.2.12 publicada
+
+[Descargar instalador 0.2.12](https://github.com/Trefot/Creator-Hunter/releases/download/v0.2.12/Nexus-Studio_0.2.12_x64-setup.exe) o «Buscar actualizaciones» → «Actualizar ahora» en Nexus. Instala al terminar tu grabación si utilizas sus overlays.
+
+OBS local y marcas desde Stream Deck, sin iniciar ni detener salidas. Requiere activar WebSocket en OBS y configurar puerto/contraseña una vez en Live Studio; instrucciones en [OBS.md](OBS.md).
+
+La ejecución 43068021591 pasó las pruebas, build NSIS y actualización silenciosa desde 0.2.11. Release y canal verificados: 3.349.295 bytes, SHA-256 `0f18621a516fa0d7ccaa2bb2e5ef7089c34e57bea8c8a9721455fd249140c480`, origen `89b524a94c5cd56032b19bbe75be0144b375fc6e`. Migración 016 protegida por copia previa y nuevas tablas incluidas en las copias; se admiten copias del esquema anterior. No se ha probado todavía con el OBS real del usuario.
+
 ## 0.2.11 publicada
 
 [Descargar instalador 0.2.11](https://github.com/Trefot/Creator-Hunter/releases/download/v0.2.11/Nexus-Studio_0.2.11_x64-setup.exe). En Nexus: «Buscar actualizaciones» → «Actualizar ahora». Si estás usando los overlays, instala al terminar la grabación, porque Nexus se cierra y vuelve a abrirse.
@@ -10,7 +18,7 @@ Detección de Fortnite en PC, selección manual del juego e iconos/accesos de Wi
 
 Estado: publicada el 2026-11-11. [Descargar instalador Windows](https://github.com/Trefot/Creator-Hunter/releases/download/v0.2.10/Nexus-Studio_0.2.10_x64-setup.exe) · [Release y novedades](https://github.com/Trefot/Creator-Hunter/releases/tag/v0.2.10).
 
-En la app instalada: «Buscar actualizaciones» → «Actualizar ahora». El canal `releases` anunció 0.2.10; ahora anuncia 0.2.11. La descarga manual y el instalador del canal son idénticos: 3.156.785 bytes, SHA-256 `0bbd99c5f37c7684db5b5e4685358ba841b4ef2f43dd0712ef23080020c4e615`.
+En la app instalada: «Buscar actualizaciones» → «Actualizar ahora». El canal `releases` anunció 0.2.10; ahora anuncia 0.2.12. La descarga manual y el instalador del canal son idénticos: 3.156.785 bytes, SHA-256 `0bbd99c5f37c7684db5b5e4685358ba841b4ef2f43dd0712ef23080020c4e615`.
 
 La ejecución [43046894264](https://github.com/Trefot/Creator-Hunter/actions/runs/43046894264) terminó correctamente: pruebas, compilación nativa, instalador NSIS y publicación. Origen: `d6694f2da1008a292b96d49b24e977a5cd8a774a`. Sigue pendiente comprobar la instalación y el uso en el PC del usuario.
 

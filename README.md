@@ -1,6 +1,6 @@
 # Nexus Studio
 
-Estudio personal de creación de contenido de TrefotG. Versión publicada: **[v0.2.11](https://github.com/Trefot/Creator-Hunter/releases/tag/v0.2.11)**. Actualiza desde «Buscar actualizaciones» o descarga el instalador de la release.
+Estudio personal de creación de contenido de TrefotG. Versión publicada: **[v0.2.12](https://github.com/Trefot/Creator-Hunter/releases/tag/v0.2.12)**. Actualiza desde «Buscar actualizaciones» o descarga el instalador de la release.
 
 Aplicación de escritorio para Windows, construida con React, TypeScript, Tauri 2 y SQLite. Incluye Creator Studio, conexión con YouTube, biblioteca de juegos con trofeos de PSN y contadores para OBS y Stream Deck. Twitch sigue pendiente.
 
@@ -62,3 +62,7 @@ Nombre definitivo: **Nexus Studio**. Emblema elegido: el compañero violeta sost
 ## Fortnite en PC
 
 Con Fortnite abierto, entra en Juegos y pulsa «Añadir Fortnite para PC» una vez. El modo automático reconocerá su proceso cada 15 segundos, sin necesitar PSN. «Elegir juego» permite seleccionar manualmente un juego de cualquier plataforma y volver a la detección automática al terminar. El estado muestra su procedencia; no implica que Nexus esté conectado al estado de grabación de OBS.
+
+## OBS y Stream Deck
+
+Live Studio permite conectar OBS WebSocket v5 y marcar momentos con los tiempos de grabación/directo y el juego actual. Tiene un historial con copia de lista y URL para el botón de Stream Deck. Configuración inicial y límites en [OBS.md](OBS.md). No inicia emisiones ni genera clips por su cuenta.

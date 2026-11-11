@@ -1,6 +1,14 @@
 # Validación de estabilidad · 2026-11-11
 
-Versión actual 0.2.11, preparada desde `1d77f07` (0.2.9). El instalador ya se ha compilado en GitHub Actions para Windows; la instalación y revisión en el equipo del usuario siguen pendientes.
+Versión actual 0.2.12, preparada desde `1d77f07` (0.2.9). El instalador ya se ha compilado en GitHub Actions para Windows; la instalación y revisión en el equipo del usuario siguen pendientes.
+
+## 0.2.12 · OBS y momentos
+
+- 19 pruebas frontend y 6 de publicación pasan; TypeScript/Vite y versiones coherentes.
+- 10 pruebas de datos pasan con las 16 migraciones y las 24 tablas: incluyen importación de copia real del esquema 15, marcas con ambos tiempos, archivo Unicode, roundtrip y rechazo de marcas sin tiempo o con sesión terminada.
+- 2 pruebas del protocolo OBS pasan contra un servidor WebSocket local simulado: autenticación, estado, evento de archivo, rechazo de comandos de control y fallo de autenticación/conexión.
+- Chromium con IPC simulado: conectar, marcar en 00:02:03, copiar la URL de Stream Deck, fallo sin duplicar la marca y bloqueo de grabación pausada. Sin errores JavaScript ni desbordamiento a 1280/960 píxeles. Captura de prueba con datos ficticios en nexus-obs-momentos.png.
+- La ejecución [43068021591](https://github.com/Trefot/Creator-Hunter/actions/runs/43068021591) pasó 19 pruebas frontend, 6 de publicación, 10 de datos y 18 del núcleo nativo, compiló NSIS y verificó la actualización desde 0.2.11. Release y canal publicados y comprobados: instaladores idénticos, 3.349.295 bytes; SHA-256 `0f18621a516fa0d7ccaa2bb2e5ef7089c34e57bea8c8a9721455fd249140c480`, origen `89b524a94c5cd56032b19bbe75be0144b375fc6e`. La conexión al OBS y la pulsación física del Stream Deck del usuario siguen pendientes de configuración y revisión en su equipo.
 
 ## 0.2.11 · PC e identidad de Windows
 
