@@ -2,6 +2,12 @@
 
 ## [Sin publicar]
 
+## [0.2.9] · 2026-11-10 · Botón para actualizar
+
+- Nuevo botón «Buscar actualizaciones» abajo en el menú, como en Lumen.
+- Si hay versión nueva, te enseña las novedades y con «Actualizar ahora» se instala y TrophyHunter se vuelve a abrir solo: ya no hace falta cerrarlo.
+- Si no hay nada nuevo, te dice qué versión tienes.
+
 ## [0.2.8] · 2026-11-10 · Vista previa a medida
 
 - La vista previa del editor se ajusta al tamaño del contador: al agrandar el icono ya no se corta.

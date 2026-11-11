@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { getVersion } from "@tauri-apps/api/app";
 import { invoke } from "@tauri-apps/api/core";
-import { Download, PartyPopper, RefreshCw, Sparkles, X } from "lucide-react";
+import { CheckCircle2, Download, PartyPopper, RefreshCw, Sparkles, X } from "lucide-react";
 import { Logo } from "../../components/Logo";
 import { es } from "../../i18n/es";
 
@@ -12,6 +12,8 @@ const CHECK_EVERY_MS = 10 * 60 * 1000;
 const READ_TIME_MS = 3500;
 /** Novedades de la versión que se está instalando, para enseñarlas al volver a abrir. */
 const PENDING_KEY = "th.update.pending";
+/** El botón «Buscar actualizaciones» del menú lanza este evento. */
+export const CHECK_UPDATES_EVENT = "th:check-updates";
 
 interface UpdateInfo {
   version: string;
@@ -42,6 +44,16 @@ export function UpdateLayer() {
   const [available, setAvailable] = useState<UpdateInfo | null>(null);
   const [updated, setUpdated] = useState<{ version: string; notes: string[] } | null>(null);
   const [error, setError] = useState("");
+  /** Resultado de buscar a mano: comprobando, hay una nueva o ya está al día. */
+  const [manual, setManual] = useState<{ state: "checking" } | { state: "found"; info: UpdateInfo } | { state: "latest"; version: string } | null>(null);
+
+  async function checkNow() {
+    if (import.meta.env.DEV) return setManual({ state: "latest", version: "PRUEBAS" });
+    setManual({ state: "checking" });
+    const [info, current] = await Promise.all([invoke<UpdateInfo | null>("update_check").catch(() => null), getVersion()]);
+    setAvailable(info);
+    setManual(info ? { state: "found", info } : { state: "latest", version: current });
+  }
 
   async function apply(info: UpdateInfo) {
     setInstalling(info);
@@ -80,6 +92,12 @@ export function UpdateLayer() {
     return () => clearInterval(timer);
   }, []);
 
+  useEffect(() => {
+    const onCheck = () => checkNow();
+    window.addEventListener(CHECK_UPDATES_EVENT, onCheck);
+    return () => window.removeEventListener(CHECK_UPDATES_EVENT, onCheck);
+  }, []);
+
   if (installing) {
     return (
       <div className="update-screen" role="status">
@@ -104,6 +122,44 @@ export function UpdateLayer() {
           <h2>{t.updated(updated.version)}</h2>
           {updated.notes.length > 0 ? <Notes notes={updated.notes} /> : <p className="muted">{t.noNotes}</p>}
           <button onClick={() => setUpdated(null)}>{t.great}</button>
+        </div>
+      </div>
+    );
+  }
+
+  if (manual) {
+    const close = () => setManual(null);
+    return (
+      <div className="update-backdrop" onClick={close}>
+        <div className="card update-done" onClick={(e) => e.stopPropagation()} role="dialog">
+          <button className="ghost icon-button update-close" onClick={close} title={t.close}>
+            <X size={16} />
+          </button>
+          {manual.state === "checking" && (
+            <>
+              <RefreshCw size={32} className="spin" />
+              <h2>{t.checking}</h2>
+            </>
+          )}
+          {manual.state === "latest" && (
+            <>
+              <CheckCircle2 size={36} />
+              <h2>{t.latest}</h2>
+              <p className="muted">{manual.version === "PRUEBAS" ? t.devNoUpdates : t.youHave(manual.version)}</p>
+              <button onClick={close}>{t.ok}</button>
+            </>
+          )}
+          {manual.state === "found" && (
+            <>
+              <Download size={36} />
+              <h2>{t.available(manual.info.version)}</h2>
+              <Notes notes={manual.info.notes} />
+              <p className="muted small">{t.restartHint}</p>
+              <button onClick={() => apply(manual.info)}>
+                <Download size={16} /> {t.now}
+              </button>
+            </>
+          )}
         </div>
       </div>
     );

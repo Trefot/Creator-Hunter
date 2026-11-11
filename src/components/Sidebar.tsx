@@ -6,6 +6,7 @@ import {
   LayoutDashboard,
   Lightbulb,
   LucideIcon,
+  RefreshCw,
   Radio,
   Target,
   UsersRound,
@@ -14,6 +15,7 @@ import {
 import { es } from "../i18n/es";
 import { READY_SECTIONS, Section } from "../sections";
 import { Logo } from "./Logo";
+import { CHECK_UPDATES_EVENT } from "../features/update/UpdateLayer";
 
 export const SECTION_ICONS: Record<Section, LucideIcon> = {
   dashboard: LayoutDashboard,
@@ -73,10 +75,15 @@ export function Sidebar({ current, onSelect }: Props) {
         ))}
       </div>
       <ul>{item("backups")}</ul>
-      <p className="sidebar-footer">
-        {es.version}
-        {import.meta.env.DEV && <span className="dev-badge">{es.devBadge}</span>}
-      </p>
+      <div className="sidebar-footer">
+        <span>
+          {es.version}
+          {import.meta.env.DEV && <span className="dev-badge">{es.devBadge}</span>}
+        </span>
+        <button className="ghost small-button update-check" onClick={() => window.dispatchEvent(new Event(CHECK_UPDATES_EVENT))}>
+          <RefreshCw size={13} /> {es.update.check}
+        </button>
+      </div>
     </nav>
   );
 }

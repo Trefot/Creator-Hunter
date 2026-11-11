@@ -4380,3 +4380,19 @@ button.muted-link {
   max-width: none;
   transform-origin: top left;
 }
+
+/* Pie del menú: versión y botón de actualizar (como Lumen) */
+.sidebar-footer {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.update-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  font-size: 12px;
+}
