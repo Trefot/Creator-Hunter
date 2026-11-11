@@ -227,6 +227,14 @@ Objetivos con progreso (nivel, XP farmeada…) y proyectos del Creator Studio en
 
 - [x] Actualización automática desde GitHub como Lumen (v0.2.4), confirmada por el usuario el 2026-11-10.
 
+#### 💡 Ideas para los directos (propuestas el 2026-11-10, por elegir)
+- Celebraciones por hitos: cada 100/1.000, confeti, sonido especial y mensaje («¡10.000 COFRES!»).
+- Camino al platino en pantalla: % al platino, trofeo actual y su progreso; se actualiza solo con PSN.
+- Botón «¡Clip!» en el Stream Deck: apunta el minuto del directo para cortar Shorts después (va a Ideas/Proyectos).
+- Resumen al terminar el directo: duración, contadores, trofeos y seguidores nuevos.
+- Escenas automáticas en OBS según el juego detectado en la PS5 (OBS WebSocket).
+- ~~Contador «de hoy» + total~~ (descartada por el usuario).
+
 #### ⬜ L2 · Seguidores y suscriptores automáticos
 YouTube (ya conectado) y Twitch (EventSub, pendiente de Alpha 0.2) como contadores de origen automático.
 
