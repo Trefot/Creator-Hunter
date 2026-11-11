@@ -11,6 +11,8 @@ concurrency:
 jobs:
   build:
     runs-on: windows-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -28,28 +30,8 @@ jobs:
       - name: Comprobar actualización y accesos de Windows
         shell: pwsh
         run: ./scripts/test-windows-install.ps1
-      - uses: actions/upload-artifact@v4
-        with:
-          name: nexus-windows-${{ github.sha }}
-          path: .release/*
-          include-hidden-files: true
-          if-no-files-found: error
-          retention-days: 30
-  publish:
-    needs: build
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 24
-      - uses: actions/download-artifact@v4
-        with:
-          name: nexus-windows-${{ github.sha }}
-          path: .release
-      - name: Comprobar integridad del instalador descargado
+      - name: Comprobar integridad del instalador
+        shell: bash
         run: cd .release && sha256sum --check SHA256SUMS.txt
       - uses: actions/checkout@v4
         with:
