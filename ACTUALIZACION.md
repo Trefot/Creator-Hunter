@@ -1,5 +1,11 @@
 # Actualizaciones de Nexus Studio
 
+## 0.2.15 preparada, publicación pendiente
+
+Portada oficial de Fortnite, colección de platinados y objetivos de Wukong/Fortnite para OBS y Stream Deck. Detección visual experimental por referencia, sin IA generativa; requiere calibración real por objeto en el OBS del usuario. Uso en [DIRECTOS-JUEGOS.md](DIRECTOS-JUEGOS.md).
+
+El código está preparado desde `14b3fb509252bffd3d507fa48936d7fdb03c8e45`. La ejecución [43095079417](https://github.com/Trefot/Creator-Hunter/actions/runs/43095079417) pasó pruebas, build NSIS y actualización desde 0.2.14, pero falló transfiriendo el artefacto antes de publicar. [Reintento 43097625025](https://github.com/Trefot/Creator-Hunter/actions/runs/43097625025) con el flujo original, pendiente. El canal mantiene 0.2.14; no se debe anunciar 0.2.15 como instalable hasta verificar la publicación y sus archivos.
+
 ## 0.2.14 publicada
 
 [Descargar instalador 0.2.14](https://github.com/Trefot/Creator-Hunter/releases/download/v0.2.14/Nexus-Studio_0.2.14_x64-setup.exe) o «Buscar actualizaciones» → «Actualizar ahora».

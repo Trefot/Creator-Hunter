@@ -1,6 +1,15 @@
 # Validación de estabilidad · 2026-11-11
 
-Versión actual 0.2.14, preparada desde `1d77f07` (0.2.9). El instalador ya se ha compilado en GitHub Actions para Windows; la instalación y revisión en el equipo del usuario siguen pendientes.
+Versión de código 0.2.15; versión publicada 0.2.14, preparada desde `1d77f07` (0.2.9). El instalador ya se ha compilado en GitHub Actions para Windows; la instalación y revisión en el equipo del usuario siguen pendientes.
+
+## 0.2.15 · Platinos, objetos y detección visual
+
+- 20 pruebas frontend y 6 de publicación; TypeScript/Vite correctos.
+- 16 pruebas de datos con 19 migraciones y 27 tablas: importación del esquema 18, calibraciones y selección en copias, platinos sin duplicados con prioridad del trofeo real, marcado idempotente y progreso compartido con collection_item.
+- 5 pruebas del protocolo OBS con servidor simulado; lecturas de fuentes y capturas permitidas sin iniciar ni detener salidas.
+- Chromium con SQLite real en memoria y RPC nativo simulado: registro de platino manual, preparación repetida de 36 curiosidades sin duplicados, selección del objetivo, URL del overlay y calibración. Modo Prueba detecta sin escribir progreso; modo automático espera la ausencia previa y dos coincidencias, escribe un objeto y el overlay muestra 1/36. Sin errores JavaScript. Fuente de navegador 720×420 sin recorte del panel en el caso probado.
+- Prueba reproducible opcional: tests/broadcast-browser.py con Vite abierto, Playwright/Chromium y Pillow. La referencia es texto sintético; no acredita detección real de Wukong o del token de Fortnite. Ambas requieren calibración y prueba en el OBS del usuario.
+- Se canceló la primera compilación 43092872456 antes de publicar para corregir la altura recomendada del overlay. La ejecución 43095079417 pasó las pruebas, compilación NSIS y actualización desde 0.2.14; falló en actions/upload-artifact, antes de publicar. Reintento con el mismo código y permisos originales: 43097625025, pendiente. No se ha verificado ni activado el canal 0.2.15.
 
 ## 0.2.14 · Biblioteca y fichas de juego
 

@@ -341,3 +341,15 @@ Guardar Replay Buffer se implementa en 0.2.13; recortar/editar vídeo sigue pend
 - [x] Prueba de interfaz con SQLite real, recarga y navegación de trofeos de PSN.
 - [x] Publicar y verificar Windows desde 0.2.13 (43080516190).
 - [ ] Revisar el uso de Fortnite/PSN en el equipo del usuario.
+
+## Entrega 0.2.15 · Platinos y objetivos en directo
+
+- [x] Portada oficial de Fortnite como fallback sin sustituir portadas personales.
+- [x] Colección de platinados con origen manual/PSN y sin duplicación por ficha.
+- [x] Listas de Wukong compartidas con las guías y objetivo personal para el token de Fortnite.
+- [x] Overlay de platinos/objetivo y controles Conseguido, Deshacer y Siguiente para Stream Deck.
+- [x] Detección visual local por referencia y región desde OBS, con modos Prueba y automático.
+- [x] Copias de las 27 tablas y compatibilidad con esquema 18.
+- [x] Prueba de interfaz, detección sintética y progreso del overlay.
+- [ ] Publicar y verificar Windows desde 0.2.14 (43095079417).
+- [ ] Calibrar avisos reales de Wukong y el token de Fortnite en el OBS del usuario; comprobar falsos positivos y duración de avisos.

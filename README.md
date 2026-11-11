@@ -2,7 +2,9 @@
 
 Estudio personal de creación de contenido de TrefotG. Versión publicada: **[v0.2.14](https://github.com/Trefot/Creator-Hunter/releases/tag/v0.2.14)**. Actualiza desde «Buscar actualizaciones» o descarga el instalador de la release.
 
-Aplicación de escritorio para Windows, construida con React, TypeScript, Tauri 2 y SQLite. Incluye Creator Studio, conexión con YouTube, biblioteca de juegos con trofeos de PSN y contadores para OBS y Stream Deck. Twitch sigue pendiente.
+Aplicación de escritorio para Windows, construida con React, TypeScript, Tauri 2 y SQLite. Incluye Creator Studio, conexión con YouTube, biblioteca de juegos con trofeos de PSN y contadores para OBS y Stream Deck. Los overlays se pueden emitir en Twitch desde OBS; no hay sincronización de métricas de Twitch.
+
+La versión 0.2.15 está preparada en el código; su publicación está pendiente de resolver la transferencia del instalador en GitHub Actions. No se ofrece todavía desde el canal de actualización.
 
 ## Preparar la actualización
 
@@ -69,4 +71,4 @@ Live Studio permite conectar OBS WebSocket v5 y marcar momentos con los tiempos 
 
 ## Juegos y creación
 
-Biblioteca con búsqueda y plataformas. Fortnite y juegos sin trofeos tienen plan diario, notas y portada editable. Cada juego reúne clips, momentos, ideas y proyectos; una captura se convierte en idea sin duplicarse y conserva su juego al aprobarse como proyecto. PlayStation mantiene sus trofeos, ruta y guía. Detalles y pruebas en [JUEGOS.md](JUEGOS.md).
+Biblioteca con búsqueda y plataformas. Fortnite y juegos sin trofeos tienen plan diario, notas y portada editable. Cada juego reúne clips, momentos, ideas y proyectos; una captura se convierte en idea sin duplicarse y conserva su juego al aprobarse como proyecto. PlayStation mantiene sus trofeos, ruta y guía. Detalles y pruebas en [JUEGOS.md](JUEGOS.md). Colección de platinados, objetivos para OBS/Stream Deck y detección visual experimental calibrable en [DIRECTOS-JUEGOS.md](DIRECTOS-JUEGOS.md).
