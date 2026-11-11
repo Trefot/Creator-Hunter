@@ -1,6 +1,21 @@
 # ROADMAP.md — Ruta y tareas
 
-Ritmo: sesiones diarias, cada una con un presupuesto de ~8–9 % del uso semanal de Claude Code. Una tarea cerrada y probada por sesión.
+Ritmo: trabajo por tareas verificables, con validación final en la app de pruebas de Windows.
+
+## Prioridad actual · Estabilidad para uso personal (2026-11-11)
+
+El producto es exclusivamente personal (PRODUCT.md). Las fases históricas de abajo se conservan como contexto, no como compromiso de implementar todos los módulos.
+
+- [x] Implementar bloqueo de migraciones si falla la copia y recuperación visible con reintento.
+- [x] Separar credenciales, archivos de YouTube y copias de pruebas.
+- [x] Probar con datos temporales exportación/restauración de las 22 tablas, reapertura, rollback y migraciones con datos existentes.
+- [x] Corregir errores de actualización que se mostraban como «al día» y clics duplicados al instalar.
+- [x] Comprobar recuperación y vista previa aislada del overlay en Chromium con comandos nativos simulados.
+- [ ] Ejecutar y revisar la compilación y tests nativos en Windows.
+- [ ] Confirmar en la app de PRUEBAS la persistencia, el audio en WebView2 y la separación de conexiones.
+- [ ] Solo después, preparar una versión e instalador para la app diaria.
+
+Resultados y límites en VALIDACION.md. Propuestas investigadas de uso en RECOMENDACIONES.md; ninguna función nueva se considera implementada por figurar allí.
 
 ## Fases
 

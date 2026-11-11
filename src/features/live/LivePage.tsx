@@ -155,6 +155,7 @@ function OverlayPreview({ form }: { form: CounterInput }) {
           ref={frame}
           className="counter-preview-frame"
           srcDoc={overlayHtml}
+          sandbox="allow-scripts"
           title={t.preview}
           allow="autoplay"
           onLoad={() => setReady(true)}

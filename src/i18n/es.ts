@@ -5,6 +5,12 @@ export const es = {
   version: "Alpha 0.2 · v0.2.9",
   /** Marca de la versión de pruebas (D-019). */
   devBadge: "PRUEBAS",
+  startup: {
+    loading: "Preparando tus datos…",
+    failed: "No se pudieron abrir tus datos",
+    recovery: "La app no continuará hasta resolver el problema. Si falló la copia de seguridad, comprueba el espacio libre y el acceso a Documentos/TrophyHunter/Copias. Después, vuelve a intentarlo. No borres tu base de datos.",
+    retry: "Volver a intentar",
+  },
   games: {
     subtitle: "Tu biblioteca y tu camino al platino. Los trofeos llegan desde tu cuenta de PlayStation.",
     nowPlaying: "Jugando ahora en tu consola:",

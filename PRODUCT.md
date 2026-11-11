@@ -4,7 +4,7 @@
 
 Un "sistema operativo" para **creadores de contenido, comunidades y jugadores**: módulos conectados que comparten identidad, datos, permisos y automatizaciones, en lugar de aplicaciones sueltas.
 
-Empieza como herramienta **personal** para gestionar TrefotG. Está diseñado para que algún día otros creadores puedan usarlo como SaaS.
+Es una herramienta **exclusivamente personal** para gestionar TrefotG. Decisión del usuario confirmada el 2026-11-11: no se distribuirá a terceros ni se convertirá en SaaS. Las referencias históricas a SaaS en documentos anteriores no definen el alcance actual.
 
 > No construimos una aplicación para tener más herramientas, sino para necesitar menos y tener más control.
 
@@ -14,6 +14,7 @@ Empieza como herramienta **personal** para gestionar TrefotG. Está diseñado pa
 - Fácil de usar sin conocimientos técnicos.
 - Integraciones oficiales siempre que sea posible. Nunca métodos que pongan en riesgo las cuentas del usuario.
 - No construir nada antes de necesitarlo. La estabilidad va antes que la velocidad.
+- Priorizar datos seguros, preparación de directos, aprovechamiento de grabaciones y una rutina breve de planificación y revisión. No añadir infraestructura de varios usuarios ni permisos de organización.
 - **Autonomía híbrida:** lo rutinario se automatiza. Publicar, gastar dinero o tomar decisiones sensibles requiere aprobación.
 - La IA es transparente: no se hace pasar por una persona, no inventa respuestas y no genera actividad falsa.
 

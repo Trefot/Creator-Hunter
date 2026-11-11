@@ -1,4 +1,5 @@
 import Database from "@tauri-apps/plugin-sql";
+import { invoke } from "@tauri-apps/api/core";
 
 /**
  * Misma cadena que DB_URL en src-tauri/src/lib.rs, donde se registran las migraciones.
@@ -13,7 +14,12 @@ let connection: Promise<Database> | null = null;
 
 /** Conexión compartida; la primera llamada aplica las migraciones pendientes. */
 export function getDb(): Promise<Database> {
-  connection ??= Database.load(DB_URL);
+  connection ??= invoke("prepare_database")
+    .then(() => Database.load(DB_URL))
+    .catch((error: unknown) => {
+      connection = null; // permite reintentar tras corregir el problema de la copia
+      throw error;
+    });
   return connection;
 }
 

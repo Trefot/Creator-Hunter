@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { getVersion } from "@tauri-apps/api/app";
 import { invoke } from "@tauri-apps/api/core";
 import { CheckCircle2, Download, PartyPopper, RefreshCw, Sparkles, X } from "lucide-react";
@@ -44,18 +44,28 @@ export function UpdateLayer() {
   const [available, setAvailable] = useState<UpdateInfo | null>(null);
   const [updated, setUpdated] = useState<{ version: string; notes: string[] } | null>(null);
   const [error, setError] = useState("");
+  const applying = useRef(false);
   /** Resultado de buscar a mano: comprobando, hay una nueva o ya está al día. */
   const [manual, setManual] = useState<{ state: "checking" } | { state: "found"; info: UpdateInfo } | { state: "latest"; version: string } | null>(null);
 
   async function checkNow() {
     if (import.meta.env.DEV) return setManual({ state: "latest", version: "PRUEBAS" });
     setManual({ state: "checking" });
-    const [info, current] = await Promise.all([invoke<UpdateInfo | null>("update_check").catch(() => null), getVersion()]);
-    setAvailable(info);
-    setManual(info ? { state: "found", info } : { state: "latest", version: current });
+    setError("");
+    try {
+      const [info, current] = await Promise.all([invoke<UpdateInfo | null>("update_check"), getVersion()]);
+      setAvailable(info);
+      setManual(info ? { state: "found", info } : { state: "latest", version: current });
+    } catch (err) {
+      setManual(null);
+      setError(String(err));
+    }
   }
 
   async function apply(info: UpdateInfo) {
+    if (applying.current) return;
+    applying.current = true;
+    setError("");
     setInstalling(info);
     try {
       localStorage.setItem(PENDING_KEY, JSON.stringify({ version: info.version, notes: info.notes }));
@@ -66,6 +76,8 @@ export function UpdateLayer() {
     try {
       await invoke("update_apply");
     } catch (err) {
+      applying.current = false;
+      try { localStorage.removeItem(PENDING_KEY); } catch { /* sin almacenamiento */ }
       setInstalling(null);
       setError(String(err));
     }
@@ -83,11 +95,11 @@ export function UpdateLayer() {
       } catch {
         /* nada que enseñar */
       }
-    });
+    }).catch(() => { /* no impide usar la app */ });
 
-    invoke<UpdateInfo | null>("update_check").then((info) => info && apply(info));
+    invoke<UpdateInfo | null>("update_check").then((info) => info && apply(info)).catch(() => { /* reintento desde el menú */ });
     const timer = setInterval(() => {
-      invoke<UpdateInfo | null>("update_check").then((info) => setAvailable(info));
+      invoke<UpdateInfo | null>("update_check").then((info) => setAvailable(info)).catch(() => { /* conservar aviso */ });
     }, CHECK_EVERY_MS);
     return () => clearInterval(timer);
   }, []);
@@ -171,7 +183,7 @@ export function UpdateLayer() {
       <Download size={16} />
       <span>
         {error ? t.failed(error) : t.available(available!.version)}
-        {available?.notes[0] && <span className="muted small"> · {available.notes[0]}</span>}
+        {!error && available?.notes[0] && <span className="muted small"> · {available.notes[0]}</span>}
       </span>
       {!error && (
         <button className="small-button" onClick={() => apply(available!)}>

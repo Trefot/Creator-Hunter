@@ -1,14 +1,50 @@
 # TrophyHunter (nombre de trabajo)
 
-Sistema operativo para creadores de TrefotG. Versión actual: **v0.1.0, Creator Studio Alpha 0.1**.
+Sistema operativo para creadores de TrefotG. Versión actual: **v0.2.9**.
+
+Aplicación de escritorio para Windows, construida con React, TypeScript, Tauri 2 y SQLite. Incluye Creator Studio, conexión con YouTube, biblioteca de juegos con trofeos de PSN y contadores para OBS y Stream Deck. Twitch sigue pendiente.
+
+## Preparar el desarrollo en Windows
+
+Requisitos: Node.js LTS compatible con Vite 8 (20.19+ o 22.12+), Rust estable con toolchain MSVC, Visual Studio Build Tools con «Desarrollo para el escritorio con C++» y WebView2.
+
+```bash
+git clone https://github.com/Trefot/Creator-Hunter.git
+cd Creator-Hunter
+npm ci
+npm run build
+npm run tauri dev
+```
+
+`npm run build` comprueba TypeScript y compila la interfaz. `npm run tauri dev` abre la aplicación de escritorio de **PRUEBAS**. También se puede abrir con `Probar TrophyHunter (pruebas).bat` después de instalar las dependencias.
+
+`npm run dev` solo inicia Vite: una pestaña de navegador no dispone de los comandos nativos ni de SQLite de Tauri y no sustituye la prueba de la app.
+
+Las integraciones se configuran desde la aplicación. No hace falta conectar YouTube o PSN para empezar a revisar el código y compilar la interfaz.
 
 ## Usar la app
 
-- **Instalada:** ejecuta el instalador de `src-tauri/target/release/bundle/` (msi o nsis). Usa los mismos datos que la versión de desarrollo (`%APPDATA%\com.trefotg.studio\studio.db`).
-- **En desarrollo:** doble clic en `Abrir TrophyHunter.bat`.
+- **Instalada:** ejecuta el instalador de `src-tauri/target/release/bundle/` (msi o nsis). Usa `%APPDATA%\com.trefotg.studio\studio.db`; desarrollo usa `studio-dev.db`.
+- **En desarrollo:** sigue los pasos de preparación anteriores.
 - **Copias de seguridad:** sección "Copias de seguridad" de la app (se guardan en Documentos\TrophyHunter\Copias).
 
 ## Documentación
 
 Empieza por [CLAUDE.md](CLAUDE.md) (reglas y comandos) y [PRODUCT.md](PRODUCT.md) (visión y alcance).
-[ROADMAP.md](ROADMAP.md) tiene lo siguiente: Alpha 0.2, con conexión a YouTube y Twitch.
+[ROADMAP.md](ROADMAP.md) contiene las tareas pendientes y [CHANGELOG.md](CHANGELOG.md), el historial de versiones.
+
+La [revisión inicial](REVISION-INICIAL.md) recoge las comprobaciones del 2026-11-11, sus límites y las primeras correcciones propuestas.
+
+[VALIDACION.md](VALIDACION.md) documenta las pruebas y la comprobación pendiente en Windows. [RECOMENDACIONES.md](RECOMENDACIONES.md) propone mejoras para el uso personal, los directos y el contenido.
+
+## Comprobar cambios
+
+```bash
+npm test
+npm run build
+cargo test --locked --manifest-path tests/data-safety/Cargo.toml
+```
+
+Las pruebas de datos usan el código real de SQLite con bases temporales, sin arrancar Tauri. Para comprobar también el núcleo de escritorio en Windows: `cargo test --locked --manifest-path src-tauri/Cargo.toml`.
+
+La versión de pruebas necesita configurar sus propias conexiones de YouTube y PSN. Sus copias se guardan en `Documentos\TrophyHunter\Copias\Pruebas`. No reutiliza ni copia automáticamente las credenciales de producción.

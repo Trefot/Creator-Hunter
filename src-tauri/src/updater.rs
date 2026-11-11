@@ -39,6 +39,7 @@ pub fn newest_in(dir: &Path, current: Version) -> Option<(Version, PathBuf)> {
         .ok()?
         .filter_map(|entry| entry.ok())
         .filter_map(|entry| {
+            if !entry.file_type().ok()?.is_file() { return None; }
             let name = entry.file_name().into_string().ok()?;
             let version = parse_version(name.strip_prefix(PREFIX)?.strip_suffix(SUFFIX)?)?;
             Some((version, entry.path()))
@@ -123,31 +124,27 @@ fn check_folder(app: &AppHandle, current: Version) -> Option<Found> {
     })
 }
 
-fn pending(app: &AppHandle) -> Option<Found> {
-    if cfg!(debug_assertions) {
-        return None; // la versión de pruebas nunca se actualiza sola
-    }
-    let current = parse_version(&app.package_info().version.to_string())?;
+fn pending(app: &AppHandle) -> Result<Option<Found>, String> {
+    if cfg!(debug_assertions) { return Ok(None); }
+    let current = parse_version(&app.package_info().version.to_string()).ok_or("Versión instalada no válida.")?;
     match check_github(app, current) {
-        Ok(Some(found)) => Some(found),
-        Ok(None) => check_folder(app, current), // GitHub al día; por si acaso, la carpeta
-        Err(e) => {
-            eprintln!("Actualizaciones: GitHub no respondió ({e}); se mira la carpeta.");
-            check_folder(app, current)
-        }
+        Ok(Some(found)) => Ok(Some(found)),
+        Ok(None) => Ok(check_folder(app, current)),
+        Err(e) => match check_folder(app, current) {
+            Some(found) => Ok(Some(found)),
+            None => Err(format!("No se pudo comprobar GitHub y no hay un instalador local más nuevo: {e}")),
+        },
     }
 }
 
-/// ¿Hay una versión más nueva? Devuelve la versión y sus novedades.
+/// Un fallo de conexión es un error, no una confirmación de estar al día.
 #[tauri::command]
-pub async fn update_check(app: AppHandle) -> Option<UpdateInfo> {
-    // git puede tardar unos segundos: fuera del hilo principal.
-    tauri::async_runtime::spawn_blocking(move || match pending(&app)? {
-        Found::GitHub { info, .. } | Found::Folder { info, .. } => Some(info),
-    })
-    .await
-    .ok()
-    .flatten()
+pub async fn update_check(app: AppHandle) -> Result<Option<UpdateInfo>, String> {
+    tauri::async_runtime::spawn_blocking(move || {
+        Ok(pending(&app)?.map(|found| match found {
+            Found::GitHub { info, .. } | Found::Folder { info, .. } => info,
+        }))
+    }).await.map_err(|e| e.to_string())?
 }
 
 /// Descarga (si viene de GitHub), instala en silencio y vuelve a abrir la app.
@@ -155,7 +152,7 @@ pub async fn update_check(app: AppHandle) -> Option<UpdateInfo> {
 pub async fn update_apply(app: AppHandle) -> Result<(), String> {
     let handle = app.clone();
     let setup = tauri::async_runtime::spawn_blocking(move || -> Result<PathBuf, String> {
-        match pending(&handle).ok_or("No hay ninguna actualización pendiente.")? {
+        match pending(&handle)?.ok_or("No hay ninguna actualización pendiente.")? {
             Found::Folder { setup, .. } => Ok(setup),
             Found::GitHub { info, installer, dir } => {
                 let bytes = git(&dir, &["cat-file", "blob", &format!("FETCH_HEAD:{installer}")])?;

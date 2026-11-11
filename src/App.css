@@ -4396,3 +4396,7 @@ button.muted-link {
   padding: 4px 8px;
   font-size: 12px;
 }
+/* Preparación y recuperación antes de montar las pantallas de datos. */
+.startup { width: min(100%, 768px); margin: 10vh auto; padding: 24px; box-sizing: border-box; }
+.startup > .card { padding: 24px; }
+.startup .error { overflow-wrap: anywhere; }

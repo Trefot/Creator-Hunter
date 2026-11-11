@@ -2,6 +2,17 @@
 
 ## [Sin publicar]
 
+### 2026-11-11 · Estabilidad para uso personal (pendiente de prueba nativa en Windows)
+
+- La app espera a una copia previa válida antes de abrir la base y aplicar migraciones. Si falla, muestra el problema y permite reintentar.
+- Conexiones de YouTube y PSN separadas en pruebas; archivos de YouTube y carpeta de copias de pruebas independientes. Desconectar YouTube en pruebas no revoca el acceso de producción en Google.
+- Exportaciones con una instantánea consistente de todas las tablas y sin sobrescribir otra copia con el mismo nombre.
+- Importaciones que rechazan tablas obligatorias ausentes, filas vacías y copias sin el espacio de trabajo esperado; se conserva la compatibilidad con copias antiguas válidas.
+- La búsqueda manual de actualizaciones informa de los errores de conexión en lugar de asegurar que la app está al día. Se evitan instalaciones duplicadas por clics repetidos.
+- Vista previa del overlay aislada y respuestas tardías del modo juego o de la portada ignoradas después de salir de su pantalla.
+- Pruebas automatizadas de recuperación SQLite y del bloqueo de apertura; comprobaciones de frontend y Windows preparadas para GitHub Actions.
+- Documentación actualizada al uso exclusivamente personal e investigación de mejoras en RECOMENDACIONES.md. No se ha publicado un instalador nuevo.
+
 ## [0.2.9] · 2026-11-10 · Botón para actualizar
 
 - Nuevo botón «Buscar actualizaciones» abajo en el menú, como en Lumen.

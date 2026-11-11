@@ -24,7 +24,7 @@ const SCOPE: &str = "psn:mobile.v2.core psn:clientapp";
 /// Pide nombres y descripciones en español cuando PSN los tiene.
 const LANGUAGE: &str = "es-419,es;q=0.9,en;q=0.8";
 const KEYRING_SERVICE: &str = "TrophyHunter";
-const KEYRING_USER: &str = "psn-refresh-token";
+const KEYRING_USER: &str = if cfg!(debug_assertions) { "psn-refresh-token-dev" } else { "psn-refresh-token" };
 
 #[derive(Default)]
 pub struct PsnState {

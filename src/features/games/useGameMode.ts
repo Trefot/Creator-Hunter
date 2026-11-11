@@ -32,6 +32,7 @@ export function useGameMode(onStart: (game: Game) => void): GameModeState {
       }
       try {
         const [now, library] = await Promise.all([psnNowPlaying(), listGames()]);
+        if (cancelled) return;
         const game = matchPlaying(library, now.games);
         if (game && game.id !== lastId.current) onStartRef.current(game);
         lastId.current = game?.id ?? null;

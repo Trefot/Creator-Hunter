@@ -29,9 +29,9 @@ const ANALYTICS_URL: &str = "https://youtubeanalytics.googleapis.com/v2/reports"
 const SCOPES: &str =
     "https://www.googleapis.com/auth/youtube.readonly https://www.googleapis.com/auth/yt-analytics.readonly";
 const KEYRING_SERVICE: &str = "TrophyHunter";
-const KEYRING_USER: &str = "youtube-refresh-token";
-const CLIENT_FILE: &str = "google-client.json";
-const CONNECTION_FILE: &str = "youtube-connection.json";
+const KEYRING_USER: &str = if cfg!(debug_assertions) { "youtube-refresh-token-dev" } else { "youtube-refresh-token" };
+const CLIENT_FILE: &str = if cfg!(debug_assertions) { "google-client-dev.json" } else { "google-client.json" };
+const CONNECTION_FILE: &str = if cfg!(debug_assertions) { "youtube-connection-dev.json" } else { "youtube-connection.json" };
 /// Tiempo máximo para completar el inicio de sesión en el navegador.
 const LOGIN_TIMEOUT: Duration = Duration::from_secs(300);
 
@@ -573,13 +573,15 @@ pub async fn youtube_video_stats(
     Ok(VideoSyncData { videos: out.into_values().collect(), warning })
 }
 
-/// Desconecta: revoca el acceso en Google y borra el token de Windows y la conexión guardada.
+/// Pruebas desconecta solo en local: revocar en Google afecta a todos los clientes del proyecto.
 #[tauri::command]
 pub async fn youtube_disconnect(app: AppHandle, state: State<'_, YouTubeState>) -> Result<(), String> {
     let entry = keyring_entry()?;
     if let Ok(refresh) = entry.get_password() {
         // Si Google no responde, se desconecta igualmente en local.
-        let _ = reqwest::Client::new().post(REVOKE_URL).form(&[("token", refresh.as_str())]).send().await;
+        if !cfg!(debug_assertions) {
+            let _ = reqwest::Client::new().post(REVOKE_URL).form(&[("token", refresh.as_str())]).send().await;
+        }
         let _ = entry.delete_credential();
     }
     *state.access.lock().unwrap() = None;

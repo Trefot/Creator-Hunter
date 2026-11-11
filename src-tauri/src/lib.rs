@@ -3,6 +3,7 @@ use tauri_plugin_sql::{Migration, MigrationKind};
 mod backup;
 mod live;
 mod premigrate;
+mod data_safety;
 mod updater;
 mod psn;
 mod youtube;
@@ -121,14 +122,9 @@ pub fn run() {
         .manage(youtube::YouTubeState::default())
         .manage(psn::PsnState::default())
         .manage(live::LiveState::default())
+        .manage(premigrate::Preparation::default())
         .setup(|app| {
-            // D-020: copia de los datos antes de aplicar migraciones nuevas (el frontend aún no abrió la base).
-            let latest = migrations().iter().map(|m| m.version).max().unwrap_or(0);
-            match premigrate::backup_if_pending(app.handle(), latest) {
-                Ok(Some(path)) => eprintln!("Copia antes de migrar: {path}"),
-                Ok(None) => {}
-                Err(e) => eprintln!("Aviso: {e}"),
-            }
+            // La interfaz espera a prepare_database antes de abrir SQLite (D-024).
             // D-019: la versión de pruebas se distingue a simple vista.
             #[cfg(debug_assertions)]
             if let Some(window) = tauri::Manager::get_webview_window(app, "main") {
@@ -138,6 +134,7 @@ pub fn run() {
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
+            premigrate::prepare_database,
             backup::export_backup,
             backup::import_backup,
             youtube::youtube_import_client,

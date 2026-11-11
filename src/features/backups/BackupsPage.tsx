@@ -34,17 +34,19 @@ export function BackupsPage() {
 
   async function onChooseFile(e: ChangeEvent<HTMLInputElement>) {
     setError("");
+    setFile(null);
     setImported(null);
     const chosen = e.target.files?.[0];
     e.target.value = ""; // permite volver a elegir el mismo archivo
     if (!chosen) return;
-    const content = await chosen.text();
-    const preview = previewBackup(content);
-    if (!preview) {
-      setFile(null);
-      return setError(t.invalidFile);
+    try {
+      const content = await chosen.text();
+      const preview = previewBackup(content);
+      if (!preview) return setError(t.invalidFile);
+      setFile({ content, preview });
+    } catch (err) {
+      setError(String(err));
     }
-    setFile({ content, preview });
   }
 
   async function onImport() {

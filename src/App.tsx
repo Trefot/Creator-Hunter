@@ -44,7 +44,7 @@ function App() {
     }
     skinFromCover(playingCover)
       .then((skin) => !cancelled && applySkin(skin, playingCover))
-      .catch(() => applySkin(null, null));
+      .catch(() => { if (!cancelled) applySkin(null, null); });
     return () => {
       cancelled = true;
     };

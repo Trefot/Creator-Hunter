@@ -216,6 +216,20 @@ Cuentan lo recibido en USD desde la fecha local de creación de la meta, filtrad
 - **Plan B:** si GitHub falla, la carpeta `Documentos\TrophyHunter\Instaladores` (D-021). Por eso el script también copia ahí el instalador.
 - En otro PC hará falta tener git e iniciar sesión en GitHub una vez (el repositorio es privado).
 
+### D-024 · Estabilidad y uso exclusivamente personal (2026-11-11)
+- Por decisión del usuario, no se prepara distribución a terceros ni SaaS. Se conserva la arquitectura de escritorio y las decisiones históricas de arriba como contexto.
+- Sustituye el comportamiento de fallo abierto de D-020: `getDb()` espera al comando `prepare_database` antes de llamar a `Database.load`. La preparación se serializa en Rust y solo se recuerda si termina correctamente. No configurar `plugins.sql.preload`: aplicaría migraciones antes de esta protección.
+- `Startup` monta la app, las sincronizaciones y el modo juego solo después de abrir correctamente SQLite; un fallo muestra el motivo y permite reintentar sin borrar datos.
+- `data_safety.rs` concentra la lógica SQLite de copia previa, instantánea y restauración, sin depender de una ventana. `backup.rs` mantiene los comandos y las rutas del sistema. Las migraciones históricas no se modifican.
+- La copia previa comprueba su integridad. Una base existente sin historial de migraciones también se respalda. No se crea la carpeta de destino si el esquema ya está al día.
+- La exportación lee todas las tablas dentro de una transacción y crea un archivo nuevo; no sobrescribe copias existentes. Importar conserva la copia previa y la transacción con rollback. Solo pueden faltar tablas que aún no existían en la versión declarada de una copia antigua; el workspace fijo es obligatorio.
+- Producción conserva sus identificadores y archivos de conexión. Desarrollo usa `youtube-refresh-token-dev`, `psn-refresh-token-dev`, `google-client-dev.json`, `youtube-connection-dev.json` y `Copias/Pruebas`. No se copian credenciales automáticamente.
+- Desconectar YouTube en desarrollo elimina el acceso local sin revocarlo en Google: la revocación puede invalidar todos los clientes del mismo proyecto OAuth. Para aislamiento remoto completo al probar nuevas autorizaciones, usar otro proyecto de Google; separar archivos no cambia los límites del proveedor. Referencia: https://developers.google.com/identity/protocols/oauth2/native-app#tokenrevoke
+- El error de comprobar GitHub se propaga a la búsqueda manual si tampoco hay instalador local. Los fallos de las comprobaciones automáticas no interrumpen el uso. Se conserva la actualización automática solicitada en D-021/D-023.
+- El overlay de vista previa se ejecuta en un iframe con `sandbox="allow-scripts"`, sin acceso al origen de la app. Su animación y renderizado se comprobaron en Chromium; audio en WebView2 pendiente.
+- Las pruebas de `tests/data-safety` compilan el mismo `data_safety.rs` con SQLx, no una réplica. Tokio solo es dependencia directa de pruebas para ejecutarlas sin GTK/WebView. No se añade una dependencia de ejecución a la aplicación.
+- Los cambios quedan sin publicar hasta verificar Windows. La firma del actualizador y la CSP completa siguen pendientes; no se afirma que estén resueltas por el aislamiento del iframe.
+
 ## Dependencias
 
 | Dependencia | Para qué |
