@@ -2,6 +2,12 @@
 
 ## [Sin publicar]
 
+## [0.2.6] · 2026-11-10 · Sonido más rápido
+
+- El sonido de los contadores suena a la vez que la animación: queda cargado desde que se abre el overlay, en vez de prepararse al sumar.
+- Si tu sonido propio empieza con silencio (muchos MP3 lo traen), ese silencio se salta solo.
+- El audio arranca listo desde el principio en OBS.
+
 ## [0.2.5] · 2026-11-10 · Arreglos de la vista previa y el sonido
 
 - Arreglada la vista previa del editor de contadores: «Probar animación y sonido» ya se ve y se oye.

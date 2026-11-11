@@ -2,7 +2,7 @@
 export const es = {
   appName: "TrophyHunter",
   appTagline: "Creator Studio",
-  version: "Alpha 0.2 · v0.2.5",
+  version: "Alpha 0.2 · v0.2.6",
   /** Marca de la versión de pruebas (D-019). */
   devBadge: "PRUEBAS",
   games: {

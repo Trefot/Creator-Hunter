@@ -101,6 +101,7 @@
   const list = document.getElementById("list");
   if (params.get("layout") === "column") list.classList.add("column");
   const last = new Map();
+  /** Sonidos propios ya decodificados: id → { src, buffer, offset }. */
   const sounds = new Map();
   let audio = null;
 
@@ -109,21 +110,58 @@
     return `rgba(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}, ${(opacity ?? 85) / 100})`;
   }
 
+  /** El contexto de audio se crea al cargar (no al sumar), para que el primer sonido no llegue tarde. */
+  function ctx() {
+    audio ??= new AudioContext({ latencyHint: "interactive" });
+    if (audio.state === "suspended") audio.resume().catch(() => {});
+    return audio;
+  }
+
+  /** Dónde empieza a sonar de verdad: se salta el silencio inicial que traen muchos MP3. */
+  function soundStart(buffer) {
+    const limit = Math.min(buffer.length, Math.floor(buffer.sampleRate * 1.5));
+    for (let i = 0; i < limit; i++) {
+      for (let ch = 0; ch < buffer.numberOfChannels; ch++) {
+        if (Math.abs(buffer.getChannelData(ch)[i]) > 0.02) return Math.max(0, i - 64) / buffer.sampleRate;
+      }
+    }
+    return 0;
+  }
+
+  function soundSrc(c) {
+    return c.sound_src || (c.has_sound ? `/api/counters/${c.id}/sound?v=${encodeURIComponent(c.sound_version)}` : null);
+  }
+
+  /** Descarga y decodifica el sonido propio en cuanto aparece el contador, antes de que haga falta. */
+  function preloadSound(c) {
+    const src = soundSrc(c);
+    if (!src || sounds.get(c.id)?.src === src) return;
+    const entry = { src, buffer: null, offset: 0 };
+    sounds.set(c.id, entry);
+    fetch(src)
+      .then((r) => r.arrayBuffer())
+      .then((data) => ctx().decodeAudioData(data))
+      .then((buffer) => {
+        entry.buffer = buffer;
+        entry.offset = soundStart(buffer);
+      })
+      .catch(() => sounds.delete(c.id));
+  }
+
   /** Sonido por defecto: un arpegio corto y brillante (tipo "cofre abierto"), generado sin archivos. */
   function defaultSound(volume) {
-    audio ??= new AudioContext();
-    if (audio.state === "suspended") audio.resume().catch(() => {});
-    const now = audio.currentTime;
+    const ac = ctx();
+    const now = ac.currentTime;
     [784, 988, 1319, 1568].forEach((freq, i) => {
-      const osc = audio.createOscillator();
-      const gain = audio.createGain();
+      const osc = ac.createOscillator();
+      const gain = ac.createGain();
       osc.type = i === 3 ? "sine" : "triangle";
       osc.frequency.value = freq;
-      const t = now + i * 0.06;
+      const t = now + i * 0.05;
       gain.gain.setValueAtTime(0, t);
-      gain.gain.linearRampToValueAtTime(0.35 * volume, t + 0.01);
+      gain.gain.linearRampToValueAtTime(0.35 * volume, t + 0.005);
       gain.gain.exponentialRampToValueAtTime(0.001, t + (i === 3 ? 0.6 : 0.25));
-      osc.connect(gain).connect(audio.destination);
+      osc.connect(gain).connect(ac.destination);
       osc.start(t);
       osc.stop(t + 0.7);
     });
@@ -132,16 +170,21 @@
   function playSound(c) {
     if (!c.sound_on) return;
     const volume = (c.sound_volume ?? 70) / 100;
-    const src = c.sound_src || (c.has_sound ? `/api/counters/${c.id}/sound?v=${encodeURIComponent(c.sound_version)}` : null);
-    if (!src) return defaultSound(volume);
-    let a = sounds.get(c.id);
-    if (!a || a.dataset.src !== src) {
-      a = new Audio(src);
-      a.dataset.src = src;
-      sounds.set(c.id, a);
+    if (!soundSrc(c)) return defaultSound(volume);
+    const entry = sounds.get(c.id);
+    if (entry?.buffer) {
+      const ac = ctx();
+      const node = ac.createBufferSource();
+      const gain = ac.createGain();
+      node.buffer = entry.buffer;
+      gain.gain.value = volume;
+      node.connect(gain).connect(ac.destination);
+      node.start(0, entry.offset);
+      return;
     }
+    // Aún decodificando (solo en el primer instante): se toca tal cual.
+    const a = new Audio(soundSrc(c));
     a.volume = volume;
-    a.currentTime = 0;
     a.play().catch(() => {});
   }
 
@@ -206,6 +249,7 @@
         } else icon.textContent = c.icon;
       }
       el.querySelector(".name").textContent = c.name;
+      if (c.sound_on) preloadSound(c);
 
       const valueNode = el.querySelector(".value");
       const before = last.get(c.id);
@@ -228,10 +272,7 @@
     // El editor manda { counters } para pintar y { bump: true } para probar la animación y el sonido.
     let current = [];
     window.addEventListener("message", (e) => {
-      if (e.data?.unlockAudio) {
-        audio ??= new AudioContext();
-        audio.resume().catch(() => {});
-      }
+      if (e.data?.unlockAudio) ctx();
       if (e.data?.counters) {
         current = e.data.counters;
         render(current);
@@ -246,6 +287,7 @@
     // Espera larga: el servidor responde en cuanto algo cambia, así el número salta al instante.
     let change = -1;
     let appVersion = null;
+    ctx(); // en OBS el audio puede arrancar sin clic: se deja listo desde el principio
     async function loop() {
       try {
         const url = change < 0 ? "/api/counters/live" : `/api/counters/live?since=${change}`;
