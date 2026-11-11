@@ -1,0 +1,10 @@
+{
+  "version": "0.2.9",
+  "date": "2026-11-11",
+  "notes": [
+    "Nuevo botón «Buscar actualizaciones» abajo en el menú, como en Lumen.",
+    "Si hay versión nueva, te enseña las novedades y con «Actualizar ahora» se instala y TrophyHunter se vuelve a abrir solo: ya no hace falta cerrarlo.",
+    "Si no hay nada nuevo, te dice qué versión tienes."
+  ],
+  "installer": "TrophyHunter-setup.exe"
+}
