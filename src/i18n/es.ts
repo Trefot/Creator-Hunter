@@ -206,7 +206,7 @@ export const es = {
     loading: "Cargando…",
     empty: "Crea tu primer contador. Empieza con uno de estos:",
     quickAdd: "Añadir rápido:",
-    serverOn: (port: number) => `Conexión con OBS y Stream Deck activa (puerto ${port})`,
+    serverOn: (port: number) => `Servidor de overlays y Stream Deck activo (puerto ${port})`,
     serverStarting: "Iniciando la conexión con OBS y Stream Deck…",
     serverError: "La conexión con OBS y Stream Deck no pudo arrancar",
     serverHint: "Solo funciona en este PC y con Nexus Studio abierto.",

@@ -292,3 +292,12 @@ Las dependencias nuevas se añaden a esta tabla con su justificación.
 - No hay conexión de estado/grabación con OBS en esta entrega. Los contadores y overlays existentes siguen siendo independientes de la detección.
 - `productName`, identificador, ejecutable y claves de actualización permanecen. NSIS instala `nexus-studio.ico`, crea accesos Nexus Studio, actualiza enlaces propios y DisplayName, e invalida la caché de iconos. La ventana recibe el icono con `set_icon`. No se borra un enlace TrophyHunter si apunta a otro ejecutable.
 - Antes de publicar, el runner Windows instala 0.2.10, la actualiza silenciosamente y verifica ejecutable, destino/icono de accesos, registro y versión. No abre ni usa la base de datos del usuario.
+
+## D-030 · OBS local y marcas (0.2.12)
+
+- OBS WebSocket v5 sobre loopback, cliente tungstenite. Autenticación SHA-256/base64; contraseña en keyring y configuración sin secretos en obs.json/obs-dev.json. El protocolo solo permite GetRecordStatus y GetStreamStatus; escucha RecordStateChanged para la ruta confirmada.
+- Monitor cada dos segundos después de abrir SQLite. Las marcas consultan tiempos nuevos de OBS; comparten un mutex de operaciones con monitor, configuración y restauración. Los estados de salida y duración nunca proceden del reloj de la app.
+- Migración 016 añade obs_session y obs_marker; las 24 tablas están en la copia. Se aceptan copias anteriores sin las nuevas tablas. Restauración bloquea escrituras de OBS y descarta IDs en memoria después de confirmar la transacción.
+- Sesiones de grabación y emisión separadas; marcas con ambos tiempos y snapshot del título del juego. Grabación pausada no aporta tiempo a una marca. Sin salida activa o consulta fallida no se inserta nada. No hay comandos de iniciar/parar ni cambios de escena.
+- GET /api/moments/mark usa la clave local existente para la acción Sitio web de Stream Deck. No roba foco. Los cambios se reflejan en Live Studio; no hay plugin de Stream Deck ni confirmación visual en su botón todavía.
+- App se conecta a grabaciones ya iniciadas sin estimar su inicio: observed_at es la primera observación; record_ms/stream_ms vienen de OBS. Desconexiones y reinicios separan segmentos. output_path solo se guarda cuando el servidor lo confirma; el cliente no promete un clip ni precisión de fotograma.
