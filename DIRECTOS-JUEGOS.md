@@ -14,7 +14,7 @@ En Juegos → Platinados aparecen los juegos con un trofeo de platino obtenido o
 2. Elige un juego y pulsa Mostrar en el overlay.
 3. Para Wukong puedes preparar las listas existentes, empezando por Las 36 curiosidades. Se reutilizan las claves de su guía y el progreso de collection_item. Las indicaciones y fuentes siguen siendo las de las guías existentes; sus nombres españoles pueden diferir del idioma del juego.
 4. Para Fortnite puedes preparar «Token de la tienda pirata» como objetivo personal; no se afirma una ubicación ni una API para ese token.
-5. Pulsa Mostrar en el objeto elegido. Copia la URL del overlay completo, solo platinos o solo objetivo a una Fuente de navegador de OBS (720×280). Sirve para Twitch u otro destino de OBS sin conexión adicional a Twitch.
+5. Pulsa Mostrar en el objeto elegido. Copia la URL del overlay completo, solo platinos o solo objetivo a una Fuente de navegador de OBS (720×420). Sirve para Twitch u otro destino de OBS sin conexión adicional a Twitch.
 6. Copia las URLs Conseguido, Deshacer y Siguiente a acciones Sitio web en segundo plano de Stream Deck. Llevan la clave local; no compartirlas. Repetir Conseguido no incrementa dos veces ni avanza solo al siguiente objeto.
 
 El overlay lee el estado aproximadamente cada segundo. Si Nexus se desconecta conserva el último estado e indica que no está actualizado. No se incluyen credenciales, capturas ni calibraciones en la API pública del overlay. Los objetos confirmados por un trofeo no se pueden desmarcar como si se hubiese revocado ese logro.
