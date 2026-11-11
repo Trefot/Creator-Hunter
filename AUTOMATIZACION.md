@@ -8,7 +8,7 @@ Decisión del usuario: uso exclusivamente personal, aprovechar Stream Deck y red
 |---|---|---|---|---|
 | 1 | Datos actualizados | Sincronizar YouTube con la app abierta, compartir consultas simultáneas y reintentar fallos | Conectar la cuenta; el botón manual sigue disponible | Implementado localmente; pruebas de servicio simulado pasan, Windows real pendiente |
 | 2 | Sesiones de directo | Leer estado de OBS, detectar grabación/emisión, tiempos y archivo confirmado | Configurar OBS una vez; elegir el juego cuando no se detecte | Publicado en 0.2.12; pruebas Windows superadas, configuración y uso real pendientes |
-| 3 | Momentos aprovechables | Guardar marcas con sesión, juego y tiempos de OBS | Pulsar «Marcar momento» | Marcas implementadas en 0.2.12; Replay Buffer pendiente |
+| 3 | Momentos aprovechables | Guardar marcas con sesión, juego y tiempos de OBS | Pulsar «Marcar momento» | Marcas publicadas en 0.2.12 y Replay Buffer en 0.2.13; clip real del usuario pendiente |
 | 4 | Manager de contenido con IA | Leer el contexto permitido, proponer prioridades, títulos, ganchos, guiones y borradores | Elegir dirección creativa y revisar qué se publica | Pendiente: proveedor/modelo y presupuesto sin decidir |
 | 5 | Cierre y aprovechamiento | Preparar resumen de sesión y convertir momentos seleccionados en borradores enlazados | Corregir o descartar lo que no sirve | Pendiente |
 | 6 | Revisión de resultados | Recoger métricas disponibles, comparar formatos/antigüedad y sugerir un experimento | Elegir qué probar la próxima semana | Parcial: ya existe recogida de métricas; el análisis asistido sigue pendiente |
@@ -52,3 +52,5 @@ Antes de activar llamadas reales hay que elegir modelo local o API, definir qué
 En sesiones reales, observar tiempo de preparación, facilidad para encontrar momentos y proporción de momentos elegidos que llegan a una adaptación publicada. Cada automatización debe reducir una tarea concreta. Si pide más pasos de los que elimina, se simplifica o se descarta.
 
 Configuración y límites de la conexión inicial en [OBS.md](OBS.md). La marca no corta vídeo ni implica que haya un archivo confirmado.
+
+En 0.2.13, «Guardar clip» guarda el Replay Buffer tras confirmación de archivo y crea marca cuando hay sesión activa. El usuario configura e inicia el búfer en OBS. La edición, recorte posterior y publicación siguen pendientes.

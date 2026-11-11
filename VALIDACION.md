@@ -1,6 +1,14 @@
 # Validación de estabilidad · 2026-11-11
 
-Versión actual 0.2.12, preparada desde `1d77f07` (0.2.9). El instalador ya se ha compilado en GitHub Actions para Windows; la instalación y revisión en el equipo del usuario siguen pendientes.
+Versión actual 0.2.13, preparada desde `1d77f07` (0.2.9). El instalador ya se ha compilado en GitHub Actions para Windows; la instalación y revisión en el equipo del usuario siguen pendientes.
+
+## 0.2.13 · Clips del Replay Buffer
+
+- Protocolo: 5 tests con servidor WebSocket local simulado. Incluyen ACK/evento en ambos órdenes, búfer apagado sin iniciarlo, rechazo de OBS y ACK sin ruta nueva que no reutiliza un archivo anterior.
+- Datos: 12 pruebas con 17 migraciones y 25 tablas. Clip+marca en transacción, rollback ante ruta duplicada, clip sin sesión, rechazo de ruta vacía, roundtrip e importación de copia del esquema 16.
+- Frontend: 19 tests y 6 del empaquetado, TypeScript y Vite correctos.
+- Chromium con IPC simulado: botón desactivado sin búfer, guardado con búfer solo, estado pendiente sin éxito anticipado, ruta confirmada, URL del Deck y fallo sin inventar un clip; sin errores JS ni desbordamiento a 1280/960 píxeles.
+- La ejecución [43074073595](https://github.com/Trefot/Creator-Hunter/actions/runs/43074073595) pasó 19 pruebas frontend, 6 de publicación, 12 de datos y 21 del núcleo nativo, build NSIS y actualización desde 0.2.12. Release y canal verificados: instaladores idénticos, 3.359.643 bytes, SHA-256 `f3ddaf12b9e29103c231b4da37ee51d8f83570deb5b3cd54d1ac7e83808e384b`, origen `99dd7ed169dd2a4c4dd7e25130ed1fa8aba44a99`. Replay Buffer y guardado físico en el PC del usuario pendientes. El usuario confirmó previamente que las marcas con OBS/Stream Deck de 0.2.12 funcionan.
 
 ## 0.2.12 · OBS y momentos
 

@@ -26,5 +26,6 @@ export interface ObsClip {
   id:string; title:string; created_at:string; output_path:string; game_title:string|null;
   marker_id:string|null; record_ms:number|null; stream_ms:number|null;
 }
-export const obsSaveReplay=(title?:string)=>invoke<ObsClip>("obs_save_replay",{title:title?.trim()||null});
+export type ObsClipResult = Pick<ObsClip, "id"|"output_path"|"marker_id"|"record_ms"|"stream_ms">;
+export const obsSaveReplay=(title?:string)=>invoke<ObsClipResult>("obs_save_replay",{title:title?.trim()||null});
 export const obsClips=()=>invoke<ObsClip[]>("obs_clips");

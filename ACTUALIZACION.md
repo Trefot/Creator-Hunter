@@ -1,5 +1,13 @@
 # Actualizaciones de Nexus Studio
 
+## 0.2.13 publicada
+
+[Descargar instalador 0.2.13](https://github.com/Trefot/Creator-Hunter/releases/download/v0.2.13/Nexus-Studio_0.2.13_x64-setup.exe) o «Buscar actualizaciones» → «Actualizar ahora».
+
+Guardar clip del Replay Buffer desde Live Studio o Stream Deck. Requiere activar e iniciar el búfer en OBS; conserva la conexión existente. Consulta [OBS.md](OBS.md). Historial con ruta confirmada y marca opcional. La copia JSON incluye referencias y metadatos, no los vídeos.
+
+La ejecución 43074073595 pasó pruebas, build NSIS y actualización desde 0.2.12. Descarga y canal verificados: 3.359.643 bytes, SHA-256 `f3ddaf12b9e29103c231b4da37ee51d8f83570deb5b3cd54d1ac7e83808e384b`, origen `99dd7ed169dd2a4c4dd7e25130ed1fa8aba44a99`. Migración 017 protegida por copia previa; 25 tablas en las copias, compatibilidad con esquema 16. El guardado físico en el OBS del usuario sigue pendiente de prueba.
+
 ## 0.2.12 publicada
 
 [Descargar instalador 0.2.12](https://github.com/Trefot/Creator-Hunter/releases/download/v0.2.12/Nexus-Studio_0.2.12_x64-setup.exe) o «Buscar actualizaciones» → «Actualizar ahora» en Nexus. Instala al terminar tu grabación si utilizas sus overlays.
@@ -18,7 +26,7 @@ Detección de Fortnite en PC, selección manual del juego e iconos/accesos de Wi
 
 Estado: publicada el 2026-11-11. [Descargar instalador Windows](https://github.com/Trefot/Creator-Hunter/releases/download/v0.2.10/Nexus-Studio_0.2.10_x64-setup.exe) · [Release y novedades](https://github.com/Trefot/Creator-Hunter/releases/tag/v0.2.10).
 
-En la app instalada: «Buscar actualizaciones» → «Actualizar ahora». El canal `releases` anunció 0.2.10; ahora anuncia 0.2.12. La descarga manual y el instalador del canal son idénticos: 3.156.785 bytes, SHA-256 `0bbd99c5f37c7684db5b5e4685358ba841b4ef2f43dd0712ef23080020c4e615`.
+En la app instalada: «Buscar actualizaciones» → «Actualizar ahora». El canal `releases` anunció 0.2.10; ahora anuncia 0.2.13. La descarga manual y el instalador del canal son idénticos: 3.156.785 bytes, SHA-256 `0bbd99c5f37c7684db5b5e4685358ba841b4ef2f43dd0712ef23080020c4e615`.
 
 La ejecución [43046894264](https://github.com/Trefot/Creator-Hunter/actions/runs/43046894264) terminó correctamente: pruebas, compilación nativa, instalador NSIS y publicación. Origen: `d6694f2da1008a292b96d49b24e977a5cd8a774a`. Sigue pendiente comprobar la instalación y el uso en el PC del usuario.
 

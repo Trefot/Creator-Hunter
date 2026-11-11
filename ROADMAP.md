@@ -317,6 +317,16 @@ Las ideas nuevas se anotan aquí y no interrumpen la fase actual.
 - [x] Migración 016 y copias de las 24 tablas; compatibilidad con esquema 15 y escritura serializada durante restauración.
 - [x] Pruebas de protocolo, SQLite e interfaz con servicios simulados.
 - [x] Publicación Windows y descarga verificadas (43068021591).
-- [ ] Configurar y probar con OBS y Stream Deck reales del usuario.
+- [x] Usuario confirma marcas con OBS y Stream Deck reales (0.2.12).
 
-Guardar Replay Buffer y generar clips siguen pendientes; una marca no es un archivo de vídeo.
+Guardar Replay Buffer se implementa en 0.2.13; recortar/editar vídeo sigue pendiente. Una marca por sí sola no es un archivo de vídeo.
+
+## Entrega 0.2.13 · Replay Buffer
+
+- [x] Guardar clip con confirmación de archivo en OBS, sin iniciar/parar salidas.
+- [x] Botón Live Studio y URL independiente para Stream Deck.
+- [x] Historial con ruta, juego y marca opcional, válido con búfer solo.
+- [x] Migración 017 y copias de 25 tablas; pruebas de rollback y esquema anterior.
+- [x] Pruebas de protocolo e interfaz sin mostrar guardados falsos.
+- [x] Publicar y verificar Windows desde 0.2.12 (43074073595).
+- [ ] Probar un clip real del Replay Buffer del usuario.
