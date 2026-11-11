@@ -1,6 +1,14 @@
 # Validación de estabilidad · 2026-11-11
 
-Versión 0.2.10, preparada desde `1d77f07` (0.2.9). El instalador ya se ha compilado en GitHub Actions para Windows; la instalación y revisión en el equipo del usuario siguen pendientes.
+Versión actual 0.2.11, preparada desde `1d77f07` (0.2.9). El instalador ya se ha compilado en GitHub Actions para Windows; la instalación y revisión en el equipo del usuario siguen pendientes.
+
+## 0.2.11 · PC e identidad de Windows
+
+- `npm test`: 18 pruebas frontend y 6 de publicación pasan. Las cinco nuevas cubren PC sin PSN, aislamiento de plataformas, prioridad y salida manual, modo desactivado, fallo local con recuperación a PSN y limpieza sin peticiones solapadas ni navegación tardía.
+- `npm run build` y `npm run release:check`: correctos.
+- Chromium con IPC y datos simulados: Fortnite detectado sin PSN, alta en PC, apertura de su ficha, selección manual y vuelta a automática. Sin errores JavaScript ni desbordamiento horizontal a 1280 y 960 píxeles. No ejecuta Fortnite real ni conecta OBS.
+- La ejecución [43061149568](https://github.com/Trefot/Creator-Hunter/actions/runs/43061149568) terminó correctamente: 18 tests frontend, 6 de publicación, 8 de datos y 16 del núcleo nativo, compilación NSIS y prueba de actualización silenciosa desde 0.2.10. Se verificaron ejecutable, accesos de escritorio/Inicio, icono dedicado, DisplayName y versión. La release v0.2.11 y el canal `releases` están publicados; sus instaladores descargados son idénticos (3.271.804 bytes; SHA-256 `8cd4fbe894ad0af09aa8bef94d8a5f736ea34369e8e5d72cf45515d4305893e7`).
+- El proceso real de Fortnite, los anclajes de la barra de tareas y la grabación con OBS en el PC del usuario siguen pendientes de comprobación de uso. La app no incorpora conexión WebSocket a OBS en esta entrega.
 
 ## Preparación de la actualización 0.2.10
 

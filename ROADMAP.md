@@ -53,6 +53,16 @@ Diseño y orden de entrega en AUTOMATIZACION.md. La compilación y pruebas nativ
 
 La release 0.2.10 y el canal remoto están publicados y verificados. Estado e instrucciones en ACTUALIZACION.md.
 
+## Entrega 0.2.11 · Fortnite en PC e identidad de Windows
+
+- [x] Detectar el proceso real de Fortnite sin depender de PSN ni confundir ediciones de PC y consola.
+- [x] Añadir juegos de cualquier plataforma y elegir el juego actual manualmente.
+- [x] Icono explícito de ventana y accesos Nexus Studio con icono dedicado.
+- [x] Probar la actualización desde 0.2.10 en Windows: ejecutable, accesos, iconos, registro y versión.
+- [x] Publicar y verificar descarga, manifiesto y coincidencia del canal.
+- [ ] Confirmar Fortnite real e icono anclado en el PC del usuario.
+- [ ] Conectar el estado de grabación/emisión de OBS; todavía no está implementado.
+
 ## Fases
 
 | Fase | Contenido | Estado |
@@ -252,7 +262,7 @@ Objetivo: el platino de Black Myth: Wukong (y los siguientes juegos) desde Troph
 - [x] Al empezar a jugar, la app abre la ficha del juego una sola vez por partida y muestra la franja "Jugando ahora" con "Ver ruta".
 - [x] Interruptor "Modo juego automático" con su estado (activo, detectado, error o desactivado).
 - [x] Prueba del usuario: detectó Black Myth: Wukong abierto en la PS5.
-- **Más adelante:** juegos de PC por proceso en ejecución.
+- **PC:** Fortnite por proceso implementado en 0.2.11; detección automática de otros juegos pendiente.
 
 #### ✅ G5+ · Skin del juego, listas por trofeo y plan de hoy
 - [x] Skin: colores y fondo de la app sacados de la portada del juego que se está jugando.

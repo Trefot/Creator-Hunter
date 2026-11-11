@@ -1,6 +1,6 @@
 # Nexus Studio
 
-Estudio personal de creación de contenido de TrefotG. Versión publicada: **[v0.2.10](https://github.com/Trefot/Creator-Hunter/releases/tag/v0.2.10)**. Actualiza desde «Buscar actualizaciones» o descarga el instalador de la release.
+Estudio personal de creación de contenido de TrefotG. Versión publicada: **[v0.2.11](https://github.com/Trefot/Creator-Hunter/releases/tag/v0.2.11)**. Actualiza desde «Buscar actualizaciones» o descarga el instalador de la release.
 
 Aplicación de escritorio para Windows, construida con React, TypeScript, Tauri 2 y SQLite. Incluye Creator Studio, conexión con YouTube, biblioteca de juegos con trofeos de PSN y contadores para OBS y Stream Deck. Twitch sigue pendiente.
 
@@ -57,4 +57,8 @@ La versión de pruebas necesita configurar sus propias conexiones de YouTube y P
 
 ## Identidad
 
-Nombre definitivo: **Nexus Studio**. Emblema elegido: el compañero violeta sosteniendo el farol (concepto B); lema «Tu espacio para crear». Recursos y regeneración de iconos en [IDENTIDAD.md](IDENTIDAD.md). El nombre anterior TrophyHunter se conserva en rutas y claves compatibles; el instalador 0.2.10 incluye la nueva identidad visual y conserva el nombre técnico para actualizar la instalación existente.
+Nombre definitivo: **Nexus Studio**. Emblema elegido: el compañero violeta sosteniendo el farol (concepto B); lema «Tu espacio para crear». Recursos y regeneración de iconos en [IDENTIDAD.md](IDENTIDAD.md). El nombre anterior TrophyHunter se conserva en rutas y claves compatibles; la 0.2.11 incluye el icono explícito de ventana y accesos Nexus Studio, conservando el nombre técnico para actualizar la instalación existente.
+
+## Fortnite en PC
+
+Con Fortnite abierto, entra en Juegos y pulsa «Añadir Fortnite para PC» una vez. El modo automático reconocerá su proceso cada 15 segundos, sin necesitar PSN. «Elegir juego» permite seleccionar manualmente un juego de cualquier plataforma y volver a la detección automática al terminar. El estado muestra su procedencia; no implica que Nexus esté conectado al estado de grabación de OBS.
