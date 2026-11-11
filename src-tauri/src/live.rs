@@ -6,12 +6,15 @@
 //!
 //! - `GET /overlay[?c=id1,id2&layout=row|column]`: página para la "Fuente de navegador" de OBS.
 //! - `GET /api/counters`: los contadores en JSON.
-//! - `GET /api/counters/{id}/image`: el PNG propio del contador (el overlay lo pide solo cuando cambia).
+//! - `GET /api/counters/live?since=N`: espera (hasta 20 s) a que algo cambie y devuelve
+//!   `{ change, counters }`. Así el overlay reacciona en el mismo instante en que se pulsa (D-022).
+//! - `GET /api/counters/{id}/image` y `/sound`: el PNG y el sonido propios (se piden solo si cambian).
 //! - `GET /api/counters/{id}/{inc|dec|reset}?key=…`: para el Stream Deck ("Sitio web" en segundo plano).
 
 use std::fs;
-use std::sync::Mutex;
+use std::sync::{Condvar, Mutex};
 use std::thread;
+use std::time::Duration;
 
 use serde::Serialize;
 use serde_json::json;
@@ -23,6 +26,12 @@ use tiny_http::{Header, Request, Response, Server};
 pub const PORT: u16 = if cfg!(debug_assertions) { 7879 } else { 7878 };
 const KEY_FILE: &str = if cfg!(debug_assertions) { "live-key-dev.txt" } else { "live-key.txt" };
 const OVERLAY_HTML: &str = include_str!("../overlay/counters.html");
+/// Lo que espera como mucho una petición `live` antes de responder sin cambios.
+const LONG_POLL: Duration = Duration::from_secs(20);
+
+/// Número de cambio: sube con cada modificación de un contador y despierta a los overlays.
+static CHANGE: Mutex<u64> = Mutex::new(0);
+static CHANGED: Condvar = Condvar::new();
 
 #[derive(Clone, Default, Serialize)]
 pub struct LiveInfo {
@@ -41,6 +50,28 @@ pub fn live_status(state: State<'_, LiveState>) -> LiveInfo {
     state.0.lock().map(|i| i.clone()).unwrap_or_default()
 }
 
+/// La app avisa de que cambió un contador desde su propia interfaz.
+#[tauri::command]
+pub fn live_notify() {
+    bump_change();
+}
+
+fn bump_change() {
+    if let Ok(mut n) = CHANGE.lock() {
+        *n += 1;
+        CHANGED.notify_all();
+    }
+}
+
+/// Espera a que el número de cambio pase de `since` (o a que se agote el tiempo) y lo devuelve.
+fn wait_change(since: u64) -> u64 {
+    let Ok(guard) = CHANGE.lock() else { return since };
+    match CHANGED.wait_timeout_while(guard, LONG_POLL, |n| *n <= since) {
+        Ok((n, _)) => *n,
+        Err(_) => since,
+    }
+}
+
 /// Clave local: se genera una vez y se guarda en la carpeta de datos de la app.
 fn load_key(app: &AppHandle) -> Result<String, String> {
     let dir = app.path().app_data_dir().map_err(|e| e.to_string())?;
@@ -57,7 +88,8 @@ fn load_key(app: &AppHandle) -> Result<String, String> {
     Ok(key)
 }
 
-/// Arranca el servidor en un hilo propio. Si el puerto está ocupado, lo deja anotado en el estado.
+/// Arranca el servidor. Cada petición va en su propio hilo: las de `live` se quedan esperando
+/// cambios sin bloquear a las demás (el Stream Deck, las imágenes…).
 pub fn start(app: AppHandle) {
     let mut info = LiveInfo { port: PORT, ..Default::default() };
     match load_key(&app) {
@@ -72,7 +104,9 @@ pub fn start(app: AppHandle) {
                 let handle = app.clone();
                 thread::spawn(move || {
                     for request in server.incoming_requests() {
-                        handle_request(&handle, &key, request);
+                        let handle = handle.clone();
+                        let key = key.clone();
+                        thread::spawn(move || handle_request(&handle, &key, request));
                     }
                 });
             }
@@ -96,13 +130,26 @@ fn respond_json(request: Request, status: u16, body: serde_json::Value) {
     let _ = request.respond(response);
 }
 
+fn respond_blob(request: Request, result: Result<Option<(String, Vec<u8>)>, String>, missing: &str) {
+    match result {
+        Ok(Some((mime, bytes))) => {
+            let response = Response::from_data(bytes)
+                .with_header(header("Content-Type", &mime))
+                .with_header(header("Cache-Control", "max-age=31536000"));
+            let _ = request.respond(response);
+        }
+        Ok(None) => respond_json(request, 404, json!({ "error": missing })),
+        Err(e) => respond_json(request, 400, json!({ "error": e })),
+    }
+}
+
 fn handle_request(app: &AppHandle, key: &str, request: Request) {
     let url = match url::Url::parse(&format!("http://127.0.0.1{}", request.url())) {
         Ok(u) => u,
         Err(_) => return respond_json(request, 400, json!({ "error": "URL no válida" })),
     };
     let segments: Vec<String> = url.path_segments().map(|s| s.map(String::from).collect()).unwrap_or_default();
-    let query_key = url.query_pairs().find(|(k, _)| k == "key").map(|(_, v)| v.to_string());
+    let query = |name: &str| url.query_pairs().find(|(k, _)| k == name).map(|(_, v)| v.to_string());
 
     match segments.iter().map(String::as_str).collect::<Vec<_>>().as_slice() {
         ["overlay"] | ["overlay", ""] => {
@@ -115,27 +162,36 @@ fn handle_request(app: &AppHandle, key: &str, request: Request) {
             Ok(list) => respond_json(request, 200, list),
             Err(e) => respond_json(request, 503, json!({ "error": e })),
         },
-        ["api", "counters", id, "image"] => {
-            let id = id.to_string();
-            match tauri::async_runtime::block_on(counter_image(app, &id)) {
-                Ok(Some((mime, bytes))) => {
-                    let response = Response::from_data(bytes)
-                        .with_header(header("Content-Type", &mime))
-                        .with_header(header("Cache-Control", "max-age=31536000"));
-                    let _ = request.respond(response);
-                }
-                Ok(None) => respond_json(request, 404, json!({ "error": "Ese contador no tiene imagen." })),
-                Err(e) => respond_json(request, 400, json!({ "error": e })),
+        ["api", "counters", "live"] => {
+            // Solo espera si el overlay está al día (`since` == actual). Sin `since`, o con uno de otra
+            // sesión de la app (tras reiniciarla el contador vuelve a 0), responde al momento.
+            let current = CHANGE.lock().map(|n| *n).unwrap_or(0);
+            let change = match query("since").and_then(|s| s.parse::<u64>().ok()) {
+                Some(since) if since == current => wait_change(since),
+                _ => current,
+            };
+            match tauri::async_runtime::block_on(list_counters(app)) {
+                Ok(list) => respond_json(request, 200, json!({ "change": change, "counters": list })),
+                Err(e) => respond_json(request, 503, json!({ "error": e })),
             }
         }
+        ["api", "counters", id, "image"] => {
+            let result = tauri::async_runtime::block_on(counter_blob(app, id, "image", "image/"));
+            respond_blob(request, result, "Ese contador no tiene imagen.")
+        }
+        ["api", "counters", id, "sound"] => {
+            let result = tauri::async_runtime::block_on(counter_blob(app, id, "sound", "audio/"));
+            respond_blob(request, result, "Ese contador no tiene sonido propio.")
+        }
         ["api", "counters", id, action] => {
-            if query_key.as_deref() != Some(key) {
+            if query("key").as_deref() != Some(key) {
                 return respond_json(request, 403, json!({ "error": "Falta la clave local o no es correcta." }));
             }
             let id = id.to_string();
             let action = action.to_string();
             match tauri::async_runtime::block_on(change_counter(app, &id, &action)) {
                 Ok(value) => {
+                    bump_change();
                     let _ = app.emit("counters-changed", &id);
                     respond_json(request, 200, json!({ "id": id, "value": value }))
                 }
@@ -149,13 +205,16 @@ fn handle_request(app: &AppHandle, key: &str, request: Request) {
 async fn list_counters(app: &AppHandle) -> Result<serde_json::Value, String> {
     let pool = crate::backup::pool(app).await?;
     let rows = sqlx::query(
-        "SELECT id, name, icon, color, value, bg_color, bg_opacity, image IS NOT NULL AS has_image,
-                COALESCE(length(image) || '-' || substr(image, -24), '') AS image_version
+        "SELECT id, name, icon, color, value, bg_color, bg_opacity, style, sound_on, sound_volume,
+                image IS NOT NULL AS has_image,
+                COALESCE(length(image) || '-' || substr(image, -24), '') AS image_version,
+                sound IS NOT NULL AS has_sound,
+                COALESCE(length(sound) || '-' || substr(sound, -24), '') AS sound_version
            FROM counter ORDER BY position, created_at",
     )
-        .fetch_all(&pool)
-        .await
-        .map_err(|e| e.to_string())?;
+    .fetch_all(&pool)
+    .await
+    .map_err(|e| e.to_string())?;
     let list: Vec<serde_json::Value> = rows
         .iter()
         .map(|r| {
@@ -167,9 +226,14 @@ async fn list_counters(app: &AppHandle) -> Result<serde_json::Value, String> {
                 "value": r.get::<i64, _>("value"),
                 "bg_color": r.get::<String, _>("bg_color"),
                 "bg_opacity": r.get::<i64, _>("bg_opacity"),
+                "style": r.get::<String, _>("style"),
+                "sound_on": r.get::<bool, _>("sound_on"),
+                "sound_volume": r.get::<i64, _>("sound_volume"),
                 "has_image": r.get::<bool, _>("has_image"),
-                // Solo cambia si cambia la imagen: el overlay la vuelve a pedir únicamente entonces.
+                // Solo cambian si cambia el archivo: el overlay lo vuelve a pedir únicamente entonces.
                 "image_version": r.get::<String, _>("image_version"),
+                "has_sound": r.get::<bool, _>("has_sound"),
+                "sound_version": r.get::<String, _>("sound_version"),
             })
         })
         .collect();
@@ -196,23 +260,48 @@ async fn change_counter(app: &AppHandle, id: &str, action: &str) -> Result<i64, 
     Ok(row.get::<i64, _>("value"))
 }
 
-/// El PNG propio de un contador, decodificado de su data URL.
-async fn counter_image(app: &AppHandle, id: &str) -> Result<Option<(String, Vec<u8>)>, String> {
+/// Un archivo propio de un contador (imagen o sonido), decodificado de su data URL.
+async fn counter_blob(app: &AppHandle, id: &str, column: &str, mime_prefix: &str) -> Result<Option<(String, Vec<u8>)>, String> {
     use base64::Engine;
+    // `column` solo puede ser uno de estos dos: nunca llega del usuario.
+    let sql = match column {
+        "image" => "SELECT image AS data FROM counter WHERE id = $1",
+        "sound" => "SELECT sound AS data FROM counter WHERE id = $1",
+        _ => return Err("Columna no válida.".into()),
+    };
     let pool = crate::backup::pool(app).await?;
-    let row = sqlx::query("SELECT image FROM counter WHERE id = $1")
-        .bind(id)
-        .fetch_optional(&pool)
-        .await
-        .map_err(|e| e.to_string())?;
-    let Some(data_url) = row.and_then(|r| r.get::<Option<String>, _>("image")) else {
+    let row = sqlx::query(sql).bind(id).fetch_optional(&pool).await.map_err(|e| e.to_string())?;
+    let Some(data_url) = row.and_then(|r| r.get::<Option<String>, _>("data")) else {
         return Ok(None);
     };
-    let (meta, b64) = data_url.split_once(',').ok_or("Imagen no válida.")?;
+    let (meta, b64) = data_url.split_once(',').ok_or("Archivo no válido.")?;
     let mime = meta.trim_start_matches("data:").trim_end_matches(";base64").to_string();
-    if !mime.starts_with("image/") {
-        return Err("Imagen no válida.".into());
+    if !mime.starts_with(mime_prefix) {
+        return Err("Archivo no válido.".into());
     }
     let bytes = base64::engine::general_purpose::STANDARD.decode(b64).map_err(|e| e.to_string())?;
     Ok(Some((mime, bytes)))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn wait_change_returns_at_once_if_already_newer_and_wakes_on_bump() {
+        let start = CHANGE.lock().map(|n| *n).unwrap();
+        // Ya hay un cambio más nuevo que `since`: no espera.
+        bump_change();
+        assert!(wait_change(start) > start);
+        // Sin cambios nuevos: otro hilo lo despierta enseguida.
+        let now = CHANGE.lock().map(|n| *n).unwrap();
+        let waker = thread::spawn(|| {
+            thread::sleep(Duration::from_millis(50));
+            bump_change();
+        });
+        let t0 = std::time::Instant::now();
+        assert_eq!(wait_change(now), now + 1);
+        assert!(t0.elapsed() < Duration::from_secs(2));
+        waker.join().unwrap();
+    }
 }

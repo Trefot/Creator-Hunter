@@ -2,7 +2,7 @@
 export const es = {
   appName: "TrophyHunter",
   appTagline: "Creator Studio",
-  version: "Alpha 0.2 · v0.2.2",
+  version: "Alpha 0.2 · v0.2.3",
   /** Marca de la versión de pruebas (D-019). */
   devBadge: "PRUEBAS",
   games: {
@@ -167,6 +167,7 @@ export const es = {
       "En OBS: Fuentes → + → «Navegador».",
       "Pega la dirección en «URL»; ancho 800 y alto 200 (ajústalo a tu gusto).",
       "Deja el fondo transparente: no hace falta CSS personalizado.",
+      "Para que el sonido salga en el directo, marca «Controlar audio mediante OBS» en la fuente.",
     ],
     deckTitle: "En el Stream Deck",
     deckSteps: [
@@ -192,6 +193,23 @@ export const es = {
     icon: "Icono",
     color: "Color del borde",
     preview: "Así se verá en OBS",
+    testFx: "Probar animación y sonido",
+    style: "Estilo",
+    styles: {
+      gamer: { name: "Gamer", hint: "Icono grande y número gigante con contorno" },
+      card: { name: "Tarjeta", hint: "Compacto, dentro de una caja" },
+    },
+    sound: "Sonido al sumar",
+    soundOn: "Sonido activado",
+    soundOff: "Sin sonido",
+    soundUpload: "Subir mi sonido",
+    soundChange: "Cambiar sonido",
+    soundDefault: "Usar el sonido por defecto",
+    soundHint: "Suena un arpegio tipo «cofre abierto». Puedes subir tu propio MP3 o WAV (máx. 1,5 MB).",
+    soundCustom: "Usando tu sonido.",
+    soundTooBig: "Ese audio pesa más de 1,5 MB: recórtalo a un efecto corto.",
+    soundError: "No se pudo leer el audio.",
+    volume: (n: number) => `Volumen: ${n} %`,
     uploadPng: "Subir tu imagen (PNG con transparencia)",
     pngHint: "Pulsa el primer recuadro para usar tu propio PNG.",
     removePng: "Quitar mi imagen y usar un emoji",

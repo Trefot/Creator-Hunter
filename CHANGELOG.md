@@ -2,6 +2,14 @@
 
 ## [Sin publicar]
 
+## [0.2.3] · 2026-11-10 · Contadores estilo gamer, con sonido y al instante
+
+- Estilo «Gamer» para los contadores: icono grande y número gigante con contorno y degradado (como los overlays de Fortnite), además del estilo «Tarjeta».
+- Al sumar: el número salta, destello del color del contador, chispas y sonido. Sonido por defecto tipo «cofre abierto» o tu propio MP3/WAV, con volumen.
+- El overlay reacciona en el mismo instante en que pulsas el Stream Deck (antes podía tardar hasta 0,6 s).
+- Vista previa real en el editor (el mismo overlay de OBS) con «Probar animación y sonido».
+- Migración 014. Primera versión que se instala sola (D-021).
+
 ## [0.2.2] · 2026-11-08 · Actualización automática
 
 - La app se actualiza sola: al abrirla, si hay una versión nueva en Documentos\TrophyHunter\Instaladores, muestra «Actualizando…», la instala en silencio y se vuelve a abrir (D-021).

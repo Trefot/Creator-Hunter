@@ -4,74 +4,174 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>TrophyHunter · Contadores</title>
+<!-- Tipografía de estilo "gamer"; si OBS no tiene internet se usa Impact. -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&display=swap" rel="stylesheet" />
 <style>
   /* Overlay para la "Fuente de navegador" de OBS: fondo transparente. */
   html, body { margin: 0; background: transparent; overflow: hidden; }
-  body {
-    font-family: "Inter", "Segoe UI", system-ui, sans-serif;
-    color: #fff;
-    padding: 12px;
-  }
-  #list { display: flex; gap: 14px; flex-wrap: wrap; align-items: flex-start; }
+  body { font-family: "Inter", "Segoe UI", system-ui, sans-serif; color: #fff; padding: 14px; }
+  #list { display: flex; gap: 18px; flex-wrap: wrap; align-items: flex-start; }
   #list.column { flex-direction: column; }
-  .counter {
-    --c: #8b5cf6;
-    --bg: rgba(14, 12, 20, 0.85);
-    display: flex; align-items: center; gap: 14px;
-    padding: 12px 22px 12px 14px;
-    border-radius: 18px;
-    background: var(--bg);
-    border: 2px solid var(--c);
-    box-shadow: 0 0 22px color-mix(in srgb, var(--c) 45%, transparent), 0 8px 24px rgba(0, 0, 0, 0.45);
-    animation: enter 400ms ease-out;
-  }
-  .icon {
-    display: grid; place-items: center;
-    width: 58px; height: 58px; border-radius: 14px;
-    font-size: 34px;
-    background: color-mix(in srgb, var(--c) 30%, transparent);
-  }
+
+  .counter { --c: #8b5cf6; --bg: rgba(14, 12, 20, 0.85); position: relative; animation: enter 400ms ease-out; }
+  .icon { display: grid; place-items: center; flex-shrink: 0; }
   .icon img { width: 100%; height: 100%; object-fit: contain; }
-  .icon.has-image { background: transparent; width: 64px; height: 64px; }
-  .text { display: flex; flex-direction: column; line-height: 1.05; }
-  .name {
+  .text { display: flex; flex-direction: column; }
+  .value { font-variant-numeric: tabular-nums; display: inline-block; }
+
+  /* ── Estilo tarjeta ── */
+  .counter.card {
+    display: flex; align-items: center; gap: 14px;
+    padding: 12px 22px 12px 14px; border-radius: 18px;
+    background: var(--bg); border: 2px solid var(--c);
+    box-shadow: 0 0 22px color-mix(in srgb, var(--c) 45%, transparent), 0 8px 24px rgba(0, 0, 0, 0.45);
+  }
+  .card .icon { width: 58px; height: 58px; border-radius: 14px; font-size: 34px; background: color-mix(in srgb, var(--c) 30%, transparent); }
+  .card .icon.has-image { background: transparent; width: 64px; height: 64px; }
+  .card .text { line-height: 1.05; }
+  .card .name {
     font-size: 15px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
-    color: color-mix(in srgb, var(--c) 55%, #fff);
-    text-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
+    color: color-mix(in srgb, var(--c) 55%, #fff); text-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
   }
-  .value {
-    font-size: 46px; font-weight: 800; font-variant-numeric: tabular-nums;
-    text-shadow: 0 3px 10px rgba(0, 0, 0, 0.7);
+  .card .value { font-size: 46px; font-weight: 800; text-shadow: 0 3px 10px rgba(0, 0, 0, 0.7); }
+  .card .bar { display: none; }
+
+  /* ── Estilo gamer: icono grande, número gigante con contorno y degradado ── */
+  .counter.gamer {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 22px 12px 8px; border-radius: 22px;
+    background: var(--bg);
   }
-  .bump .value { animation: bump 450ms ease-out; }
-  .bump .icon { animation: shake 450ms ease-out; }
-  @keyframes bump {
-    0% { transform: scale(1); }
-    35% { transform: scale(1.35); color: var(--c); }
-    100% { transform: scale(1); }
+  .gamer .icon { width: 128px; height: 128px; font-size: 92px; filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.55)); }
+  .gamer .text { line-height: 0.9; }
+  .gamer .name {
+    font-family: "Luckiest Guy", Impact, "Arial Black", sans-serif;
+    font-size: 22px; letter-spacing: 0.04em; text-transform: uppercase; font-style: italic;
+    color: #fff; -webkit-text-stroke: 1.5px #120a00; paint-order: stroke fill;
+    text-shadow: 0 3px 0 rgba(0, 0, 0, 0.6);
   }
-  @keyframes shake {
-    0%, 100% { transform: rotate(0); }
-    25% { transform: rotate(-14deg) scale(1.1); }
-    60% { transform: rotate(10deg) scale(1.1); }
+  .gamer .value {
+    font-family: "Luckiest Guy", Impact, "Arial Black", sans-serif;
+    font-size: 96px; letter-spacing: 0.01em; font-style: italic; transform-origin: 20% 60%;
+    background: linear-gradient(180deg, #ffffff 0%, #fff6d6 45%, color-mix(in srgb, var(--c) 70%, #ffd34d) 100%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    -webkit-text-stroke: 3px #1a0f00; paint-order: stroke fill;
+    filter: drop-shadow(0 5px 0 rgba(0, 0, 0, 0.55));
   }
+  .gamer .bar {
+    display: block; height: 6px; width: 70%; margin-top: 4px; border-radius: 99px;
+    background: linear-gradient(90deg, var(--c), color-mix(in srgb, var(--c) 30%, #fff));
+    box-shadow: 0 0 12px var(--c);
+  }
+
+  /* ── Animación al sumar ── */
+  .bump .value { animation: pop 520ms cubic-bezier(.2, 1.6, .4, 1); }
+  .bump .icon { animation: hop 520ms ease-out; }
+  .bump::after {
+    content: ""; position: absolute; inset: -6px; border-radius: 26px; pointer-events: none;
+    box-shadow: 0 0 0 3px var(--c), 0 0 40px 6px var(--c); opacity: 0; animation: flash 600ms ease-out;
+  }
+  @keyframes pop { 0% { transform: scale(1); } 30% { transform: scale(1.35) rotate(-3deg); } 100% { transform: scale(1); } }
+  @keyframes hop { 0%, 100% { transform: translateY(0) rotate(0); } 30% { transform: translateY(-14px) rotate(-10deg) scale(1.12); } 60% { transform: translateY(2px) rotate(6deg); } }
+  @keyframes flash { 0% { opacity: 0.9; } 100% { opacity: 0; } }
   @keyframes enter { from { opacity: 0; transform: translateY(10px); } }
+
+  .spark {
+    position: absolute; width: 10px; height: 10px; pointer-events: none;
+    background: radial-gradient(circle, #fff 0%, var(--c) 45%, transparent 70%);
+    border-radius: 50%; animation: spark 800ms ease-out forwards;
+  }
+  @keyframes spark {
+    0% { transform: translate(0, 0) scale(1.4); opacity: 1; }
+    100% { transform: translate(var(--dx), var(--dy)) scale(0.2); opacity: 0; }
+  }
 </style>
 </head>
 <body>
 <div id="list"></div>
 <script>
-  // Parámetros: ?c=id1,id2 (qué contadores; vacío = todos) y ?layout=row|column.
+  // Parámetros: ?c=id1,id2 (qué contadores; vacío = todos), ?layout=row|column
+  // y ?preview=1 (vista previa del editor: recibe los datos por postMessage, sin red).
   const params = new URLSearchParams(location.search);
   const only = (params.get("c") || "").split(",").filter(Boolean);
+  const preview = params.get("preview") === "1";
   const list = document.getElementById("list");
   if (params.get("layout") === "column") list.classList.add("column");
   const last = new Map();
+  const sounds = new Map();
+  let audio = null;
 
-  /** Color #rrggbb + opacidad 0–100 → rgba() para el fondo de la tarjeta. */
   function rgba(hex, opacity) {
     const n = parseInt((hex || "#0e0c14").slice(1), 16);
     return `rgba(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}, ${(opacity ?? 85) / 100})`;
+  }
+
+  /** Sonido por defecto: un arpegio corto y brillante (tipo "cofre abierto"), generado sin archivos. */
+  function defaultSound(volume) {
+    audio ??= new AudioContext();
+    const now = audio.currentTime;
+    [784, 988, 1319, 1568].forEach((freq, i) => {
+      const osc = audio.createOscillator();
+      const gain = audio.createGain();
+      osc.type = i === 3 ? "sine" : "triangle";
+      osc.frequency.value = freq;
+      const t = now + i * 0.06;
+      gain.gain.setValueAtTime(0, t);
+      gain.gain.linearRampToValueAtTime(0.35 * volume, t + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + (i === 3 ? 0.6 : 0.25));
+      osc.connect(gain).connect(audio.destination);
+      osc.start(t);
+      osc.stop(t + 0.7);
+    });
+  }
+
+  function playSound(c) {
+    if (!c.sound_on) return;
+    const volume = (c.sound_volume ?? 70) / 100;
+    const src = c.sound_src || (c.has_sound ? `/api/counters/${c.id}/sound?v=${encodeURIComponent(c.sound_version)}` : null);
+    if (!src) return defaultSound(volume);
+    let a = sounds.get(c.id);
+    if (!a || a.dataset.src !== src) {
+      a = new Audio(src);
+      a.dataset.src = src;
+      sounds.set(c.id, a);
+    }
+    a.volume = volume;
+    a.currentTime = 0;
+    a.play().catch(() => {});
+  }
+
+  function sparks(el) {
+    const value = el.querySelector(".value");
+    const box = value.getBoundingClientRect();
+    const host = el.getBoundingClientRect();
+    for (let i = 0; i < 12; i++) {
+      const s = document.createElement("span");
+      s.className = "spark";
+      const angle = (Math.PI * 2 * i) / 12 + Math.random() * 0.4;
+      const dist = 50 + Math.random() * 50;
+      s.style.left = `${box.left - host.left + box.width / 2}px`;
+      s.style.top = `${box.top - host.top + box.height / 2}px`;
+      s.style.setProperty("--dx", `${Math.cos(angle) * dist}px`);
+      s.style.setProperty("--dy", `${Math.sin(angle) * dist}px`);
+      el.appendChild(s);
+      setTimeout(() => s.remove(), 850);
+    }
+  }
+
+  /** Cuenta del valor viejo al nuevo (rápido si es +1, animado si el salto es grande). */
+  function countTo(node, from, to) {
+    const fmt = (n) => Math.round(n).toLocaleString("es-MX");
+    if (Math.abs(to - from) <= 1) return (node.textContent = fmt(to));
+    const t0 = performance.now();
+    const step = (t) => {
+      const k = Math.min(1, (t - t0) / 450);
+      node.textContent = fmt(from + (to - from) * (1 - Math.pow(1 - k, 3)));
+      if (k < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
   }
 
   function render(counters) {
@@ -82,48 +182,79 @@
       let el = list.querySelector(`[data-id="${c.id}"]`);
       if (!el) {
         el = document.createElement("div");
-        el.className = "counter";
         el.dataset.id = c.id;
-        el.innerHTML = '<span class="icon"></span><span class="text"><span class="name"></span><span class="value"></span></span>';
+        el.innerHTML = '<span class="icon"></span><span class="text"><span class="name"></span><span class="value"></span><span class="bar"></span></span>';
       }
       if (list.children[i] !== el) list.insertBefore(el, list.children[i] || null);
+      el.className = `counter ${c.style === "gamer" ? "gamer" : "card"}`;
       el.style.setProperty("--c", c.color);
       el.style.setProperty("--bg", rgba(c.bg_color, c.bg_opacity));
+
       const icon = el.querySelector(".icon");
-      const key = c.has_image ? `img:${c.image_version}` : `emoji:${c.icon}`;
+      const imgSrc = c.image_src || (c.has_image ? `/api/counters/${c.id}/image?v=${encodeURIComponent(c.image_version)}` : null);
+      const key = imgSrc ? `img:${imgSrc.length}:${imgSrc.slice(-32)}` : `emoji:${c.icon}`;
       if (icon.dataset.key !== key) {
         icon.dataset.key = key;
-        icon.classList.toggle("has-image", c.has_image);
-        if (c.has_image) {
-          icon.innerHTML = "";
+        icon.classList.toggle("has-image", !!imgSrc);
+        icon.innerHTML = "";
+        if (imgSrc) {
           const img = document.createElement("img");
-          img.src = `/api/counters/${c.id}/image?v=${encodeURIComponent(c.image_version)}`;
+          img.src = imgSrc;
           icon.appendChild(img);
-        } else {
-          icon.textContent = c.icon;
-        }
+        } else icon.textContent = c.icon;
       }
       el.querySelector(".name").textContent = c.name;
-      el.querySelector(".value").textContent = c.value.toLocaleString("es-MX");
-      if (last.has(c.id) && last.get(c.id) !== c.value) {
-        el.classList.remove("bump");
-        void el.offsetWidth; // reinicia la animación
-        el.classList.add("bump");
+
+      const valueNode = el.querySelector(".value");
+      const before = last.get(c.id);
+      if (before === undefined) valueNode.textContent = c.value.toLocaleString("es-MX");
+      else if (before !== c.value) {
+        countTo(valueNode, before, c.value);
+        if (c.value > before) {
+          el.classList.remove("bump");
+          void el.offsetWidth; // reinicia la animación
+          el.classList.add("bump");
+          sparks(el);
+          playSound(c);
+        }
       }
       last.set(c.id, c.value);
     });
   }
 
-  async function tick() {
-    try {
-      const res = await fetch("/api/counters", { cache: "no-store" });
-      if (res.ok) render(await res.json());
-    } catch (_) {
-      /* la app está cerrada: se reintenta */
+  if (preview) {
+    // El editor manda { counters } para pintar y { bump: true } para probar la animación y el sonido.
+    let current = [];
+    window.addEventListener("message", (e) => {
+      if (e.data?.counters) {
+        current = e.data.counters;
+        render(current);
+      }
+      if (e.data?.bump && current.length) {
+        current = current.map((c) => ({ ...c, value: c.value + 1 }));
+        render(current);
+      }
+    });
+    parent.postMessage({ overlayReady: true }, "*");
+  } else {
+    // Espera larga: el servidor responde en cuanto algo cambia, así el número salta al instante.
+    let change = -1;
+    async function loop() {
+      try {
+        const url = change < 0 ? "/api/counters/live" : `/api/counters/live?since=${change}`;
+        const res = await fetch(url, { cache: "no-store" });
+        if (res.ok) {
+          const data = await res.json();
+          change = data.change;
+          render(data.counters);
+        } else await new Promise((r) => setTimeout(r, 1500));
+      } catch (_) {
+        await new Promise((r) => setTimeout(r, 1500)); // la app está cerrada: se reintenta
+      }
+      loop();
     }
-    setTimeout(tick, 600);
+    loop();
   }
-  tick();
 </script>
 </body>
 </html>

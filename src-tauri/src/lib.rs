@@ -94,6 +94,12 @@ fn migrations() -> Vec<Migration> {
             sql: include_str!("../migrations/013_counter_style.sql"),
             kind: MigrationKind::Up,
         },
+        Migration {
+            version: 14,
+            description: "estilo y sonido de los contadores",
+            sql: include_str!("../migrations/014_counter_fx.sql"),
+            kind: MigrationKind::Up,
+        },
     ]
 }
 
@@ -143,6 +149,7 @@ pub fn run() {
             psn::psn_now_playing,
             youtube::youtube_disconnect,
             live::live_status,
+            live::live_notify,
             updater::update_check,
             updater::update_apply,
         ])

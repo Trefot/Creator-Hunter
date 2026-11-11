@@ -200,6 +200,13 @@ Cuentan lo recibido en USD desde la fecha local de creación de la meta, filtrad
 - **Por qué así y no el plugin oficial de actualización:** el repositorio es privado (el plugin necesita un servidor público o con token) y el usuario usa un solo PC; la carpeta ya existía y Claude no puede instalar por el usuario (sus procesos tienen AppData redirigido, ver D-019).
 - **Riesgo aceptado:** se ejecuta lo que haya en esa carpeta del propio usuario con el nombre esperado. Si algún día se distribuye la app, pasar al plugin oficial con firma.
 
+### D-022 · Overlay instantáneo, con estilo y sonido (2026-11-10)
+- **Espera larga en vez de preguntar cada 0,6 s:** `/api/counters/live?since=N` se queda esperando (hasta 20 s) a que suba el número de cambio y responde en el acto. Cada petición del servidor va en su propio hilo, así esas esperas no bloquean al Stream Deck. La app avisa de sus propios cambios con `live_notify`.
+- Si `since` no coincide con el número actual (por ejemplo, tras reiniciar la app, que vuelve a 0), responde al momento: un overlay abierto nunca se queda colgado.
+- **Estilo y sonido en la base (`style`, `sound`, `sound_on`, `sound_volume`)**; el sonido propio se sirve aparte (`/sound`) y solo se vuelve a pedir si cambia. El sonido por defecto se genera con Web Audio, sin archivos.
+- **La vista previa del editor es el propio overlay** en un iframe (`?preview=1`, datos por `postMessage`): una sola fuente de diseño.
+- La tipografía gamer (Luckiest Guy) se carga de Google Fonts; sin internet, el overlay usa Impact.
+
 ## Dependencias
 
 | Dependencia | Para qué |

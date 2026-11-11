@@ -1,7 +1,7 @@
-import { ChangeEvent, FormEvent, useEffect, useState } from "react";
+import { ChangeEvent, FormEvent, useEffect, useRef, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
-import { Check, ChevronDown, Copy, ImagePlus, Minus, MonitorPlay, Pencil, Plus, RotateCcw, Trash2, X } from "lucide-react";
+import { Check, ChevronDown, Copy, ImagePlus, Minus, MonitorPlay, Music, Pencil, Play, Plus, RotateCcw, Trash2, Volume2, VolumeX, X } from "lucide-react";
 import { fitPng } from "../../components/images";
 import { EmptyState } from "../../components/EmptyState";
 import { PageTitle } from "../../components/PageTitle";
@@ -36,7 +36,9 @@ export function CounterIcon({ counter }: { counter: Pick<Counter, "icon" | "imag
 }
 
 /** Contadores rápidos para empezar con un clic. */
-const STYLE = { image: null, bg_color: "#0e0c14", bg_opacity: 85 };
+const STYLE = { image: null, bg_color: "#0e0c14", bg_opacity: 85, style: "gamer" as const, sound: null, sound_on: true, sound_volume: 70 };
+/** Tamaño máximo del sonido propio (se guarda en la base de datos). */
+const MAX_SOUND_BYTES = 1_500_000;
 const TEMPLATES: CounterInput[] = [
   { name: "Muertes", icon: "💀", color: "#ef4444", step: 1, game_id: null, ...STYLE },
   { name: "Jefes vencidos", icon: "⚔️", color: "#8b5cf6", step: 1, game_id: null, ...STYLE },
@@ -68,20 +70,67 @@ function CopyButton({ text, label }: { text: string; label: string }) {
   );
 }
 
+/**
+ * Vista previa real: el mismo overlay de OBS dentro de un iframe, alimentado con lo que se está
+ * editando (sin guardar). "Probar" suma 1 para ver la animación y oír el sonido.
+ */
+function OverlayPreview({ base, form }: { base: string; form: CounterInput }) {
+  const frame = useRef<HTMLIFrameElement>(null);
+  const [ready, setReady] = useState(false);
+  const [value, setValue] = useState(27);
+
+  useEffect(() => {
+    const onMessage = (e: MessageEvent) => e.data?.overlayReady && setReady(true);
+    window.addEventListener("message", onMessage);
+    return () => window.removeEventListener("message", onMessage);
+  }, []);
+
+  useEffect(() => {
+    if (!ready) return;
+    const counter = {
+      ...form,
+      id: "preview",
+      name: form.name || t.namePlaceholder,
+      value,
+      has_image: !!form.image,
+      image_src: form.image,
+      has_sound: !!form.sound,
+      sound_src: form.sound,
+    };
+    frame.current?.contentWindow?.postMessage({ counters: [counter] }, "*");
+  }, [ready, form, value]);
+
+  return (
+    <div className="counter-preview-stage">
+      <div className="counter-preview-head">
+        <span className="small muted">{t.preview}</span>
+        <button type="button" className="small-button" onClick={() => setValue((v) => v + 1)}>
+          <Play size={13} /> {t.testFx}
+        </button>
+      </div>
+      <iframe ref={frame} className="counter-preview-frame" src={`${base}/overlay?preview=1`} title={t.preview} allow="autoplay" />
+    </div>
+  );
+}
+
 /** Formulario para crear o editar un contador. */
 function CounterForm({
   initial,
   games,
+  overlayBase,
   onSave,
   onCancel,
 }: {
   initial: CounterInput;
   games: Game[];
+  /** Dirección del servidor local (para la vista previa real); null si no está activo. */
+  overlayBase: string | null;
   onSave: (input: CounterInput) => Promise<void>;
   onCancel: () => void;
 }) {
   const [form, setForm] = useState<CounterInput>(initial);
   const [imageError, setImageError] = useState("");
+  const [soundError, setSoundError] = useState("");
   const set = (patch: Partial<CounterInput>) => setForm((f) => ({ ...f, ...patch }));
 
   async function onImage(e: ChangeEvent<HTMLInputElement>) {
@@ -96,6 +145,18 @@ function CounterForm({
     }
   }
 
+  function onSound(e: ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    if (file.size > MAX_SOUND_BYTES) return setSoundError(t.soundTooBig);
+    setSoundError("");
+    const reader = new FileReader();
+    reader.onload = () => set({ sound: String(reader.result), sound_on: true });
+    reader.onerror = () => setSoundError(t.soundError);
+    reader.readAsDataURL(file);
+  }
+
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
     if (!form.name.trim()) return;
@@ -105,14 +166,29 @@ function CounterForm({
   return (
     <form className="card counter-form" onSubmit={onSubmit}>
       {/* Vista previa tal cual se verá en OBS (sobre un fondo de tablero para notar la transparencia) */}
-      <div className="counter-preview-stage">
-        <span className="small muted">{t.preview}</span>
-        <div className="overlay-card" style={{ ["--c" as string]: form.color, background: cardBackground(form.bg_color, form.bg_opacity) }}>
-          <span className="overlay-icon">{form.image ? <img src={form.image} alt="" /> : form.icon}</span>
-          <span className="overlay-text">
-            <span className="overlay-name">{form.name || t.namePlaceholder}</span>
-            <span className="overlay-value">27</span>
-          </span>
+      {overlayBase ? (
+        <OverlayPreview base={overlayBase} form={form} />
+      ) : (
+        <div className="counter-preview-stage">
+          <span className="small muted">{t.preview}</span>
+          <div className="overlay-card" style={{ ["--c" as string]: form.color, background: cardBackground(form.bg_color, form.bg_opacity) }}>
+            <span className="overlay-icon">{form.image ? <img src={form.image} alt="" /> : form.icon}</span>
+            <span className="overlay-text">
+              <span className="overlay-name">{form.name || t.namePlaceholder}</span>
+              <span className="overlay-value">27</span>
+            </span>
+          </div>
+        </div>
+      )}
+      <div className="counter-form-row">
+        <span className="small muted">{t.style}</span>
+        <div className="counter-styles">
+          {(["gamer", "card"] as const).map((style) => (
+            <button type="button" key={style} className={`counter-style${form.style === style ? " on" : ""}`} onClick={() => set({ style })}>
+              <strong>{t.styles[style].name}</strong>
+              <span className="small muted">{t.styles[style].hint}</span>
+            </button>
+          ))}
         </div>
       </div>
       <label>
@@ -182,6 +258,31 @@ function CounterForm({
           <input type="range" min={0} max={100} step={5} value={form.bg_opacity} onChange={(e) => set({ bg_opacity: Number(e.target.value) })} />
         </label>
       </div>
+      <div className="counter-form-row">
+        <span className="small muted">{t.sound}</span>
+        <div className="counter-sound">
+          <button type="button" className={`small-button${form.sound_on ? "" : " ghost"}`} onClick={() => set({ sound_on: !form.sound_on })}>
+            {form.sound_on ? <Volume2 size={14} /> : <VolumeX size={14} />} {form.sound_on ? t.soundOn : t.soundOff}
+          </button>
+          <label className="ghost small-button counter-sound-upload">
+            <Music size={14} /> {form.sound ? t.soundChange : t.soundUpload}
+            <input type="file" accept="audio/*" onChange={onSound} hidden />
+          </label>
+          {form.sound && (
+            <button type="button" className="link-button small" onClick={() => set({ sound: null })}>
+              {t.soundDefault}
+            </button>
+          )}
+        </div>
+        <span className="muted small">{form.sound ? t.soundCustom : t.soundHint}</span>
+        {form.sound_on && (
+          <label className="counter-opacity">
+            <span className="small muted">{t.volume(form.sound_volume)}</span>
+            <input type="range" min={0} max={100} step={5} value={form.sound_volume} onChange={(e) => set({ sound_volume: Number(e.target.value) })} />
+          </label>
+        )}
+        {soundError && <span className="error small">{soundError}</span>}
+      </div>
       <div className="counter-form-grid">
         <label>
           {t.step}
@@ -250,6 +351,7 @@ export function LivePage() {
   async function act(fn: () => Promise<void>) {
     try {
       await fn();
+      await invoke("live_notify"); // el overlay de OBS se entera al instante
       await refresh();
     } catch (err) {
       setError(String(err));
@@ -309,6 +411,7 @@ export function LivePage() {
         <CounterForm
           initial={{ name: "", icon: COUNTER_ICONS[0], color: COUNTER_COLORS[0], step: 1, game_id: null, ...STYLE }}
           games={games}
+          overlayBase={info?.running ? base : null}
           onCancel={() => setCreating(false)}
           onSave={async (input) => {
             await act(() => createCounter(input));
@@ -338,6 +441,7 @@ export function LivePage() {
                   key={c.id}
                   initial={c}
                   games={games}
+                  overlayBase={info?.running ? base : null}
                   onCancel={() => setEditing(null)}
                   onSave={async (input) => {
                     await act(() => updateCounter(c.id, input));
