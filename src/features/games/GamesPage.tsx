@@ -7,6 +7,8 @@ import { PageTitle } from "../../components/PageTitle";
 import { Game, GAME_PLATFORMS, GamePlatform, createGame, listGames } from "../../db/games";
 import { psnStatus } from "../../db/psn";
 import { es } from "../../i18n/es";
+import { PlatinumCollection } from "./PlatinumCollection";
+import { GameBroadcastPanel } from "./GameBroadcastPanel";
 import { GameArtwork } from "./GameArtwork";
 import { GameDetail, GameView } from "./GameDetail";
 import { PsnConnect } from "./PsnConnect";
@@ -28,6 +30,7 @@ export function GamesPage({
   onOpenProject:(id:string)=>void;
   onOpenIdeas:()=>void;
 }) {
+  const [tab,setTab]=useState<"library"|"platinum"|"broadcast">("library");
   const [search,setSearch]=useState("");
   const [platform,setPlatform]=useState("");
   const [games, setGames] = useState<Game[] | null>(null);
@@ -90,6 +93,8 @@ export function GamesPage({
         <PageTitle section="games" subtitle={t.subtitle} />
       </header>
 
+      <div className="tabs">{([['library','Biblioteca'],['platinum','Platinados'],['broadcast','Overlay y objetos']] as const).map(([key,label])=><button key={key} className={`tab${tab===key?' active':''}`} onClick={()=>setTab(key)}>{label}</button>)}<button className="ghost small-button" onClick={refresh}>Actualizar biblioteca</button></div>
+      {tab==='platinum'?<PlatinumCollection games={games??[]} onChanged={refresh} onOpen={setOpenId}/>:tab==='broadcast'?<GameBroadcastPanel games={games??[]}/>:<>
       <details className="game-psn-options"><summary>{es.gameStudio.psnOptions}</summary><PsnConnect connected={connected} onChange={refresh} onImport={() => setImporting(true)} /></details>
 
       {
@@ -187,6 +192,7 @@ export function GamesPage({
           })}
         </ul>
       )}
+      </>}
     </section>
   );
 }

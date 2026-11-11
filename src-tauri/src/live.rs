@@ -152,6 +152,18 @@ fn handle_request(app: &AppHandle, key: &str, request: Request) {
     let query = |name: &str| url.query_pairs().find(|(k, _)| k == name).map(|(_, v)| v.to_string());
 
     match segments.iter().map(String::as_str).collect::<Vec<_>>().as_slice() {
+        ["game-overlay"] => {
+            let response=Response::from_string(include_str!("../overlay/game.html")).with_header(header("Content-Type","text/html; charset=utf-8")).with_header(header("Cache-Control","no-store"));let _=request.respond(response);
+        }
+        ["api","game","state"] => {
+            let result=tauri::async_runtime::block_on(async {let pool=crate::backup::pool(app).await?;crate::game_broadcast::state(&pool).await});
+            match result {Ok(data)=>respond_json(request,200,data),Err(error)=>respond_json(request,503,json!({"error":error}))}
+        }
+        ["api","game","current",action] => {
+            if query("key").as_deref()!=Some(key){return respond_json(request,403,json!({"error":"Falta la clave local o no es correcta."}));}
+            let result=tauri::async_runtime::block_on(async {let pool=crate::backup::pool(app).await?;crate::game_broadcast::current_action(&pool,action).await});
+            match result {Ok(data)=>{let _=app.emit("game-targets-changed",&data);respond_json(request,200,data)},Err(error)=>respond_json(request,409,json!({"error":error}))}
+        }
         ["api", "clips", "save"] => {
             if query("key").as_deref() != Some(key) {
                 return respond_json(request, 403, json!({ "error": "Falta la clave local o no es correcta." }));

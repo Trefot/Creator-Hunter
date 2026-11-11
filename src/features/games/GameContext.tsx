@@ -1,3 +1,4 @@
+import { listen } from "@tauri-apps/api/event";
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import { addTask, deleteTask, listCollected, listTasks, setCollected, setTaskDone, TrophyTask } from "../../db/collections";
 import type { Game, Trophy } from "../../db/games";
@@ -67,6 +68,11 @@ export function useGameState(game: Game, trophies: Trophy[] | null, openTrophy: 
     reloadToday();
   }, [game.id, reloadToday]);
 
+  useEffect(()=>{
+    let disposed=false;let stop:(()=>void)|undefined;
+    listen<{game_id:string}>("game-targets-changed",event=>{if(!disposed&&event.payload.game_id===game.id){listCollected(game.id).then(keys=>{if(!disposed)setCollectedKeys(keys);}).catch(console.error);}}).then(fn=>{if(disposed)fn();else stop=fn;}).catch(console.error);
+    return()=>{disposed=true;stop?.();};
+  },[game.id]);
   const earned = (psnId: number | undefined) =>
     psnId !== undefined && !!trophies?.find((x) => x.psn_trophy_id === psnId)?.earned_at;
 

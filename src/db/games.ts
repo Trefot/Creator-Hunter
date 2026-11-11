@@ -19,6 +19,8 @@ export interface Game {
   notes: string | null;
   last_synced_at: string | null;
   /** Calculados a partir de los trofeos. */
+  platinum_at?: string | null;
+  psn_platinum_at?: string | null;
   trophy_count: number;
   earned_count: number;
 }
@@ -41,7 +43,8 @@ export interface Trophy {
 }
 
 const GAME_COLUMNS = `g.id, g.title, g.platform, g.status, g.cover, g.np_communication_id, g.np_service_name,
-  g.notes, g.last_synced_at,
+  g.notes, g.last_synced_at,g.platinum_at,
+  (SELECT MAX(t.earned_at) FROM trophy t WHERE t.game_id=g.id AND t.type='platinum' AND t.earned_at IS NOT NULL) AS psn_platinum_at,
   (SELECT COUNT(*) FROM trophy t WHERE t.game_id = g.id) AS trophy_count,
   (SELECT COUNT(*) FROM trophy t WHERE t.game_id = g.id AND t.earned_at IS NOT NULL) AS earned_count`;
 

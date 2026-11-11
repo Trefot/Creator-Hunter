@@ -234,3 +234,13 @@ test('OBS moments keep separate recording and stream times and never invent a fi
   const text=momentsText([{created_at:'2026-11-11',game_title:'Fortnite',title:'Jugada',record_ms:123450,stream_ms:45000,output_path:null}]);
   assert.match(text,/Grabación: 00:02:03/);assert.match(text,/Directo: 00:00:45/);assert.match(text,/No confirmado por OBS/);
 });
+
+test('visual detector rejects blank references and matches distinctive luminance patterns',()=>{
+  const {templateScore}=load('src/features/games/gameDetector.ts',{'../../db/database':{},'../../db/gameBroadcast':{}});
+  const pixels=values=>values.flatMap(x=>[x,x,x,255]);
+  const a=pixels([0,240,20,160,45,255,80,130]);
+  assert.equal(templateScore(a,a),1);
+  assert.equal(templateScore(pixels([20,20,20,20]),pixels([20,20,20,20])),0);
+  assert.ok(templateScore(a,pixels([255,0,235,80,210,0,175,110]))<.9);
+  assert.equal(templateScore(a,[]),0);
+});

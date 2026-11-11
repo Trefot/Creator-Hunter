@@ -16,3 +16,9 @@ export function collectionFor(npCommunicationId: string | null, psnTrophyId: num
   if (!npCommunicationId || psnTrophyId === null) return null;
   return ALL.find((g) => g.npCommunicationId === npCommunicationId)?.collections.find((c) => c.trophy === psnTrophyId) ?? null;
 }
+
+export function collectionsForGame(title:string,npCommunicationId:string|null):TrophyCollection[]{
+  const exact=ALL.find(g=>g.npCommunicationId===npCommunicationId);
+  if(exact)return exact.collections;
+  return /wukong/i.test(title)?ALL[0].collections:[];
+}

@@ -516,3 +516,19 @@ pub async fn obs_clips(app: AppHandle) -> Result<Value, String> {
     let pool = crate::backup::pool(&app).await?;
     obs_store::list_clips(&pool).await
 }
+
+pub(crate) fn read_obs(app: &AppHandle, kind: &str, data: Option<Value>) -> Result<Value, String> {
+    initialize(app)?;
+    let state = app.state::<ObsState>();
+    let _guard = state.operation.lock().map_err(|e| e.to_string())?;
+    let config = state
+        .inner
+        .lock()
+        .map_err(|e| e.to_string())?
+        .config
+        .clone();
+    if !config.enabled {
+        return Err("Conecta OBS en Live Studio para leer la captura del juego.".into());
+    }
+    Client::connect(config.port, &password()?)?.request_data(kind, data)
+}

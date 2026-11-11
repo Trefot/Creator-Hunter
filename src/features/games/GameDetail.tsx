@@ -22,6 +22,7 @@ import { TodayView } from "./TodayView";
 import { RouteView } from "./RouteView";
 import { TrophyRow } from "./TrophyRow";
 import { TrophySheet } from "./TrophySheet";
+import { GameBroadcastPanel } from "./GameBroadcastPanel";
 import { GameDayPlan as CreativeDay } from "./GameDayPlan";
 import { CreativeGameDetail } from "./CreativeGameDetail";
 import { GameAppearance } from "./GameAppearance";
@@ -32,7 +33,7 @@ const t = es.games;
 const TYPES: TrophyType[] = ["platinum", "gold", "silver", "bronze"];
 
 type Filter = "all" | "pending" | "earned";
-export type GameView = "today" | "route" | "guide" | "list" | "studio";
+export type GameView = "today" | "route" | "guide" | "list" | "studio" | "live";
 
 interface Props {
   game: Game;
@@ -174,14 +175,14 @@ function TrophyGameDetail({ game, psnConnected, initialView = "route", onBack, o
       <GameAppearance game={game} onChanged={onChanged}/>
       <GameContextProvider value={gameState}>
       <div className="tabs">
-        {(["today", "route", "guide", "list", "studio"] as GameView[]).map((v) => (
+        {(["today", "route", "guide", "list", "studio", "live"] as GameView[]).map((v) => (
           <button key={v} className={`tab${view === v ? " active" : ""}`} onClick={() => setView(v)}>
             {t.views[v]}
           </button>
         ))}
       </div>
 
-      {view === "studio" ? (<GameContent game={game} onOpenProject={onOpenProject} onOpenIdeas={onOpenIdeas}/>) : trophies === null ? (
+      {view === "live" ? (<GameBroadcastPanel games={[game]} initialGameId={game.id}/>) : view === "studio" ? (<GameContent game={game} onOpenProject={onOpenProject} onOpenIdeas={onOpenIdeas}/>) : trophies === null ? (
         <p className="muted">{t.loading}</p>
       ) : list.length === 0 && view === "today" ? (<CreativeDay game={game}/>) : list.length === 0 ? (
         <p className="muted small">{t.noTrophies}</p>

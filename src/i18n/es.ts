@@ -2,7 +2,7 @@
 export const es = {
   appName: "Nexus Studio",
   appTagline: "Tu espacio para crear",
-  version: "Alpha 0.2 · v0.2.14",
+  version: "Alpha 0.2 · v0.2.15",
   /** Marca de la versión de pruebas (D-019). */
   devBadge: "PRUEBAS",
   startup: {
@@ -16,7 +16,7 @@ export const es = {
     today: "Tu plan de hoy", todayHint: "Elige qué quieres conseguir y qué vale la pena grabar. Marca los objetivos cuando los completes.", completed: "completados", loading: "Cargando…", noObjectives: "Todavía no hay objetivos para hoy.", objective: "Nuevo objetivo", objectivePlaceholder: "Por ejemplo: conseguir una victoria y grabar el final", add: "Añadir", remove: "Quitar", sessionNotes: "Notas de la partida de hoy", saveSessionNotes: "Guardar notas de hoy", previousPlans: "Últimos planes anteriores",
     suggestedObjectives: ["Conseguir una victoria", "Guardar una buena jugada", "Grabar una partida comentada"],
     content: "Contenido de este juego", contentHint: "Clips y momentos de OBS, ideas y proyectos asociados a este juego.", refresh: "Actualizar", clips: "Clips confirmados", noClips: "Los clips guardados con este juego activo aparecerán aquí.", moments: "Momentos marcados", noMoments: "Todavía no hay momentos asociados a este juego.", copyPath: "Copiar ruta", copied: "¡Copiado!", makeIdea: "Crear idea", ideaSaved: "Idea disponible en tu banco de ideas. Repetir la conversión del mismo origen no la duplica.", clipSource: "Idea creada desde un clip", momentSource: "Idea creada desde un momento", fullRecordingTime: "Tiempo en la grabación completa", streamTime: "Directo", fileUnknown: "Archivo sin confirmar por OBS.", ideas: "Ideas", openIdeas: "Abrir Ideas", ideaTitle: "Nueva idea para este juego", ideaPlaceholder: "¿Qué contenido quieres grabar?", addIdea: "Guardar idea", noIdeas: "Todavía no hay ideas asociadas.", projects: "Proyectos relacionados", noProjects: "Asocia un proyecto existente o aprueba una idea de este juego desde Ideas.", adaptations: "adaptaciones", chooseProject: "Proyecto sin juego asociado", linkProject: "Asociar proyecto",
-    heroHint: "Juega con un objetivo. Rescata lo que merece convertirse en contenido.", status: "Estado del juego", yourSpace: "Tu espacio de juego y creación", tabs: { today: "Hoy", content: "Contenido", notes: "Portada y notas" }, confirmRemoveGame: "Quitar este juego", manageGame: "Gestionar este juego", deleteHint: "Se borrarán los planes del juego. Las ideas, los proyectos y los vídeos se conservan.",
+    heroHint: "Juega con un objetivo. Rescata lo que merece convertirse en contenido.", status: "Estado del juego", yourSpace: "Tu espacio de juego y creación", tabs: { today: "Hoy", content: "Contenido", notes: "Portada y notas", live: "Directo y objetos" }, confirmRemoveGame: "Quitar este juego", manageGame: "Gestionar este juego", deleteHint: "Se borrarán los planes del juego. Las ideas, los proyectos y los vídeos se conservan.",
     psnOptions: "PlayStation: conexión e importación", addOrChoose: "Elegir o añadir un juego", noMatches: "No hay juegos con esos filtros.", search: "Buscar en tu biblioteca", filterPlatform: "Filtrar por plataforma", allPlatforms: "Todas las plataformas", cardHint: "Plan y contenido",
   },
   games: {
@@ -76,7 +76,7 @@ export const es = {
     rarity: (rate: number) => `${rate.toLocaleString("es-MX", { maximumFractionDigits: 1 })} % de jugadores`,
     earnedOn: (date: string) => `Conseguido el ${date}`,
     filters: { pending: "Pendientes", earned: "Conseguidos", all: "Todos" },
-    views: { today: "Hoy", route: "Ruta al platino", guide: "Guía", list: "Lista de trofeos", studio: "Contenido" },
+    views: { today: "Hoy", route: "Ruta al platino", guide: "Guía", list: "Lista de trofeos", studio: "Contenido", live: "Directo y objetos" },
     guideForPhase: "Guía de esta fase",
     missable: "Perdible",
     editPlan: "Fase, perdible y nota",
@@ -681,6 +681,8 @@ export const es = {
       obs_session: "Sesiones de OBS",
       obs_marker: "Momentos de contenido",
       obs_clip: "Clips de OBS",
+      game_target: "Objetivos del directo",
+      game_overlay: "Configuración del overlay de juegos",
     } as Record<string, string>,
   },
   dashboard: {

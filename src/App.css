@@ -4464,3 +4464,19 @@ button.muted-link {
 .game-appearance-form { display: grid; gap: 12px; }
 .game-appearance-preview { width: min(100%,320px); aspect-ratio: 16/9; object-fit: cover; border-radius: 10px; }
 .game-delete-zone { padding: 16px 0; color: var(--muted); }
+
+.game-broadcast-panel,.platinum-summary,.platinum-manual { padding: 20px; margin-bottom: 18px; display: grid; gap: 14px; }
+.game-broadcast-panel h2,.game-broadcast-panel h3,.platinum-summary h2 { margin: 0; }
+.game-broadcast-panel label,.game-target-form label,.game-calibration label { display: grid; gap: 6px; }
+.game-overlay-state { padding: 16px; border: 1px solid #a671e4; border-radius: 12px; background: linear-gradient(120deg,#241e36,#14131d); }
+.game-overlay-state p { margin: 8px 0; }
+.game-broadcast-urls { display: flex; gap: 8px; flex-wrap: wrap; margin: 12px 0; }
+.game-target-form { display: grid; gap: 10px; }
+.game-target-list { list-style: none; margin: 0; padding: 0; max-height: 720px; overflow: auto; }
+.game-target-list > li { padding: 16px 0; display: grid; gap: 10px; border-bottom: 1px solid var(--border); }
+.game-target-list .game-notes { margin: 8px 0; }
+.game-calibration { display: grid; gap: 12px; padding: 16px; border: 1px solid var(--border); border-radius: 12px; }
+.detector-canvas { width: 100%; height: auto; cursor: crosshair; touch-action: none; background: black; }
+.platinum-manual summary { cursor: pointer; }
+.platinum-manual form { margin-top: 14px; align-items: end; }
+.platinum-manual label { display: grid; gap: 6px; }

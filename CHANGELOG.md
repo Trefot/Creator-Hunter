@@ -2,6 +2,15 @@
 
 ## [Sin publicar]
 
+## [0.2.15] · 2026-11-11 · Platinos y objetivos en directo
+
+- Portada oficial de Fortnite incluida como alternativa a la ilustración genérica; conserva las portadas personales.
+- Colección de platinados con fecha y distinción entre trofeos obtenidos y registros manuales, sin contar dos veces el mismo juego.
+- Overlay transparente para OBS/Twitch con total de platinos, juego y objetivo elegido; URLs para Conseguido, Deshacer y Siguiente en Stream Deck.
+- Listas de Wukong conectadas al progreso de sus guías y objetivos personalizados, incluido el token de la tienda pirata de Fortnite.
+- Detección visual experimental por referencia de un aviso en OBS, con región calibrable, modo de prueba, dos coincidencias y corrección manual. No reconoce todos los objetos sin calibración ni usa IA generativa.
+- Migración 019 protegida y seguimiento incluido en las copias de seguridad.
+
 ## [0.2.14] · 2026-11-11 · Juegos para crear contenido
 
 - Biblioteca con búsqueda, filtro por plataforma, ilustración de portada y sin barras ni recuentos de trofeos vacíos.

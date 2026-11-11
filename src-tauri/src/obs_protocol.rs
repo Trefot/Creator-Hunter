@@ -162,16 +162,23 @@ impl Client {
         result
     }
     pub fn request(&mut self, kind: &str) -> Result<Value, String> {
+        self.request_data(kind, None)
+    }
+    pub fn request_data(&mut self, kind: &str, data: Option<Value>) -> Result<Value, String> {
         // Esta entrega nunca debe iniciar/parar emisiones ni cambiar escenas.
         if !matches!(
             kind,
-            "GetRecordStatus" | "GetStreamStatus" | "GetReplayBufferStatus"
+            "GetRecordStatus"
+                | "GetStreamStatus"
+                | "GetReplayBufferStatus"
+                | "GetInputList"
+                | "GetSourceScreenshot"
         ) {
             return Err("Operación OBS no permitida.".into());
         }
         self.sequence += 1;
         let id = self.sequence.to_string();
-        self.send(json!({"op":6,"d":{"requestType":kind,"requestId":id}}))?;
+        self.send(json!({"op":6,"d":{"requestType":kind,"requestId":id,"requestData":data.unwrap_or_else(||json!({}))}}))?;
         for _ in 0..64 {
             let message = self.read()?;
             self.observe_event(&message);

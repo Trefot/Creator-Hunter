@@ -317,3 +317,11 @@ Las dependencias nuevas se añaden a esta tabla con su justificación.
 - Migración 018 añade idea.game_id y capture_key única nullable, sin tablas nuevas ni etiquetas técnicas visibles. La conversión por captura es idempotente y la aprobación de idea conserva el game_id en project.
 - gameContent consulta por workspace y game_id antes de LIMIT; no empareja contenido por título. Proyectos sin relación explícita pueden heredar el contexto de su idea. La selección manual solo ofrece proyectos sin juego/contexto previo.
 - Copias: game precede a idea y project; el orden inverso elimina hijos primero. snapshot usa persistent(false) en SELECT * para evitar metadatos SQLx antiguos al cambiar columnas sobre una conexión abierta. Ver JUEGOS.md y las pruebas de esquemas 17/18.
+
+## D-033 · Juegos en directo (0.2.15)
+
+- Fortnite usa un asset oficial estático cuando no hay portada personal; origen en DIRECTOS-JUEGOS.md. Colección de platinos derivada de trofeo ganado o estado manual, contando una vez por game.id, con fecha manual opcional.
+- game_target y game_overlay (migración 019) comparten las claves de collection_item con las guías. Una clave de colección no duplica el booleano done; los logros PSN no se desmarcan. Controles de objetivo requieren clave local por HTTP y detección exige que siga fijado el mismo target.
+- Overlay HTML transparente con consultas ligeras: recuento, juego, progreso y objetivo; nunca referencias de imagen ni datos de OBS. Estado cada segundo; último estado y aviso si falla.
+- GetInputList/GetSourceScreenshot se añaden a la lectura local de OBS. Detector sin modelos: correlación de luminancia en región fija, umbral, dos muestras y rearme tras no coincidencia; modo Prueba inicial y auto explícito. Vive con App para funcionar fuera de la pestaña, sin consultas visuales si está apagado o completado.
+- Capturas PNG en memoria, referencia recortada en SQLite. Sin IA, OCR, lectura de procesos del juego ni garantías universales. Se mantiene Stream Deck/manual como control y corrección. Referencias y preferencias se exportan en las 27 tablas, aceptando copias anteriores del esquema 18.

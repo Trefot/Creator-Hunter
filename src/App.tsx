@@ -1,3 +1,4 @@
+import { startGameDetector } from "./features/games/gameDetector";
 import { UpdateLayer } from "./features/update/UpdateLayer";
 import { invoke } from "@tauri-apps/api/core";
 import { LivePage } from "./features/live/LivePage";
@@ -36,6 +37,7 @@ function App() {
 
   // Modo juego: al empezar a jugar en la PS5 un juego de la biblioteca, la app abre su ficha.
   const gameMode = useGameMode((game) => openGame(game.id, "today"));
+  useEffect(() => startGameDetector(), []);
   useEffect(() => { invoke("obs_initialize").catch(console.error); }, []);
   useEffect(() => {
     invoke("obs_context", { gameId: gameMode.playing?.id ?? null }).catch(console.error);

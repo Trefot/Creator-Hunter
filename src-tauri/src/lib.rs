@@ -2,6 +2,8 @@ use tauri_plugin_sql::{Migration, MigrationKind};
 
 mod backup;
 mod live;
+mod game_broadcast;
+mod game_tracking;
 mod obs;
 mod obs_protocol;
 mod obs_store;
@@ -129,6 +131,12 @@ fn migrations() -> Vec<Migration> {
             sql: include_str!("../migrations/018_game_ideas.sql"),
             kind: MigrationKind::Up,
         },
+        Migration {
+            version: 19,
+            description: "platinos y objetivos de emisión",
+            sql: include_str!("../migrations/019_game_broadcast.sql"),
+            kind: MigrationKind::Up,
+        },
     ]
 }
 
@@ -187,6 +195,12 @@ pub fn run() {
             obs::obs_markers,
             obs::obs_save_replay,
             obs::obs_clips,
+            game_tracking::game_target_change,
+            game_tracking::game_targets,
+            game_tracking::game_broadcast_state,
+            game_tracking::game_broadcast_action,
+            game_tracking::obs_capture,
+            game_tracking::obs_sources,
             live::live_status,
             live::live_notify,
             updater::update_check,
