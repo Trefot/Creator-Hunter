@@ -1,17 +1,14 @@
 {
-  "version": "0.2.10",
+  "version": "0.2.11",
   "notes": [
-    "Nueva identidad Nexus Studio, con el compañero violeta y su farol, e interfaz grafito con acentos violeta y dorado.",
-    "Dashboard centrado en tu próximo directo, contenido en producción y accesos a Ideas y Live Studio.",
-    "YouTube se sincroniza con la app abierta sin descartar lo que estés escribiendo ni duplicar consultas simultáneas.",
-    "La app espera a una copia previa válida antes de aplicar migraciones y permite reintentar si falla.",
-    "Conexiones y copias de pruebas separadas de producción; exportaciones consistentes e importaciones con validación más estricta.",
-    "La búsqueda manual de actualizaciones informa de los fallos de conexión y evita instalaciones duplicadas por clics repetidos.",
-    "Se conservan tus datos, conexiones y rutas de TrophyHunter; el nombre técnico del instalador se mantiene para actualizar la versión existente."
+    "Detección de Fortnite abierto en Windows sin depender de PSN; comprueba el proceso del juego cada 15 segundos.",
+    "Añadir juegos de PC y otras plataformas a la biblioteca y elegir el juego actual manualmente; indica si la actividad procede de PC, PlayStation o selección manual.",
+    "Icono de ventana explícito y accesos del escritorio/Inicio con nombre Nexus Studio e icono propio. Conserva instalación, identificador y datos existentes.",
+    "El instalador actualiza los accesos antiguos que apuntan a esta instalación y solicita a Windows refrescar los iconos."
   ],
   "date": "2026-11-11",
   "installer": "TrophyHunter-setup.exe",
-  "source_commit": "d6694f2da1008a292b96d49b24e977a5cd8a774a",
-  "sha256": "0bbd99c5f37c7684db5b5e4685358ba841b4ef2f43dd0712ef23080020c4e615",
-  "size": 3156785
+  "source_commit": "6c57f1ca119f5b361ee0e933eb65cd8ecf5d38b9",
+  "sha256": "8cd4fbe894ad0af09aa8bef94d8a5f736ea34369e8e5d72cf45515d4305893e7",
+  "size": 3271804
 }
