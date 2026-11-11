@@ -351,5 +351,5 @@ Guardar Replay Buffer se implementa en 0.2.13; recortar/editar vídeo sigue pend
 - [x] Detección visual local por referencia y región desde OBS, con modos Prueba y automático.
 - [x] Copias de las 27 tablas y compatibilidad con esquema 18.
 - [x] Prueba de interfaz, detección sintética y progreso del overlay.
-- [ ] Publicar y verificar Windows desde 0.2.14 (43095079417).
+- [x] Publicar y verificar Windows desde 0.2.14 (43099483059).
 - [ ] Calibrar avisos reales de Wukong y el token de Fortnite en el OBS del usuario; comprobar falsos positivos y duración de avisos.

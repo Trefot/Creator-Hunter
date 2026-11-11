@@ -1,10 +1,12 @@
 # Actualizaciones de Nexus Studio
 
-## 0.2.15 preparada, publicación pendiente
+## 0.2.15 publicada
+
+[Descargar instalador 0.2.15](https://github.com/Trefot/Creator-Hunter/releases/download/v0.2.15/Nexus-Studio_0.2.15_x64-setup.exe) o «Buscar actualizaciones» → «Actualizar ahora».
 
 Portada oficial de Fortnite, colección de platinados y objetivos de Wukong/Fortnite para OBS y Stream Deck. Detección visual experimental por referencia, sin IA generativa; requiere calibración real por objeto en el OBS del usuario. Uso en [DIRECTOS-JUEGOS.md](DIRECTOS-JUEGOS.md).
 
-El código está preparado desde `14b3fb509252bffd3d507fa48936d7fdb03c8e45`. La ejecución [43095079417](https://github.com/Trefot/Creator-Hunter/actions/runs/43095079417) pasó pruebas, build NSIS y actualización desde 0.2.14, pero falló transfiriendo el artefacto antes de publicar. [Reintento 43097625025](https://github.com/Trefot/Creator-Hunter/actions/runs/43097625025) con el flujo original, pendiente. El propietario autorizó publicar directamente desde el trabajo de Windows, manteniendo pruebas, verificación SHA-256, prueba de actualización y protección contra versiones anteriores. Cambio aplicado en `d876c2d`; [ejecución directa 43099483059](https://github.com/Trefot/Creator-Hunter/actions/runs/43099483059), en cola. GitHub Status confirmó una incidencia importante de Actions el 2026-11-11: https://stspg.io/jdjlq5zjyl48. El canal mantiene 0.2.14; no se debe anunciar 0.2.15 como instalable hasta verificar la publicación y sus archivos.
+La ejecución [43099483059](https://github.com/Trefot/Creator-Hunter/actions/runs/43099483059) terminó correctamente: pruebas, compilación NSIS, comprobación de actualización desde 0.2.14 y publicación directa autorizada. Release y canal verificados: instaladores idénticos, 3.848.811 bytes, SHA-256 `68d2bbee5b318456027b5763172c41f2a10c515b6b1530aec489d93a19bddb43`, origen `d876c2dfc2d46fa0ca00f196282c711051ecb688`. La calibración de avisos reales y la revisión en el PC del usuario siguen pendientes.
 
 ## 0.2.14 publicada
 

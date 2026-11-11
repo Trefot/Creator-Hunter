@@ -1,6 +1,6 @@
 # Validación de estabilidad · 2026-11-11
 
-Versión de código 0.2.15; versión publicada 0.2.14, preparada desde `1d77f07` (0.2.9). El instalador ya se ha compilado en GitHub Actions para Windows; la instalación y revisión en el equipo del usuario siguen pendientes.
+Versión publicada 0.2.15, preparada desde `1d77f07` (0.2.9). El instalador ya se ha compilado en GitHub Actions para Windows; la instalación y revisión en el equipo del usuario siguen pendientes.
 
 ## 0.2.15 · Platinos, objetos y detección visual
 
@@ -9,7 +9,8 @@ Versión de código 0.2.15; versión publicada 0.2.14, preparada desde `1d77f07`
 - 5 pruebas del protocolo OBS con servidor simulado; lecturas de fuentes y capturas permitidas sin iniciar ni detener salidas.
 - Chromium con SQLite real en memoria y RPC nativo simulado: registro de platino manual, preparación repetida de 36 curiosidades sin duplicados, selección del objetivo, URL del overlay y calibración. Modo Prueba detecta sin escribir progreso; modo automático espera la ausencia previa y dos coincidencias, escribe un objeto y el overlay muestra 1/36. Sin errores JavaScript. Fuente de navegador 720×420 sin recorte del panel en el caso probado.
 - Prueba reproducible opcional: tests/broadcast-browser.py con Vite abierto, Playwright/Chromium y Pillow. La referencia es texto sintético; no acredita detección real de Wukong o del token de Fortnite. Ambas requieren calibración y prueba en el OBS del usuario.
-- Se canceló la primera compilación 43092872456 antes de publicar para corregir la altura recomendada del overlay. La ejecución 43095079417 pasó las pruebas, compilación NSIS y actualización desde 0.2.14; falló en actions/upload-artifact, antes de publicar. Reintento con el mismo código y permisos originales: 43097625025, pendiente. No se ha verificado ni activado el canal 0.2.15. Con autorización explícita del propietario se aplicó publicación directa desde Windows (`d876c2d`), conservando todas las pruebas y controles del canal. Ejecución 43099483059 en cola durante la incidencia importante de GitHub Actions, confirmada por GitHub Status (https://stspg.io/jdjlq5zjyl48).
+- La ejecución [43099483059](https://github.com/Trefot/Creator-Hunter/actions/runs/43099483059) terminó correctamente: pruebas, compilación NSIS, comprobación de actualización desde 0.2.14 y publicación directa autorizada. Release y canal verificados: instaladores idénticos, 3.848.811 bytes, SHA-256 `68d2bbee5b318456027b5763172c41f2a10c515b6b1530aec489d93a19bddb43`, origen `d876c2dfc2d46fa0ca00f196282c711051ecb688`. La calibración de avisos reales y la revisión en el PC del usuario siguen pendientes.
+- Los intentos anteriores se retrasaron por una incidencia de GitHub Actions y un fallo de transferencia de artefactos. La entrega directa conserva las pruebas y los controles de integridad y versión.
 
 ## 0.2.14 · Biblioteca y fichas de juego
 
