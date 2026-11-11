@@ -24,14 +24,16 @@ const MIGRATIONS: [&str; 18] = [
 ];
 
 struct Temp(PathBuf);
+static TEMP_SEQUENCE: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
 impl Temp {
     fn new() -> Self {
         let n = std::time::SystemTime::now()
             .duration_since(std::time::UNIX_EPOCH)
             .unwrap()
             .as_nanos();
-        let dir = std::env::temp_dir().join(format!("studio-safety-{}-{n}", std::process::id()));
-        std::fs::create_dir_all(&dir).unwrap();
+        let sequence = TEMP_SEQUENCE.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+        let dir = std::env::temp_dir().join(format!("studio-safety-{}-{n}-{sequence}", std::process::id()));
+        std::fs::create_dir(&dir).unwrap();
         Self(dir)
     }
 }
