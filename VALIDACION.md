@@ -2,6 +2,12 @@
 
 Rama de trabajo: `fix/personal-app-reliability`, basada en `1d77f07` (0.2.9). Cambios sin publicar; no se ha generado ni instalado una versión nueva en el equipo del usuario.
 
+## Preparación de la actualización 0.2.10
+
+La versión preparada pasa la comprobación de versiones y novedades, 13 tests de frontend y 6 del helper de publicación. Los 8 tests de datos también pasan. Compilación frontend, sintaxis del script Bash y análisis YAML correctos. Los tests nuevos comprueban orden numérico de versiones, novedades por sección, rechazo de retrocesos/reemplazos, cabecera de ejecutable y metadatos del ZIP sin .git. No se usa un archivo de ejemplo como instalador real.
+
+Bloqueo confirmado en esta entrega: git push devuelve «Permission ... denied» (403) y create_branch de la integración devuelve «Resource not accessible by integration» (403). No hay ejecución del workflow, artefacto Windows ni publicación nueva en el canal remoto. El archivo BAT, el workflow y la compatibilidad de actualización requieren ejecución en Windows; no se presentan como pruebas ya superadas.
+
 ## Resultado local
 
 - `npm test`: 13 pruebas pasan. Incluyen las cuatro de protección de apertura/copias y nueve de sincronización: peticiones compartidas, intervalo de tres horas, reintento tras fallo, ciclo periódico, limpieza, avisos de error sin repetición, fechas inválidas/futuras, desconexión y un vídeo enlazado a varias adaptaciones.

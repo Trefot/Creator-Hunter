@@ -1,0 +1,85 @@
+name: Publicar actualización de Windows
+on:
+  workflow_dispatch:
+  push:
+    branches: ['release/**']
+permissions:
+  contents: read
+concurrency:
+  group: nexus-studio-publicacion
+  cancel-in-progress: false
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - uses: dtolnay/rust-toolchain@stable
+      - run: npm ci
+      - run: npm run release:check
+      - run: npm test
+      - run: cargo test --locked --manifest-path tests/data-safety/Cargo.toml
+      - run: cargo test --locked --manifest-path src-tauri/Cargo.toml
+      - run: npm run tauri -- build --bundles nsis
+      - run: npm run release:prepare
+      - uses: actions/upload-artifact@v4
+        with:
+          name: nexus-windows-${{ github.sha }}
+          path: .release/*
+          if-no-files-found: error
+          retention-days: 30
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - uses: actions/download-artifact@v4
+        with:
+          name: nexus-windows-${{ github.sha }}
+          path: .release
+      - name: Comprobar integridad del instalador descargado
+        run: cd .release && sha256sum --check SHA256SUMS.txt
+      - uses: actions/checkout@v4
+        with:
+          ref: releases
+          path: .update-channel
+          fetch-depth: 1
+      - name: Proteger el canal contra versiones anteriores
+        run: node scripts/release.mjs check-channel .update-channel/latest.json
+      - name: Publicar instalador descargable
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          version=$(node -p "require('./.release/latest.json').version")
+          tag="v$version"
+          if gh release view "$tag" --json targetCommitish > .release/existing.json 2>/dev/null; then
+            target=$(node -p "require('./.release/existing.json').targetCommitish")
+            test "$target" = "$GITHUB_SHA" || { echo 'La etiqueta existe para otro origen; no se reemplaza.'; exit 1; }
+            gh release upload "$tag" ".release/Nexus-Studio_${version}_x64-setup.exe" .release/TrophyHunter-setup.exe .release/latest.json .release/SHA256SUMS.txt --clobber
+          else
+            gh release create "$tag" ".release/Nexus-Studio_${version}_x64-setup.exe" .release/TrophyHunter-setup.exe .release/latest.json .release/SHA256SUMS.txt --target "$GITHUB_SHA" --title "Nexus Studio $version" --notes-file .release/NOVEDADES.md
+          fi
+      - name: Activar la actualización de TrophyHunter existente
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp .release/TrophyHunter-setup.exe .release/latest.json .update-channel/
+          git -C .update-channel config user.name 'github-actions[bot]'
+          git -C .update-channel config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git -C .update-channel add latest.json TrophyHunter-setup.exe
+          if ! git -C .update-channel diff --cached --quiet; then
+            version=$(node -p "require('./.release/latest.json').version")
+            git -C .update-channel commit -m "Nexus Studio $version"
+            git -C .update-channel push origin HEAD:releases
+          fi

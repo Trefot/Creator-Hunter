@@ -1,8 +1,12 @@
 # Nexus Studio
 
-Estudio personal de creación de contenido de TrefotG. Versión actual: **v0.2.9**.
+Estudio personal de creación de contenido de TrefotG. Versión preparada: **v0.2.10** (aún sin instalador publicado).
 
 Aplicación de escritorio para Windows, construida con React, TypeScript, Tauri 2 y SQLite. Incluye Creator Studio, conexión con YouTube, biblioteca de juegos con trofeos de PSN y contadores para OBS y Stream Deck. Twitch sigue pendiente.
+
+## Preparar la actualización
+
+Para generar el instalador en tu PC, ejecuta `Preparar actualización Nexus Studio.bat` desde la carpeta extraída de esta versión. Requisitos, publicación por GitHub y estado real en [ACTUALIZACION.md](ACTUALIZACION.md).
 
 ## Preparar el desarrollo en Windows
 

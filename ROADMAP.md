@@ -40,6 +40,18 @@ Diseño y orden de entrega en AUTOMATIZACION.md. Se mantiene pendiente la valida
 - [x] Aplicar nombre y símbolo en la interfaz, favicon y título de ventana sin cambiar datos ni credenciales.
 - [ ] Verificar icono y título en Windows, actualización desde la versión instalada y cambio del nombre de empaquetado. No publicar hasta completar la validación.
 
+## Entrega 0.2.10 · actualización autorizada
+
+- [x] Sincronizar las seis referencias de versión y preparar las novedades de 0.2.10.
+- [x] Preparar workflow Windows con pruebas, instalador NSIS, artefacto descargable y publicación compatible en releases sin force-push.
+- [x] Preparar archivo BAT para compilar localmente en Windows y metadatos de origen en el ZIP.
+- [x] Validar configuración de versión, tests del empaquetado y esquema YAML localmente.
+- [ ] Resolver HTTP 403 de escritura de GitHub; subir el código y ejecutar el workflow.
+- [ ] Compilar el ejecutable Windows y revisar el resultado de las pruebas nativas.
+- [ ] Publicar el instalador y comprobar la actualización desde 0.2.9.
+
+El canal remoto sigue en 0.2.9; una fuente 0.2.10 preparada no equivale a un instalador publicado. Estado e instrucciones en ACTUALIZACION.md.
+
 ## Fases
 
 | Fase | Contenido | Estado |

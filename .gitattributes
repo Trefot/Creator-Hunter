@@ -1,2 +1,5 @@
 # Las migraciones se verifican por checksum: sus finales de línea no pueden cambiar al clonar o hacer checkout.
 src-tauri/migrations/*.sql text eol=lf
+
+# Fija el commit de origen en los ZIP preparados con git archive.
+.release-source.json export-subst

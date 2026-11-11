@@ -254,6 +254,16 @@ Cuentan lo recibido en USD desde la fecha local de creación de la meta, filtrad
 - `productName` de Tauri y los nombres de instaladores permanecen temporalmente en TrophyHunter. Renombrarlos requiere validar las claves del instalador, el script de publicación y el actualizador con una actualización real en Windows; no se trata como una mera sustitución de texto. Los nuevos iconos se usarán al volver a compilar el instalador.
 - Fuente anterior `src-tauri/app-icon.svg` retirada como receta de generación; se conserva como recurso histórico. La receta vigente está en IDENTIDAD.md.
 
+### D-028 · Publicación compatible de Nexus Studio 0.2.10
+- El usuario autorizó preparar y publicar la actualización. Se mantiene el nombre técnico TrophyHunter del instalador para preservar el destino y registro de instalación actuales; la marca visible es Nexus Studio.
+- Versiones sincronizadas en package.json, package-lock.json, tauri.conf.json, Cargo.toml, Cargo.lock y es.version. `scripts/release.mjs` verifica coherencia e identidad estable, extrae las novedades y prepara los archivos únicamente a partir de un ejecutable PE compilado.
+- `.release` está ignorada por Git. Contiene el instalador visible, su alias compatible, latest.json, novedades y hashes SHA-256. Los hashes son comprobación de integridad, no firma ni sustituto de la verificación pendiente del actualizador.
+- El workflow `publicar-windows.yml` compila y prueba en Windows antes de publicar; comparte el artefacto por SHA del commit y comprueba hashes antes de activar el canal. Conserva el historial de releases mediante push normal. El script local también deja de usar force-push.
+- El helper impide retroceder de versión o reemplazar una versión por contenido distinto en el canal. Se preserva el formato compatible del manifiesto; sus campos adicionales se ignoran en clientes antiguos.
+- El ZIP exportado contiene el commit declarado mediante `.release-source.json` y export-subst, para que la preparación pueda ejecutarse sin carpeta .git. No representa una firma ni garantiza integridad del código si se modifica la copia.
+- El archivo BAT permite preparar el instalador en el PC del usuario con las herramientas del proyecto, sin instalar ni publicar por sí mismo. No añade dependencias.
+- Estado bloqueado de publicación: tanto git push como create_branch de la integración devuelven HTTP 403. El código y el workflow están preparados localmente, pero todavía no se han ejecutado en GitHub ni generado el instalador. Instrucciones vigentes en ACTUALIZACION.md.
+
 ## Dependencias
 
 | Dependencia | Para qué |

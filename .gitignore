@@ -25,3 +25,7 @@ dist-ssr
 
 # Pruebas SQLite sin interfaz
 /tests/data-safety/target/
+
+# Instaladores y manifiesto generados localmente
+/.release/
+/.update-channel/

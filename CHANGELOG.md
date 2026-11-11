@@ -2,37 +2,15 @@
 
 ## [Sin publicar]
 
-### 2026-11-11 · Identidad Nexus Studio (sin instalador publicado)
+## [0.2.10] · 2026-11-11 · Nexus Studio
 
-- Nombre Nexus Studio y lema «Tu espacio para crear» en la interfaz, título HTML, título de ventana y mensajes visibles. Las rutas de copias de seguridad conservan su nombre real anterior.
-- Emblema aprobado: el compañero violeta con ojos dorados sosteniendo el farol, con transparencia real. Logo del menú, favicon e iconos de escritorio regenerados desde el mismo original.
-- Versiones PNG de 72 y 144 píxeles preparadas para personalizar teclas de Stream Deck; no añaden acciones ni configuración al dispositivo.
-- Se conservan identificador, base de datos, credenciales, formato de copias y mecanismo de actualización. El nombre del paquete instalador sigue siendo TrophyHunter hasta validar el cambio y la actualización en Windows.
-
-### 2026-11-11 · Interfaz híbrida (pendiente de prueba en Windows)
-
-- Tema grafito con acentos violeta y dorado, navegación más definida y formularios con controles de mayor contraste.
-- Nueva portada del dashboard con ilustración original incluida en la app, próximo directo programado en los siguientes siete días y accesos a Proyectos y Calendario.
-- Mesa de trabajo con una adaptación en producción, su siguiente paso calculado y accesos a Ideas y Live Studio. Las métricas se conservan debajo.
-- Estados vacíos con acciones útiles, sin mostrar conexiones ni funciones de IA que todavía no existen. Diseño comprobado en Chromium a 1440, 1280 y 960 píxeles.
-
-### 2026-11-11 · Primera automatización continua (pendiente de prueba nativa)
-
-- YouTube se vuelve a sincronizar mientras la app permanece abierta: se comprueba cada diez minutos si han pasado tres horas desde la última sincronización correcta.
-- Los botones y la tarea automática comparten una sincronización en curso para evitar consultas y guardados duplicados. Un fallo permite reintentar, sin repetir el mismo aviso en cada comprobación.
-- La actualización automática refresca dashboard, perfiles y metas sin desmontar el resto de la interfaz ni descartar lo que estés escribiendo.
-- Plan de automatización con Stream Deck, OBS y manager de IA en AUTOMATIZACION.md. La integración de IA y de OBS sigue pendiente.
-
-### 2026-11-11 · Estabilidad para uso personal (pendiente de prueba nativa en Windows)
-
-- La app espera a una copia previa válida antes de abrir la base y aplicar migraciones. Si falla, muestra el problema y permite reintentar.
-- Conexiones de YouTube y PSN separadas en pruebas; archivos de YouTube y carpeta de copias de pruebas independientes. Desconectar YouTube en pruebas no revoca el acceso de producción en Google.
-- Exportaciones con una instantánea consistente de todas las tablas y sin sobrescribir otra copia con el mismo nombre.
-- Importaciones que rechazan tablas obligatorias ausentes, filas vacías y copias sin el espacio de trabajo esperado; se conserva la compatibilidad con copias antiguas válidas.
-- La búsqueda manual de actualizaciones informa de los errores de conexión en lugar de asegurar que la app está al día. Se evitan instalaciones duplicadas por clics repetidos.
-- Vista previa del overlay aislada y respuestas tardías del modo juego o de la portada ignoradas después de salir de su pantalla.
-- Pruebas automatizadas de recuperación SQLite y del bloqueo de apertura; comprobaciones de frontend y Windows preparadas para GitHub Actions.
-- Documentación actualizada al uso exclusivamente personal e investigación de mejoras en RECOMENDACIONES.md. No se ha publicado un instalador nuevo.
+- Nueva identidad Nexus Studio, con el compañero violeta y su farol, e interfaz grafito con acentos violeta y dorado.
+- Dashboard centrado en tu próximo directo, contenido en producción y accesos a Ideas y Live Studio.
+- YouTube se sincroniza con la app abierta sin descartar lo que estés escribiendo ni duplicar consultas simultáneas.
+- La app espera a una copia previa válida antes de aplicar migraciones y permite reintentar si falla.
+- Conexiones y copias de pruebas separadas de producción; exportaciones consistentes e importaciones con validación más estricta.
+- La búsqueda manual de actualizaciones informa de los fallos de conexión y evita instalaciones duplicadas por clics repetidos.
+- Se conservan tus datos, conexiones y rutas de TrophyHunter; el nombre técnico del instalador se mantiene para actualizar la versión existente.
 
 ## [0.2.9] · 2026-11-10 · Botón para actualizar
 
