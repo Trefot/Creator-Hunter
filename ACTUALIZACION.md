@@ -1,4 +1,10 @@
-# Nexus Studio 0.2.10 · Actualización publicada
+# Actualizaciones de Nexus Studio
+
+## 0.2.11 en preparación
+
+Detección de Fortnite en PC, selección manual del juego e iconos/accesos de Windows. Se conserva el nombre técnico de instalación; el nombre visible de escritorio, Inicio y Programas será Nexus Studio. El workflow prueba una actualización silenciosa desde 0.2.10 en un runner Windows antes de publicar. No equivale a una prueba de grabación en el PC del usuario.
+
+## 0.2.10 publicada
 
 Estado: publicada el 2026-11-11. [Descargar instalador Windows](https://github.com/Trefot/Creator-Hunter/releases/download/v0.2.10/Nexus-Studio_0.2.10_x64-setup.exe) · [Release y novedades](https://github.com/Trefot/Creator-Hunter/releases/tag/v0.2.10).
 

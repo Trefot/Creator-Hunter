@@ -8,6 +8,7 @@ import { CalendarPage } from "./features/calendar/CalendarPage";
 import { DashboardPage } from "./features/dashboard/DashboardPage";
 import { GamesPage } from "./features/games/GamesPage";
 import { useGameMode } from "./features/games/useGameMode";
+import { selectManualGame } from "./features/games/gameMode";
 import { applySkin, skinFromCover } from "./features/games/gameSkin";
 import { Gamepad2 } from "lucide-react";
 import { GoalsPage } from "./features/goals/GoalsPage";
@@ -95,12 +96,14 @@ function App() {
             <Gamepad2 size={18} />
             <span>
               {es.games.nowPlaying} <strong>{gameMode.playing.title}</strong>
+              {gameMode.source && <small className="muted"> · {es.games.activitySources[gameMode.source]}</small>}
             </span>
             {!(section === "games" && gameToOpen === gameMode.playing.id) && (
               <button className="small-button" onClick={() => openGame(gameMode.playing!.id, "today")}>
                 {es.games.openToday}
               </button>
             )}
+            {gameMode.source === "manual" && <button className="small-button" onClick={() => selectManualGame(null)}>{es.games.automaticGame}</button>}
           </div>
         )}
         {section === "dashboard" ? (

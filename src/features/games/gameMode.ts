@@ -2,8 +2,22 @@ import type { Game } from "../../db/games";
 import type { PlayingGame } from "../../db/psn";
 
 /** Cada cuánto se pregunta a PSN qué estás jugando (G5). */
-export const GAME_MODE_POLL_MS = 60_000;
+export const GAME_MODE_POLL_MS = 15_000;
+export const GAME_MODE_CHANGED = "nexus-game-mode-changed";
 const ENABLED_KEY = "game-mode-enabled";
+const MANUAL_KEY = "game-mode-manual-id";
+
+export function manualGameId(): string | null {
+  try { return localStorage.getItem(MANUAL_KEY); } catch { return null; }
+}
+
+export function selectManualGame(id: string | null): void {
+  try {
+    if (id) localStorage.setItem(MANUAL_KEY, id);
+    else localStorage.removeItem(MANUAL_KEY);
+  } catch { /* La preferencia puede no persistir si el almacenamiento está bloqueado. */ }
+  window.dispatchEvent(new Event(GAME_MODE_CHANGED));
+}
 
 /** Modo juego activado (por defecto sí). Preferencia solo de este equipo. */
 export function isGameModeEnabled(): boolean {
@@ -20,6 +34,12 @@ export function setGameModeEnabled(enabled: boolean): void {
   } catch {
     // Sin almacenamiento local, el modo juego sigue activo por defecto.
   }
+  window.dispatchEvent(new Event(GAME_MODE_CHANGED));
+}
+
+/** La actividad local no se confunde con otra edición del mismo juego en consola. */
+export function matchPcPlaying(library: Game[], names: { name: string }[]): Game | null {
+  return matchPlaying(library.filter(g => g.platform === "pc"), names.map(p => ({ ...p, title_id: "", icon_url: null })));
 }
 
 /** "Black Myth: Wukong™" → "blackmythwukong": sin mayúsculas, acentos, símbolos ni espacios. */

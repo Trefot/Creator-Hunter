@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import { Gamepad2, Radar } from "lucide-react";
-import { isGameModeEnabled, setGameModeEnabled } from "./gameMode";
+import { GAME_MODE_CHANGED, isGameModeEnabled, selectManualGame, setGameModeEnabled } from "./gameMode";
 import type { GameModeState } from "./useGameMode";
 import { EmptyState } from "../../components/EmptyState";
 import { PageTitle } from "../../components/PageTitle";
-import { Game, listGames } from "../../db/games";
+import { Game, GAME_PLATFORMS, GamePlatform, createGame, listGames } from "../../db/games";
 import { psnStatus } from "../../db/psn";
 import { es } from "../../i18n/es";
 import { GameDetail, GameView } from "./GameDetail";
@@ -29,10 +29,26 @@ export function GamesPage({
   const [importing, setImporting] = useState(false);
   const [openId, setOpenId] = useState<string | null>(initialOpenId);
   const [error, setError] = useState("");
+  const [newTitle, setNewTitle] = useState("");
+  const [newPlatform, setNewPlatform] = useState<GamePlatform>("pc");
+  const [saving, setSaving] = useState(false);
+
+  async function addGame(title: string, platform: GamePlatform) {
+    if (!title.trim() || saving) return;
+    setSaving(true);
+    setError("");
+    try {
+      await createGame(title, platform);
+      setNewTitle("");
+      await refresh();
+      window.dispatchEvent(new Event(GAME_MODE_CHANGED));
+    } catch (err) { setError(String(err)); }
+    finally { setSaving(false); }
+  }
 
   async function refresh() {
     try {
-      const [g, c] = await Promise.all([listGames(), psnStatus()]);
+      const [g, c] = await Promise.all([listGames(), psnStatus().catch(() => false)]);
       setGames(g);
       setConnected(c);
     } catch (err) {
@@ -66,7 +82,7 @@ export function GamesPage({
 
       <PsnConnect connected={connected} onChange={refresh} onImport={() => setImporting(true)} />
 
-      {connected && (
+      {
         <div className="game-mode">
           <label className="checkbox">
             <input
@@ -82,14 +98,36 @@ export function GamesPage({
           <span className="muted small">
             {!gameModeOn
               ? t.gameModeOff
-              : gameMode.error
-                ? t.gameModeError(gameMode.error)
-                : gameMode.playing
+              : gameMode.playing
                   ? t.gameModePlaying(gameMode.playing.title)
-                  : t.gameModeIdle}
+                  : gameMode.detectedPc
+                    ? t.pcDetected(gameMode.detectedPc.name)
+                    : gameMode.error ? t.gameModeError(gameMode.error) : t.gameModeIdle}
           </span>
         </div>
-      )}
+      }
+
+      <div className="card game-activity-controls">
+        <h2>{t.currentGame}</h2>
+        <label>{t.chooseCurrentGame}
+          <select value={gameMode.source === "manual" ? gameMode.playing?.id ?? "" : ""}
+            onChange={e => selectManualGame(e.target.value || null)}>
+            <option value="">{t.automaticGame}</option>
+            {(games ?? []).map(g => <option key={g.id} value={g.id}>{g.title} · {t.platforms[g.platform]}</option>)}
+          </select>
+        </label>
+        <p className="muted small">{t.manualGameHint}</p>
+        {gameMode.detectedPc && !games?.some(g => g.platform === "pc" && g.title.toLowerCase() === gameMode.detectedPc!.name.toLowerCase()) && (
+          <button disabled={saving} onClick={() => addGame(gameMode.detectedPc!.name, "pc")}>{t.addDetectedPc(gameMode.detectedPc.name)}</button>
+        )}
+        <form className="game-add-form" onSubmit={e => { e.preventDefault(); void addGame(newTitle, newPlatform); }}>
+          <label>{t.gameTitle}<input required maxLength={150} value={newTitle} onChange={e => setNewTitle(e.target.value)} placeholder="Fortnite" /></label>
+          <label>{t.gamePlatform}<select value={newPlatform} onChange={e => setNewPlatform(e.target.value as GamePlatform)}>
+            {GAME_PLATFORMS.map(p => <option key={p} value={p}>{t.platforms[p]}</option>)}
+          </select></label>
+          <button disabled={saving || !newTitle.trim()}>{saving ? t.addingGame : t.addGame}</button>
+        </form>
+      </div>
 
       {importing && (
         <PsnImport

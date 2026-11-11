@@ -23,4 +23,4 @@ La primera orden genera también recursos móviles: este proyecto solo incorpora
 
 ## Compatibilidad
 
-Nexus Studio es la marca visible. Los nombres históricos de carpeta, servicio de credenciales y formato de archivo permanecen para no perder conexiones ni datos. El nombre del paquete instalador se conserva temporalmente hasta probar en Windows la actualización desde TrophyHunter. Esta entrega no instala nada sobre la app diaria ni implica que el asistente de IA esté implementado.
+Nexus Studio es la marca visible. Los nombres históricos de carpeta, servicio de credenciales y formato de archivo permanecen para no perder conexiones ni datos. El nombre del paquete instalador se conserva temporalmente hasta probar en Windows la actualización desde TrophyHunter. La 0.2.11 añade accesos visibles Nexus Studio, un icono dedicado instalado y un icono de ventana explícito. Conserva las claves y carpeta técnicas de TrophyHunter. El asistente de IA sigue pendiente.

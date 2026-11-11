@@ -283,3 +283,12 @@ Cuentan lo recibido en USD desde la fecha local de creación de la meta, filtrad
 | `tiny_http` 0.12 | Servidor HTTP local y pequeño para el overlay de OBS y el Stream Deck (D-018) |
 
 Las dependencias nuevas se añaden a esta tabla con su justificación.
+
+## D-029 · PC y accesos visibles de Nexus Studio (0.2.11)
+
+- Fortnite se reconoce por `FortniteClient-Win64-Shipping.exe` mediante `tasklist` de Windows. Solo se consulta el nombre; no se lee memoria ni se controla el juego. El lanzador y los procesos de anticheat no cuentan como partida abierta.
+- La detección local se consulta cada 15 segundos sin peticiones solapadas; PSN conserva una frecuencia máxima de una consulta por minuto y solo empareja juegos PS4/PS5. PC solo empareja juegos de plataforma PC.
+- Prioridad: selección manual, Fortnite local, PSN. Un Fortnite local no añadido se ofrece para añadir, sin enlazarlo a una edición PSN. La selección manual persiste en este equipo y se termina explícitamente.
+- No hay conexión de estado/grabación con OBS en esta entrega. Los contadores y overlays existentes siguen siendo independientes de la detección.
+- `productName`, identificador, ejecutable y claves de actualización permanecen. NSIS instala `nexus-studio.ico`, crea accesos Nexus Studio, actualiza enlaces propios y DisplayName, e invalida la caché de iconos. La ventana recibe el icono con `set_icon`. No se borra un enlace TrophyHunter si apunta a otro ejecutable.
+- Antes de publicar, el runner Windows instala 0.2.10, la actualiza silenciosamente y verifica ejecutable, destino/icono de accesos, registro y versión. No abre ni usa la base de datos del usuario.

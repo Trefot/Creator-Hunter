@@ -4402,3 +4402,9 @@ button.muted-link {
 .startup { width: min(100%, 768px); margin: 10vh auto; padding: 24px; box-sizing: border-box; }
 .startup > .card { padding: 24px; }
 .startup .error { overflow-wrap: anywhere; }
+
+.game-activity-controls { display: grid; gap: 12px; margin-bottom: 20px; }
+.game-activity-controls h2 { margin: 0; }
+.game-add-form { display: flex; align-items: end; flex-wrap: wrap; gap: 12px; }
+.game-add-form label { flex: 1 1 180px; }
+.game-activity-controls label { display: grid; gap: 6px; }

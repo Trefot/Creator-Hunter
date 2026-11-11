@@ -25,6 +25,9 @@ jobs:
       - run: cargo test --locked --manifest-path src-tauri/Cargo.toml
       - run: npm run tauri -- build --bundles nsis
       - run: npm run release:prepare
+      - name: Comprobar actualización y accesos de Windows
+        shell: pwsh
+        run: ./scripts/test-windows-install.ps1
       - uses: actions/upload-artifact@v4
         with:
           name: nexus-windows-${{ github.sha }}

@@ -170,3 +170,59 @@ test('same YouTube video is fetched once but updates every linked adaptation',as
   assert.equal(result.synced,2);
   assert.deepEqual(f.calls.requestedIds,[['video-id']]);assert.deepEqual(f.calls.results,['a','b']);
 });
+
+function gameModeFixture({pc=[], library=[], psn=[], connected=false}={}) {
+  const storage=new Map(),events=new Map(),timers=new Map(),starts=[];
+  let state,dispose,next=0,pcCalls=0,psnCalls=0;
+  const globals={
+    localStorage:{getItem:k=>storage.get(k)??null,setItem:(k,v)=>storage.set(k,v),removeItem:k=>storage.delete(k)},
+    window:{addEventListener:(k,fn)=>events.set(k,fn),removeEventListener:k=>events.delete(k),dispatchEvent:e=>events.get(e.type)?.()},
+    Event:class {constructor(type){this.type=type;}},
+    setTimeout:fn=>{timers.set(++next,fn);return next;},clearTimeout:id=>timers.delete(id),
+  };
+  const mode=load('src/features/games/gameMode.ts',{},globals);
+  const hook=load('src/features/games/useGameMode.ts',{
+    react:{useState:initial=>{state=initial;return [initial,v=>{state=typeof v==='function'?v(state):v;}];},useRef:v=>({current:v}),useEffect:fn=>{dispose=fn();}},
+    '../../db/games':{listGames:async()=>library},
+    '../../db/pcGames':{pcNowPlaying:async()=>{pcCalls++;return typeof pc==='function'?pc():pc;}},
+    '../../db/psn':{psnStatus:async()=>connected,psnNowPlaying:async()=>{psnCalls++;return {games:psn};}},
+    './gameMode':mode,
+  },globals);
+  hook.useGameMode(game=>starts.push(game.id));
+  return {mode,starts,storage,timers,get state(){return state;},get pcCalls(){return pcCalls;},get psnCalls(){return psnCalls;},dispose:()=>dispose()};
+}
+const pcFortnite={id:'pc',title:'Fortnite',platform:'pc'};
+const psFortnite={id:'ps5',title:'Fortnite',platform:'ps5'};
+
+test('PC Fortnite works without PSN and never matches the console edition',async()=>{
+  const f=gameModeFixture({pc:[{name:'Fortnite'}],library:[psFortnite,pcFortnite]});
+  await settle();assert.equal(f.state.playing.id,'pc');assert.equal(f.state.source,'pc');assert.equal(f.psnCalls,0);assert.deepEqual(f.starts,['pc']);f.dispose();
+  const missing=gameModeFixture({pc:[{name:'Fortnite'}],library:[psFortnite],connected:true,psn:[{name:'Fortnite'}]});
+  await settle();assert.equal(missing.state.playing,null);assert.equal(missing.state.detectedPc.name,'Fortnite');assert.equal(missing.psnCalls,0);missing.dispose();
+});
+
+test('manual game overrides detection immediately and releasing it resumes PC',async()=>{
+  const f=gameModeFixture({pc:[{name:'Fortnite'}],library:[pcFortnite,psFortnite]});
+  await settle();f.mode.selectManualGame('ps5');await settle();assert.equal(f.state.source,'manual');assert.equal(f.state.playing.id,'ps5');
+  f.mode.selectManualGame(null);await settle();assert.equal(f.state.source,'pc');assert.equal(f.state.playing.id,'pc');f.dispose();
+});
+
+test('disabled game mode clears activity and manual selection remains usable',async()=>{
+  const f=gameModeFixture({pc:[{name:'Fortnite'}],library:[pcFortnite]});
+  await settle();f.mode.setGameModeEnabled(false);await settle();assert.equal(f.state.playing,null);
+  f.mode.selectManualGame('pc');await settle();assert.equal(f.state.source,'manual');assert.equal(f.state.playing.id,'pc');f.dispose();
+});
+
+test('PC detection errors do not block PSN and stop showing a stale PC game',async()=>{
+  let fail=false;
+  const f=gameModeFixture({pc:()=>{if(fail)throw Error('tasklist falló');return [{name:'Fortnite'}];},library:[pcFortnite,psFortnite],connected:true,psn:[{name:'Fortnite'}]});
+  await settle();assert.equal(f.state.source,'pc');fail=true;
+  f.mode.selectManualGame(null);await settle();assert.equal(f.state.source,'psn');assert.equal(f.state.playing.id,'ps5');assert.match(f.state.error,/tasklist/);f.dispose();
+});
+
+test('activity requests never overlap and cleanup suppresses navigation and timers',async()=>{
+  let finish;
+  const f=gameModeFixture({pc:()=>new Promise(r=>finish=r),library:[pcFortnite]});
+  await settle();f.mode.selectManualGame(null);await settle();assert.equal(f.pcCalls,1);
+  f.dispose();finish([{name:'Fortnite'}]);await settle();assert.equal(f.starts.length,0);assert.equal(f.timers.size,0);
+});

@@ -6,6 +6,7 @@ mod premigrate;
 mod data_safety;
 mod updater;
 mod psn;
+mod pc_games;
 mod youtube;
 
 /// Archivo de la base de datos, dentro de la carpeta de datos de la app.
@@ -124,6 +125,9 @@ pub fn run() {
         .manage(live::LiveState::default())
         .manage(premigrate::Preparation::default())
         .setup(|app| {
+            if let Some(window) = tauri::Manager::get_webview_window(app, "main") {
+                window.set_icon(tauri::include_image!("icons/128x128.png"))?;
+            }
             // La interfaz espera a prepare_database antes de abrir SQLite (D-024).
             // D-019: la versión de pruebas se distingue a simple vista.
             #[cfg(debug_assertions)]
@@ -150,6 +154,7 @@ pub fn run() {
             psn::psn_title_trophies,
             psn::psn_download_image,
             psn::psn_now_playing,
+            pc_games::pc_now_playing,
             youtube::youtube_disconnect,
             live::live_status,
             live::live_notify,

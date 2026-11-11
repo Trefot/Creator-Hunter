@@ -2,7 +2,7 @@
 export const es = {
   appName: "Nexus Studio",
   appTagline: "Tu espacio para crear",
-  version: "Alpha 0.2 · v0.2.10",
+  version: "Alpha 0.2 · v0.2.11",
   /** Marca de la versión de pruebas (D-019). */
   devBadge: "PRUEBAS",
   startup: {
@@ -13,11 +13,22 @@ export const es = {
   },
   games: {
     subtitle: "Tu biblioteca y tu camino al platino. Los trofeos llegan desde tu cuenta de PlayStation.",
-    nowPlaying: "Jugando ahora en tu consola:",
+    nowPlaying: "Jugando ahora:",
+    currentGame: "Juego actual",
+    chooseCurrentGame: "Elegir juego",
+    automaticGame: "Detectar automáticamente",
+    manualGameHint: "Puedes elegir cualquier juego de tu biblioteca, incluso sin PSN. Vuelve a «Detectar automáticamente» al terminar.",
+    gameTitle: "Nombre del juego",
+    gamePlatform: "Plataforma",
+    addGame: "Añadir juego",
+    addingGame: "Añadiendo…",
+    pcDetected: (title: string) => `${title} está abierto en PC. Añádelo a tu biblioteca para activar su ficha.`,
+    addDetectedPc: (title: string) => `Añadir ${title} para PC`,
+    activitySources: { pc: "PC · detectado", psn: "PlayStation · detectado", manual: "Selección manual" },
     openToday: "Ver plan de hoy",
     gameMode: "Modo juego automático",
     gameModeOff: "Desactivado: la app no cambiará de pantalla cuando juegues.",
-    gameModeIdle: "Activo: cada minuto se comprueba qué juegas; al abrir un juego de tu biblioteca, la app salta a su ficha.",
+    gameModeIdle: "Buscando Fortnite en este PC y juegos de tu cuenta PSN. También puedes elegir un juego manualmente.",
     gameModePlaying: (title: string) => `Activo: detectado ${title}.`,
     gameModeError: (error: string) => `Activo, pero no se pudo leer tu actividad: ${error}`,
     connectTitle: "Conectar PlayStation Network (no oficial)",

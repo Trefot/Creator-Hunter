@@ -2,6 +2,13 @@
 
 ## [Sin publicar]
 
+## [0.2.11] - 2026-11-11
+
+- Detección de Fortnite abierto en Windows sin depender de PSN; comprueba el proceso del juego cada 15 segundos.
+- Añadir juegos de PC y otras plataformas a la biblioteca y elegir el juego actual manualmente; indica si la actividad procede de PC, PlayStation o selección manual.
+- Icono de ventana explícito y accesos del escritorio/Inicio con nombre Nexus Studio e icono propio. Conserva instalación, identificador y datos existentes.
+- El instalador actualiza los accesos antiguos que apuntan a esta instalación y solicita a Windows refrescar los iconos.
+
 ## [0.2.10] · 2026-11-11 · Nexus Studio
 
 - Nueva identidad Nexus Studio, con el compañero violeta y su farol, e interfaz grafito con acentos violeta y dorado.
