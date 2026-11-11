@@ -4,7 +4,7 @@ Estudio personal de creación de contenido de TrefotG. Versión publicada: **[v0
 
 Aplicación de escritorio para Windows, construida con React, TypeScript, Tauri 2 y SQLite. Incluye Creator Studio, conexión con YouTube, biblioteca de juegos con trofeos de PSN y contadores para OBS y Stream Deck. Los overlays se pueden emitir en Twitch desde OBS; no hay sincronización de métricas de Twitch.
 
-La versión 0.2.15 está preparada en el código; su publicación está pendiente de resolver la transferencia del instalador en GitHub Actions. No se ofrece todavía desde el canal de actualización.
+La versión 0.2.15 está preparada en el código; su publicación directa ya está configurada con autorización del propietario y está en cola durante una incidencia de GitHub Actions. No se ofrece todavía desde el canal de actualización.
 
 ## Preparar la actualización
 
