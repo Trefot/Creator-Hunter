@@ -15,7 +15,7 @@ Lee esto al inicio de cada sesión. Para el contexto, consulta:
 3. Una función no está terminada solo porque su interfaz se vea bien. Tiene que guardar, recargar y sobrevivir al cierre de la app.
 4. Al terminar: marca la tarea en ROADMAP.md, añade la entrada en CHANGELOG.md, haz el commit y súbelo (`git push`) **sin preguntar**, una vez comprobado (compila, tests y prueba en la app de pruebas). Preguntar solo antes de algo destructivo o fuera del flujo normal (D-019).
 5. El usuario aprende mirando: explica en español qué haces y por qué, sin jerga innecesaria.
-6. **Dos entornos (D-019):** el usuario usa la app **instalada** (datos reales, `studio.db`, puerto 7878). Claude prueba **solo** con la versión de pruebas (`npm run tauri dev`: `studio-dev.db`, puerto 7879, título «PRUEBAS»). Nunca se prueba sobre los datos reales. Cuando algo está listo, se sube la versión (package.json, tauri.conf.json, Cargo.toml y `es.version`), se genera el instalador y se copia a `Documentos\TrophyHunter\Instaladores`: la app instalada se actualiza sola al abrirse (D-021).
+6. **Dos entornos (D-019):** el usuario usa la app **instalada** (datos reales, `studio.db`, puerto 7878). Claude prueba **solo** con la versión de pruebas (`npm run tauri dev`: `studio-dev.db`, puerto 7879, título «PRUEBAS»). Nunca se prueba sobre los datos reales. Cuando algo está listo, se sube la versión (package.json, tauri.conf.json, Cargo.toml y `es.version`), se escribe su sección en CHANGELOG.md (sus líneas «- » son las Novedades que ve el usuario) y se ejecuta `bash scripts/publicar-version.sh`: compila, sube el instalador a la rama `releases` de GitHub y lo copia a la carpeta de instaladores. La app instalada se actualiza sola al abrirse, como Lumen (D-021, D-023).
 
 ## Reglas
 

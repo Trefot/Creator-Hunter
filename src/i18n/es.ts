@@ -2,7 +2,7 @@
 export const es = {
   appName: "TrophyHunter",
   appTagline: "Creator Studio",
-  version: "Alpha 0.2 · v0.2.3",
+  version: "Alpha 0.2 · v0.2.4",
   /** Marca de la versión de pruebas (D-019). */
   devBadge: "PRUEBAS",
   games: {
@@ -142,6 +142,11 @@ export const es = {
   },
   update: {
     installing: (v: string) => `Actualizando TrophyHunter a la versión ${v}…`,
+    newVersion: (v: string) => `Nueva versión ${v}: se está instalando`,
+    updated: (v: string) => `¡Actualizado a la versión ${v}!`,
+    noNotes: "Mejoras y arreglos.",
+    great: "¡Genial!",
+    close: "Cerrar",
     installingHint: "Se cierra y se vuelve a abrir sola en unos segundos. Tus datos se conservan.",
     available: (v: string) => `Hay una versión nueva lista (${v}).`,
     now: "Actualizar ahora",

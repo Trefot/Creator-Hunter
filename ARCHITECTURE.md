@@ -207,6 +207,15 @@ Cuentan lo recibido en USD desde la fecha local de creación de la meta, filtrad
 - **La vista previa del editor es el propio overlay** en un iframe (`?preview=1`, datos por `postMessage`): una sola fuente de diseño.
 - La tipografía gamer (Luckiest Guy) se carga de Google Fonts; sin internet, el overlay usa Impact.
 
+### D-023 · Actualizaciones desde GitHub, como Lumen (2026-11-10)
+**Pedido del usuario: que TrophyHunter se actualice «como Lumen», desde el repositorio privado.**
+- Lumen es Python y su instalación es un clon del repositorio (`fetch` + `reset --hard`). TrophyHunter se compila, así que lo que se reparte por GitHub es el **instalador ya compilado**, no el código.
+- **Rama `releases`** del repositorio privado: un solo commit con `latest.json` (versión, fecha, novedades, nombre del instalador) y `TrophyHunter-setup.exe`. Se reemplaza con `--force` en cada versión, así el repositorio no crece. Lo publica `scripts/publicar-version.sh`, que saca las novedades del CHANGELOG.
+- **La app** hace `git fetch --depth 1` de esa rama en `%LOCALAPPDATA%\com.trefotg.studio\actualizaciones` con las credenciales de git del PC (Git Credential Manager; `GIT_TERMINAL_PROMPT=0`, sin ventana), lee `latest.json` y, si la versión es mayor, saca el instalador con `git cat-file` y lo instala en silencio (como en D-021).
+- **Novedades:** se enseñan mientras se instala y, al volver a abrirse, «¡Actualizado!» una vez.
+- **Plan B:** si GitHub falla, la carpeta `Documentos\TrophyHunter\Instaladores` (D-021). Por eso el script también copia ahí el instalador.
+- En otro PC hará falta tener git e iniciar sesión en GitHub una vez (el repositorio es privado).
+
 ## Dependencias
 
 | Dependencia | Para qué |

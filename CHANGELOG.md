@@ -2,6 +2,13 @@
 
 ## [Sin publicar]
 
+## [0.2.4] · 2026-11-10 · Se actualiza como Lumen
+
+- TrophyHunter ahora se actualiza desde GitHub, igual que Lumen: cada versión nueva llega sola al abrir la app.
+- Antes de instalarse te enseña las novedades, y al volver a abrirse te muestra «¡Actualizado!» con la lista.
+- Si la app está abierta (por ejemplo, en pleno directo), solo te avisa con «Actualizar ahora»: nunca se reinicia sola a mitad de un stream.
+- Si GitHub no responde, sigue usando la carpeta Instaladores como plan B.
+
 ## [0.2.3] · 2026-11-10 · Contadores estilo gamer, con sonido y al instante
 
 - Estilo «Gamer» para los contadores: icono grande y número gigante con contorno y degradado (como los overlays de Fortnite), además del estilo «Tarjeta».
