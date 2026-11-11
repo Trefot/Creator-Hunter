@@ -97,6 +97,7 @@ pub async fn snapshot(
     let mut total = 0;
     for table in tables {
         let rows = sqlx::query(&format!("SELECT * FROM {table} ORDER BY rowid"))
+            .persistent(false)
             .fetch_all(&mut *tx)
             .await
             .map_err(|e| e.to_string())?;
@@ -154,9 +155,9 @@ pub const TABLES: [&str; 25] = [
     "account_snapshot",
     "goal",
     "income",
-    "idea",
-    // Juegos antes que proyectos: project.game_id apunta a game (migración 007).
+    // Juegos antes que ideas/proyectos: sus game_id apuntan a game.
     "game",
+    "idea",
     "trophy_phase",
     "trophy",
     "guide_entry",

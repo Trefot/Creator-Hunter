@@ -22,13 +22,17 @@ import { TodayView } from "./TodayView";
 import { RouteView } from "./RouteView";
 import { TrophyRow } from "./TrophyRow";
 import { TrophySheet } from "./TrophySheet";
+import { GameDayPlan as CreativeDay } from "./GameDayPlan";
+import { CreativeGameDetail } from "./CreativeGameDetail";
+import { GameAppearance } from "./GameAppearance";
+import { GameContent } from "./GameContent";
 import { GameContextProvider, useGameState } from "./GameContext";
 
 const t = es.games;
 const TYPES: TrophyType[] = ["platinum", "gold", "silver", "bronze"];
 
 type Filter = "all" | "pending" | "earned";
-export type GameView = "today" | "route" | "guide" | "list";
+export type GameView = "today" | "route" | "guide" | "list" | "studio";
 
 interface Props {
   game: Game;
@@ -37,10 +41,16 @@ interface Props {
   initialView?: GameView;
   onBack: () => void;
   onChanged: () => Promise<void>;
+  onOpenProject: (id:string)=>void;
+  onOpenIdeas: ()=>void;
 }
 
 /** Ficha de un juego: progreso hacia el platino y lista de trofeos. */
-export function GameDetail({ game, psnConnected, initialView = "route", onBack, onChanged }: Props) {
+export function GameDetail(props: Props) {
+  if (!props.game.np_communication_id && !props.game.trophy_count) return <CreativeGameDetail {...props}/>;
+  return <TrophyGameDetail {...props}/>;
+}
+function TrophyGameDetail({ game, psnConnected, initialView = "route", onBack, onChanged, onOpenProject, onOpenIdeas }: Props) {
   const [trophies, setTrophies] = useState<Trophy[] | null>(null);
   const [phases, setPhases] = useState<TrophyPhase[]>([]);
   const [view, setView] = useState<GameView>(initialView);
@@ -156,23 +166,24 @@ export function GameDetail({ game, psnConnected, initialView = "route", onBack, 
             )}
           </div>
         </div>
-        <ProgressRing ratio={ratio} size={104} label={t.platinumProgress(Math.floor(ratio * 100))} />
+        {list.length>0&&<ProgressRing ratio={ratio} size={104} label={t.platinumProgress(Math.floor(ratio * 100))} />}
       </header>
 
       {error && <p className="error">{error}</p>}
 
+      <GameAppearance game={game} onChanged={onChanged}/>
       <GameContextProvider value={gameState}>
       <div className="tabs">
-        {(["today", "route", "guide", "list"] as GameView[]).map((v) => (
+        {(["today", "route", "guide", "list", "studio"] as GameView[]).map((v) => (
           <button key={v} className={`tab${view === v ? " active" : ""}`} onClick={() => setView(v)}>
             {t.views[v]}
           </button>
         ))}
       </div>
 
-      {trophies === null ? (
+      {view === "studio" ? (<GameContent game={game} onOpenProject={onOpenProject} onOpenIdeas={onOpenIdeas}/>) : trophies === null ? (
         <p className="muted">{t.loading}</p>
-      ) : list.length === 0 ? (
+      ) : list.length === 0 && view === "today" ? (<CreativeDay game={game}/>) : list.length === 0 ? (
         <p className="muted small">{t.noTrophies}</p>
       ) : view === "today" ? (
         <TodayView

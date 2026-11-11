@@ -73,8 +73,8 @@ export async function setIdeaStatus(id: string, status: "new" | "discarded"): Pr
 export async function approveIdea(id: string): Promise<void> {
   const db = await getDb();
   await db.execute(
-    `INSERT OR IGNORE INTO project (id, workspace_id, idea_id, title, summary)
-     SELECT $1, workspace_id, id, title, description FROM idea WHERE id = $2 AND workspace_id = $3`,
+    `INSERT OR IGNORE INTO project (id, workspace_id, idea_id, title, summary, game_id)
+     SELECT $1, workspace_id, id, title, description, game_id FROM idea WHERE id = $2 AND workspace_id = $3`,
     [newId(), id, WORKSPACE_ID],
   );
   await db.execute(

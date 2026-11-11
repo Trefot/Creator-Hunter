@@ -126,7 +126,7 @@ function App() {
         ) : section === "income" ? (
           <IncomePage />
         ) : section === "games" ? (
-          <GamesPage key={gameToOpen ?? "list"} initialOpenId={gameToOpen} initialView={gameView} gameMode={gameMode} />
+          <GamesPage key={gameToOpen ?? "list"} initialOpenId={gameToOpen} initialView={gameView} gameMode={gameMode} onOpenProject={openProject} onOpenIdeas={()=>select("ideas")} />
         ) : section === "live" ? (
           <LivePage />
         ) : section === "backups" ? (

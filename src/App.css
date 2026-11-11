@@ -4423,3 +4423,44 @@ button.muted-link {
 .obs-moments { list-style: none; padding: 0; margin: 0; max-height: 460px; overflow: auto; }
 .obs-moments li { padding: 12px 0; border-bottom: 1px solid var(--border); display: grid; gap: 5px; }
 .obs-file { overflow-wrap: anywhere; }
+
+.game-psn-options { margin-bottom: 16px; }
+.game-psn-options summary, .game-activity-controls summary { cursor: pointer; font-weight: 600; }
+.game-psn-options .psn-connect { margin-top: 12px; }
+.game-activity-controls { padding: 16px; }
+.game-activity-controls[open] summary { margin-bottom: 14px; }
+.game-library-filters { display: flex; flex-wrap: wrap; gap: 12px; margin: 20px 0; }
+.game-library-filters input { flex: 1 1 240px; }
+.game-library-filters select { flex: 0 1 220px; }
+.game-creative-hero { position: relative; border-radius: 18px; overflow: hidden; min-height: 230px; margin: 16px 0; background: #211c39; }
+.game-creative-hero > img { position: absolute; width: 100%; height: 100%; object-fit: cover; }
+.game-creative-hero::after { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg,rgba(13,12,24,.88),rgba(13,12,24,.2)); }
+.game-creative-hero-content { position: relative; z-index: 1; padding: 32px; max-width: 640px; }
+.game-creative-hero h1 { font-size: clamp(30px,4vw,46px); margin: 12px 0; }
+.game-creative-hero p { color: #e1daed; }
+.game-platform-pill { display: inline-block; padding: 4px 12px; border-radius: 20px; background: #7850b8; font-size: 12px; font-weight: 700; }
+.game-detail-toolbar { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 20px; }
+.game-detail-toolbar label { display: flex; align-items: center; gap: 10px; }
+.game-day-plan,.game-content-panel,.game-appearance { padding: 22px; display: grid; gap: 16px; margin-bottom: 20px; }
+.game-day-plan h2,.game-content-panel h2,.game-content-panel h3,.game-appearance h2 { margin: 0; }
+.game-studio-heading { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+.game-studio-heading p { margin: 6px 0 0; }
+.game-studio-label,.game-appearance-form label { display: grid; gap: 8px; }
+.game-studio-inline { display: flex; gap: 10px; flex-wrap: wrap; }
+.game-studio-inline input,.game-studio-inline select { flex: 1 1 220px; }
+.game-objectives,.game-media-list,.game-linked-list { list-style: none; margin: 0; padding: 0; }
+.game-objectives li,.game-linked-list li { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border); }
+.game-objectives label { display: flex; align-items: center; gap: 10px; overflow-wrap: anywhere; }
+.game-objectives input { width: auto; }
+.objective-done { text-decoration: line-through; opacity: .65; }
+.game-plan-presets,.game-media-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.game-media-list { max-height: 420px; overflow: auto; }
+.game-media-list li { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px; padding: 14px 0; border-bottom: 1px solid var(--border); }
+.game-media-list li > div:first-child { min-width: 0; flex: 1 1 260px; }
+.game-media-list p { margin: 6px 0; }
+.game-file { overflow-wrap: anywhere; }
+.game-notes { white-space: pre-wrap; overflow-wrap: anywhere; }
+.game-history { padding: 12px 0; }
+.game-appearance-form { display: grid; gap: 12px; }
+.game-appearance-preview { width: min(100%,320px); aspect-ratio: 16/9; object-fit: cover; border-radius: 10px; }
+.game-delete-zone { padding: 16px 0; color: var(--muted); }

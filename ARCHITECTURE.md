@@ -309,3 +309,11 @@ Las dependencias nuevas se añaden a esta tabla con su justificación.
 - Un flag atómico rechaza guardados concurrentes; el mutex de operaciones serializa monitor, marcas, guardado y restauración. Se capturan los tiempos antes de pedir el guardado, sin afirmar precisión de fotograma o posición en el clip.
 - Migración 017: obs_clip con ruta única y marca opcional. Clip y marca se insertan en transacción; el búfer solo no inventa sesión ni tiempos. Las 25 tablas están incluidas en las copias y se admite el esquema 16 sin obs_clip.
 - GET /api/clips/save usa la clave local existente. Live Studio muestra estado del búfer, guardado pendiente e historial de 100 clips; los anteriores permanecen en SQLite. El vídeo sigue gestionado por OBS, fuera del backup JSON.
+
+## D-032 · Juegos como espacio de creación (0.2.14)
+
+- La ficha se divide por datos: juegos con vínculo PSN o trofeos conservan la vista de trofeos; el resto usa plan, contenido y notas. No se inventan trofeos, progreso ni victorias para Fortnite.
+- Plan diario y notas reutilizan play_session/session_objective; asegurar la sesión usa INSERT OR IGNORE sin reemplazar lo existente. La portada usa la conversión JPEG existente, guardada en game.cover; fallback SVG decorativo original.
+- Migración 018 añade idea.game_id y capture_key única nullable, sin tablas nuevas ni etiquetas técnicas visibles. La conversión por captura es idempotente y la aprobación de idea conserva el game_id en project.
+- gameContent consulta por workspace y game_id antes de LIMIT; no empareja contenido por título. Proyectos sin relación explícita pueden heredar el contexto de su idea. La selección manual solo ofrece proyectos sin juego/contexto previo.
+- Copias: game precede a idea y project; el orden inverso elimina hijos primero. snapshot usa persistent(false) en SELECT * para evitar metadatos SQLx antiguos al cambiar columnas sobre una conexión abierta. Ver JUEGOS.md y las pruebas de esquemas 17/18.

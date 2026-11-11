@@ -2,6 +2,14 @@
 
 ## [Sin publicar]
 
+## [0.2.14] · 2026-11-11 · Juegos para crear contenido
+
+- Biblioteca con búsqueda, filtro por plataforma, ilustración de portada y sin barras ni recuentos de trofeos vacíos.
+- Ficha de Fortnite y juegos sin trofeos con plan diario, objetivos manuales, notas de sesión y portada editable; mantiene rutas, guía y trofeos de PlayStation.
+- Clips, momentos, ideas y proyectos reunidos por juego; convierte capturas en ideas sin duplicarlas y conserva el juego al aprobar una idea como proyecto.
+- Portadas y notas generales editables, historial de los últimos planes y asociación explícita de proyectos existentes.
+- Migración 018 protegida para las relaciones de ideas; copias compatibles con el esquema 17 y exportación sin metadatos SQLite obsoletos tras cambios de esquema.
+
 ## [0.2.13] · 2026-11-11 · Guardar clip
 
 - Guardar clips del Replay Buffer de OBS desde Live Studio o Stream Deck, sin iniciar ni detener el búfer, la grabación o el directo.

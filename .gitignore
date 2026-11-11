@@ -31,3 +31,5 @@ dist-ssr
 /.update-channel/
 
 /tests/obs-protocol/target/
+
+/.browser-artifacts/

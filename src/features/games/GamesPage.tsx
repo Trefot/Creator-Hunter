@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Gamepad2, Radar } from "lucide-react";
+import { Radar } from "lucide-react";
 import { GAME_MODE_CHANGED, isGameModeEnabled, selectManualGame, setGameModeEnabled } from "./gameMode";
 import type { GameModeState } from "./useGameMode";
 import { EmptyState } from "../../components/EmptyState";
@@ -7,6 +7,7 @@ import { PageTitle } from "../../components/PageTitle";
 import { Game, GAME_PLATFORMS, GamePlatform, createGame, listGames } from "../../db/games";
 import { psnStatus } from "../../db/psn";
 import { es } from "../../i18n/es";
+import { GameArtwork } from "./GameArtwork";
 import { GameDetail, GameView } from "./GameDetail";
 import { PsnConnect } from "./PsnConnect";
 import { PsnImport } from "./PsnImport";
@@ -18,11 +19,17 @@ export function GamesPage({
   initialOpenId = null,
   initialView,
   gameMode,
+  onOpenProject,
+  onOpenIdeas,
 }: {
   initialOpenId?: string | null;
   initialView?: GameView;
   gameMode: GameModeState;
+  onOpenProject:(id:string)=>void;
+  onOpenIdeas:()=>void;
 }) {
+  const [search,setSearch]=useState("");
+  const [platform,setPlatform]=useState("");
   const [games, setGames] = useState<Game[] | null>(null);
   const [gameModeOn, setGameModeOn] = useState(isGameModeEnabled());
   const [connected, setConnected] = useState(false);
@@ -60,6 +67,7 @@ export function GamesPage({
     refresh();
   }, []);
 
+  const visibleGames=(games??[]).filter(g=>(!platform||g.platform===platform)&&g.title.toLocaleLowerCase().includes(search.trim().toLocaleLowerCase()));
   const open = games?.find((g) => g.id === openId);
   if (open) {
     return (
@@ -70,6 +78,8 @@ export function GamesPage({
         initialView={open.id === initialOpenId ? initialView : undefined}
         onBack={() => setOpenId(null)}
         onChanged={refresh}
+        onOpenProject={onOpenProject}
+        onOpenIdeas={onOpenIdeas}
       />
     );
   }
@@ -80,7 +90,7 @@ export function GamesPage({
         <PageTitle section="games" subtitle={t.subtitle} />
       </header>
 
-      <PsnConnect connected={connected} onChange={refresh} onImport={() => setImporting(true)} />
+      <details className="game-psn-options"><summary>{es.gameStudio.psnOptions}</summary><PsnConnect connected={connected} onChange={refresh} onImport={() => setImporting(true)} /></details>
 
       {
         <div className="game-mode">
@@ -107,7 +117,7 @@ export function GamesPage({
         </div>
       }
 
-      <div className="card game-activity-controls">
+      <details className="card game-activity-controls" open={gameMode.detectedPc&&!gameMode.playing?true:undefined}><summary>{es.gameStudio.addOrChoose}</summary>
         <h2>{t.currentGame}</h2>
         <label>{t.chooseCurrentGame}
           <select value={gameMode.source === "manual" ? gameMode.playing?.id ?? "" : ""}
@@ -127,7 +137,7 @@ export function GamesPage({
           </select></label>
           <button disabled={saving || !newTitle.trim()}>{saving ? t.addingGame : t.addGame}</button>
         </form>
-      </div>
+      </details>
 
       {importing && (
         <PsnImport
@@ -143,32 +153,33 @@ export function GamesPage({
 
       {error && <p className="error">{error}</p>}
 
+      <div className="game-library-filters"><input aria-label={es.gameStudio.search} placeholder={es.gameStudio.search} value={search} onChange={e=>setSearch(e.target.value)}/><select aria-label={es.gameStudio.filterPlatform} value={platform} onChange={e=>setPlatform(e.target.value)}><option value="">{es.gameStudio.allPlatforms}</option>{GAME_PLATFORMS.map(p=><option key={p} value={p}>{t.platforms[p]}</option>)}</select></div>
       {games === null ? (
         <p className="muted">{t.loading}</p>
       ) : games.length === 0 ? (
         <EmptyState section="games" text={t.empty} />
-      ) : (
+      ) : !visibleGames.length ? (<p className="muted">{es.gameStudio.noMatches}</p>) : (
         <ul className="gallery">
-          {games.map((g) => {
+          {visibleGames.map((g) => {
             const ratio = g.trophy_count ? g.earned_count / g.trophy_count : 0;
             return (
               <li key={g.id}>
                 <button className="card gallery-card gallery-button" onClick={() => setOpenId(g.id)}>
                   <div className="gallery-cover game-gallery-cover">
-                    {g.cover ? <img src={g.cover} alt="" /> : <Gamepad2 size={30} />}
+                    <GameArtwork game={g}/>
                     <span className={`gallery-status game-status-${g.status}`}>{t.statuses[g.status]}</span>
                   </div>
                   <div className="gallery-body">
                     <strong className="gallery-title">{g.title}</strong>
                     <span className="muted small">
-                      {t.platforms[g.platform]} · {t.trophyProgress(g.earned_count, g.trophy_count)}
+                      {t.platforms[g.platform]}{g.trophy_count>0?` · ${t.trophyProgress(g.earned_count,g.trophy_count)}`:` · ${es.gameStudio.cardHint}`}
                     </span>
-                    <span className="progress">
+                    {g.trophy_count>0&&<span className="progress">
                       <span
                         className={`progress-bar${ratio >= 1 ? " progress-done" : ""}`}
                         style={{ width: `${ratio * 100}%` }}
                       />
-                    </span>
+                    </span>}
                   </div>
                 </button>
               </li>
