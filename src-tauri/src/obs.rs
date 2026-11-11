@@ -43,6 +43,8 @@ pub struct ObsView {
     recording: bool,
     paused: bool,
     streaming: bool,
+    replay_active: bool,
+    saving_replay: bool,
     record_ms: Option<i64>,
     stream_ms: Option<i64>,
     error: Option<String>,
@@ -63,6 +65,7 @@ pub struct ObsState {
     inner: Mutex<Inner>,
     pub(crate) operation: Mutex<()>,
     started: AtomicBool,
+    replay_saving: AtomicBool,
 }
 pub(crate) fn reset_after_restore(app: &AppHandle) {
     let state = app.state::<ObsState>();
@@ -74,6 +77,7 @@ pub(crate) fn reset_after_restore(app: &AppHandle) {
         i.view.connected = false;
         i.view.recording = false;
         i.view.streaming = false;
+        i.view.replay_active = false;
         i.view.record_ms = None;
         i.view.stream_ms = None;
     }
@@ -129,6 +133,7 @@ fn clear_sessions(app: &AppHandle, reason: &str) -> Result<(), String> {
     inner.view.connected = false;
     inner.view.recording = false;
     inner.view.streaming = false;
+    inner.view.replay_active = false;
     inner.view.paused = false;
     inner.view.record_ms = None;
     inner.view.stream_ms = None;
@@ -172,11 +177,13 @@ pub async fn obs_initialize(app: AppHandle) -> Result<(), String> {
 }
 #[tauri::command]
 pub fn obs_status(state: State<'_, ObsState>) -> ObsView {
-    state
+    let mut view = state
         .inner
         .lock()
         .map(|i| i.view.clone())
-        .unwrap_or_default()
+        .unwrap_or_default();
+    view.saving_replay = state.replay_saving.load(Ordering::SeqCst);
+    view
 }
 #[tauri::command]
 pub fn obs_context(state: State<'_, ObsState>, game_id: Option<String>) {
@@ -260,6 +267,7 @@ fn duration(data: &Value) -> Result<Option<i64>, String> {
 fn poll(app: &AppHandle, client: &mut Client) -> Result<(), String> {
     let record = client.request("GetRecordStatus")?;
     let stream = client.request("GetStreamStatus")?;
+    let replay = client.request("GetReplayBufferStatus")?;
     let record_ms = duration(&record)?;
     let stream_ms = duration(&stream)?;
     let paused = record["outputPaused"].as_bool().unwrap_or(false) && record_ms.is_some();
@@ -324,6 +332,9 @@ fn poll(app: &AppHandle, client: &mut Client) -> Result<(), String> {
     }
     i.record_id = rid;
     i.stream_id = sid;
+    i.view.replay_active = replay["outputActive"]
+        .as_bool()
+        .ok_or("OBS no devolvió el estado del Replay Buffer.")?;
     i.view.connected = true;
     i.view.recording = record_ms.is_some();
     i.view.streaming = stream_ms.is_some();
@@ -365,6 +376,7 @@ fn monitor(app: AppHandle) {
                         i.view.connected = false;
                         i.view.recording = false;
                         i.view.streaming = false;
+                        i.view.replay_active = false;
                         i.view.record_ms = None;
                         i.view.stream_ms = None;
                     }
@@ -433,4 +445,74 @@ pub async fn obs_mark(app: AppHandle, title: Option<String>) -> Result<Value, St
 pub async fn obs_markers(app: AppHandle) -> Result<Value, String> {
     let pool = crate::backup::pool(&app).await?;
     obs_store::list_markers(&pool).await
+}
+
+struct ReplayGuard<'a>(&'a AtomicBool);
+impl Drop for ReplayGuard<'_> {
+    fn drop(&mut self) {
+        self.0.store(false, Ordering::SeqCst);
+    }
+}
+
+pub fn save_replay(app: &AppHandle, title: Option<String>) -> Result<Value, String> {
+    initialize(app)?;
+    let state = app.state::<ObsState>();
+    state
+        .replay_saving
+        .compare_exchange(false, true, Ordering::SeqCst, Ordering::SeqCst)
+        .map_err(|_| "Ya se está guardando un clip. Espera su confirmación.")?;
+    let _saving = ReplayGuard(&state.replay_saving);
+    let _operation = state.operation.lock().map_err(|e| e.to_string())?;
+    let title = title.as_deref().unwrap_or("Clip").trim();
+    if title.is_empty() || title.chars().count() > 200 {
+        return Err("El título debe tener entre 1 y 200 caracteres.".into());
+    }
+    let config = {
+        let i = state.inner.lock().map_err(|e| e.to_string())?;
+        i.config.clone()
+    };
+    if !config.enabled {
+        return Err("Conecta OBS antes de guardar un clip.".into());
+    }
+    let mut client = Client::connect(config.port, &password()?)?;
+    poll(app, &mut client)?;
+    let (session, record, stream, game) = {
+        let i = state.inner.lock().map_err(|e| e.to_string())?;
+        let record = if i.view.paused {
+            None
+        } else {
+            i.view.record_ms
+        };
+        (
+            if record.is_some() {
+                i.record_id.clone()
+            } else {
+                i.stream_id.clone()
+            },
+            record,
+            i.view.stream_ms,
+            i.game.clone(),
+        )
+    };
+    let path = client.save_replay()?;
+    let clip = id();
+    let marker = session.as_ref().map(|_| id());
+    let pool = pool(app)?;
+    tauri::async_runtime::block_on(obs_store::insert_clip(&pool,&clip,marker.as_deref(),session.as_deref(),title,&path,record,stream,game.as_deref()))
+        .map_err(|e|format!("OBS confirmó el archivo {path}, pero Nexus no pudo registrarlo: {e}. Conserva el archivo y no repitas el guardado para recuperarlo."))?;
+    let _ = app.emit("obs-markers-changed", &clip);
+    Ok(
+        json!({"id":clip,"output_path":path,"marker_id":marker,"record_ms":record,"stream_ms":stream}),
+    )
+}
+#[tauri::command]
+pub async fn obs_save_replay(app: AppHandle, title: Option<String>) -> Result<Value, String> {
+    tauri::async_runtime::spawn_blocking(move || save_replay(&app, title))
+        .await
+        .map_err(|e| e.to_string())?
+}
+#[tauri::command]
+pub async fn obs_clips(app: AppHandle) -> Result<Value, String> {
+    let pool = crate::backup::pool(&app).await?;
+    obs_store::list_clips(&pool).await
 }

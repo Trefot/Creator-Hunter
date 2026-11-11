@@ -2,6 +2,7 @@ import { invoke } from "@tauri-apps/api/core";
 export interface ObsStatus {
   enabled:boolean; port:number; connected:boolean; recording:boolean; paused:boolean; streaming:boolean;
   record_ms:number|null; stream_ms:number|null; error:string|null; last_update_ms:number;
+  replay_active:boolean; saving_replay:boolean;
 }
 export interface ObsMarker {
   id:string; title:string; created_at:string; record_ms:number|null; stream_ms:number|null;
@@ -20,3 +21,10 @@ export function obsTime(ms:number|null):string {
 export function momentsText(markers:ObsMarker[]):string {
   return markers.map(m=>`${m.created_at} · ${m.game_title??""} · ${m.title}\nGrabación: ${obsTime(m.record_ms)} · Directo: ${obsTime(m.stream_ms)}\nArchivo: ${m.output_path??"No confirmado por OBS"}`).join("\n\n");
 }
+
+export interface ObsClip {
+  id:string; title:string; created_at:string; output_path:string; game_title:string|null;
+  marker_id:string|null; record_ms:number|null; stream_ms:number|null;
+}
+export const obsSaveReplay=(title?:string)=>invoke<ObsClip>("obs_save_replay",{title:title?.trim()||null});
+export const obsClips=()=>invoke<ObsClip[]>("obs_clips");

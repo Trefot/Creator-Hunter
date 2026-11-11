@@ -301,3 +301,11 @@ Las dependencias nuevas se añaden a esta tabla con su justificación.
 - Sesiones de grabación y emisión separadas; marcas con ambos tiempos y snapshot del título del juego. Grabación pausada no aporta tiempo a una marca. Sin salida activa o consulta fallida no se inserta nada. No hay comandos de iniciar/parar ni cambios de escena.
 - GET /api/moments/mark usa la clave local existente para la acción Sitio web de Stream Deck. No roba foco. Los cambios se reflejan en Live Studio; no hay plugin de Stream Deck ni confirmación visual en su botón todavía.
 - App se conecta a grabaciones ya iniciadas sin estimar su inicio: observed_at es la primera observación; record_ms/stream_ms vienen de OBS. Desconexiones y reinicios separan segmentos. output_path solo se guarda cuando el servidor lo confirma; el cliente no promete un clip ni precisión de fotograma.
+
+## D-031 · Replay Buffer y clips confirmados (0.2.13)
+
+- Solo SaveReplayBuffer se añade como acción explícita; GetReplayBufferStatus es de lectura. No se permiten Start/Stop ni cambios de escena. El usuario inicia el búfer en OBS.
+- Conexión propia por pulsación, suscripción Outputs. Tras consultar estado se descartan eventos previos y se espera ACK del requestId y ReplayBufferSaved, en cualquier orden, hasta 15 segundos. No se consulta GetLastReplayBufferReplay para evitar archivos obsoletos. No hay correlación por requestId en el evento de OBS: evitar usar a la vez otro botón de guardado externo durante esa espera.
+- Un flag atómico rechaza guardados concurrentes; el mutex de operaciones serializa monitor, marcas, guardado y restauración. Se capturan los tiempos antes de pedir el guardado, sin afirmar precisión de fotograma o posición en el clip.
+- Migración 017: obs_clip con ruta única y marca opcional. Clip y marca se insertan en transacción; el búfer solo no inventa sesión ni tiempos. Las 25 tablas están incluidas en las copias y se admite el esquema 16 sin obs_clip.
+- GET /api/clips/save usa la clave local existente. Live Studio muestra estado del búfer, guardado pendiente e historial de 100 clips; los anteriores permanecen en SQLite. El vídeo sigue gestionado por OBS, fuera del backup JSON.

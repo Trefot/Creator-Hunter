@@ -1,10 +1,11 @@
 import { FormEvent, useEffect, useState } from "react";
-import { obsStatus,obsConfigure,obsDisconnect,obsMark,obsMarkers,obsTime,momentsText,ObsStatus,ObsMarker } from "../../db/obs";
+import { obsStatus,obsConfigure,obsDisconnect,obsMark,obsMarkers,obsTime,momentsText,ObsStatus,ObsMarker,obsSaveReplay,obsClips,ObsClip } from "../../db/obs";
 import { es } from "../../i18n/es";
 const t=es.obs;
 
-export function ObsPanel({markUrl}:{markUrl:string|null}) {
+export function ObsPanel({markUrl,clipUrl}:{markUrl:string|null;clipUrl:string|null}) {
   const [status,setStatus]=useState<ObsStatus|null>(null);
+  const [clips,setClips]=useState<ObsClip[]>([]);
   const [markers,setMarkers]=useState<ObsMarker[]>([]);
   const [port,setPort]=useState(4455);
   const [password,setPassword]=useState("");
@@ -19,8 +20,8 @@ export function ObsPanel({markUrl}:{markUrl:string|null}) {
     let timer:ReturnType<typeof setTimeout>;
     async function refresh(){
       try {
-        const [s,m]=await Promise.all([obsStatus(),obsMarkers()]);
-        if(!cancelled){setStatus(s);setMarkers(m);if(!hydrated&&s.port){setPort(s.port);hydrated=true;}}
+        const [s,m,c]=await Promise.all([obsStatus(),obsMarkers(),obsClips()]);
+        if(!cancelled){setStatus(s);setMarkers(m);setClips(c);if(!hydrated&&s.port){setPort(s.port);hydrated=true;}}
       }catch(e){if(!cancelled)setError(String(e));}
       finally{if(!cancelled)timer=setTimeout(refresh,2000);}
     }
@@ -37,6 +38,14 @@ export function ObsPanel({markUrl}:{markUrl:string|null}) {
     setBusy(true);setError("");setMessage("");
     try{const result=await obsMark(title);setTitle("");setMessage(t.saved(obsTime(result.record_ms??result.stream_ms)));setMarkers(await obsMarkers());}
     catch(e){setError(String(e));}finally{setBusy(false);}
+  }
+  async function saveClip(){
+    if(busy||status?.saving_replay)return;
+    setBusy(true);setError("");setMessage(t.savingClip);
+    try{
+      const result=await obsSaveReplay(title);setTitle("");setMessage(t.clipSaved(result.output_path));
+      const [c,m]=await Promise.all([obsClips(),obsMarkers()]);setClips(c);setMarkers(m);
+    }catch(e){setMessage("");setError(String(e));}finally{setBusy(false);}
   }
   async function disconnect(){
     setBusy(true);setError("");
@@ -66,13 +75,23 @@ export function ObsPanel({markUrl}:{markUrl:string|null}) {
     {status?.enabled&&<button className="ghost small-button" disabled={busy} onClick={disconnect}>{t.disconnect}</button>}
     {(error||status?.error)&&<p className="error" role="alert">{error||status?.error}</p>}
     <div className="obs-mark-row"><input aria-label={t.momentTitle} maxLength={200} value={title} onChange={e=>setTitle(e.target.value)} placeholder={t.momentTitle}/>
-      <button disabled={busy||!active} onClick={mark}>{busy?t.saving:t.mark}</button></div>
+      <button disabled={busy||!!status?.saving_replay||!active} onClick={mark}>{busy?t.saving:t.mark}</button></div>
+    <div className="obs-mark-row"><span className="small">{status?.replay_active?t.replayActive:t.replayInactive}</span><button disabled={busy||!!status?.saving_replay||!status?.connected||!status?.replay_active} onClick={saveClip}>{busy||status?.saving_replay?t.savingClip:t.saveClip}</button></div>
+    <p className="muted small">{t.replayHint}</p>
     {!active&&<p className="muted small">{t.markHint}</p>}
     {message&&<p role="status" className="small">{message}</p>}
     <details className="obs-deck"><summary>{t.deck}</summary><p className="small">{t.deckSteps}</p>
       {markUrl?<button className="small-button" onClick={()=>copy(markUrl)}>{t.copyMarkUrl}</button>:<p className="muted small">{t.localUnavailable}</p>}
+      {clipUrl&&<button className="small-button" onClick={()=>copy(clipUrl)}>{t.copyClipUrl}</button>}
       <p className="muted small">{t.deckFeedback}</p>
     </details>
+    <div className="obs-head"><h3>{t.clips}</h3></div>
+    {clips.length===0?<p className="muted small">{t.noClips}</p>:<ul className="obs-moments">{clips.map(c=><li key={c.id}>
+      <div><strong>{c.title}</strong>{c.game_title&&<span className="muted"> · {c.game_title}</span>}</div>
+      <time className="muted small">{new Date(c.created_at).toLocaleString("es")}</time>
+      <p className="small obs-file">{c.output_path}</p>
+      <div>{c.marker_id&&<span className="muted small">{t.linkedMarker} · {obsTime(c.record_ms??c.stream_ms)} </span>}<button className="ghost small-button" onClick={()=>copy(c.output_path)}>{t.copyClipPath}</button></div>
+    </li>)}</ul>}
     <div className="obs-head"><h3>{t.moments}</h3>{markers.length>0&&<button className="ghost small-button" onClick={()=>copy(momentsText(markers))}>{t.copyMoments}</button>}</div>
     {markers.length===0?<p className="muted small">{t.empty}</p>:<ul className="obs-moments">{markers.map(m=><li key={m.id}>
       <div><strong>{m.title}</strong>{m.game_title&&<span className="muted"> · {m.game_title}</span>}</div>

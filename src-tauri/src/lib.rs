@@ -117,6 +117,12 @@ fn migrations() -> Vec<Migration> {
             sql: include_str!("../migrations/016_obs_moments.sql"),
             kind: MigrationKind::Up,
         },
+        Migration {
+            version: 17,
+            description: "clips confirmados del Replay Buffer de OBS",
+            sql: include_str!("../migrations/017_obs_clips.sql"),
+            kind: MigrationKind::Up,
+        },
     ]
 }
 
@@ -173,6 +179,8 @@ pub fn run() {
             obs::obs_context,
             obs::obs_mark,
             obs::obs_markers,
+            obs::obs_save_replay,
+            obs::obs_clips,
             live::live_status,
             live::live_notify,
             updater::update_check,

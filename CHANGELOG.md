@@ -2,6 +2,13 @@
 
 ## [Sin publicar]
 
+## [0.2.13] · 2026-11-11 · Guardar clip
+
+- Guardar clips del Replay Buffer de OBS desde Live Studio o Stream Deck, sin iniciar ni detener el búfer, la grabación o el directo.
+- Solo registra el clip cuando OBS confirma un archivo nuevo; informa de búfer apagado, rechazo o espera agotada sin mostrar un guardado falso.
+- Historial de clips con juego y ruta, y marca asociada si había una sesión de grabación o directo activa. También funciona con el Replay Buffer solo.
+- Clips y marcas se guardan juntos y se incluyen en las copias; conserva la compatibilidad con copias anteriores mediante la migración 017.
+
 ## [0.2.12] · 2026-11-11 · OBS y momentos
 
 - Conexión local con OBS WebSocket v5: estado de grabación, pausa y directo, reconexión automática y contraseña en las credenciales de Windows.

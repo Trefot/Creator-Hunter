@@ -2,7 +2,7 @@
 export const es = {
   appName: "Nexus Studio",
   appTagline: "Tu espacio para crear",
-  version: "Alpha 0.2 · v0.2.12",
+  version: "Alpha 0.2 · v0.2.13",
   /** Marca de la versión de pruebas (D-019). */
   devBadge: "PRUEBAS",
   startup: {
@@ -177,6 +177,17 @@ export const es = {
     failed: (e: string) => `No se pudo actualizar: ${e}`,
   },
   obs: {
+    saveClip: "Guardar clip",
+    savingClip: "Guardando clip…",
+    clipSaved: (path:string) => `Clip confirmado por OBS: ${path}`,
+    replayActive: "Replay Buffer activo",
+    replayInactive: "Replay Buffer apagado",
+    replayHint: "En OBS: Ajustes → Salida → activa el búfer de repetición, elige cuántos segundos conservar y pulsa Iniciar búfer de repetición. Guardar clip no lo inicia ni lo detiene. El vídeo queda en la carpeta configurada en OBS.",
+    clips: "Últimos 100 clips confirmados",
+    noClips: "Todavía no hay clips confirmados por OBS.",
+    copyClipUrl: "Copiar URL para guardar clip",
+    copyClipPath: "Copiar ruta",
+    linkedMarker: "Marca asociada",
     title: "OBS · Sesiones y momentos",
     subtitle: "Guarda jugadas con el tiempo de tu grabación o directo, sin salir del juego.",
     setup: "Configurar OBS",
@@ -194,8 +205,8 @@ export const es = {
     markHint: "Conecta OBS y comienza una grabación o un directo. Nexus no los inicia ni los detiene.",
     saved: (time:string) => `Momento guardado · ${time}`,
     copied: "¡Copiado!", deck: "Botón de Stream Deck", copyMarkUrl: "Copiar URL para marcar momento",
-    deckSteps: "En Stream Deck añade Sistema → Sitio web, pega la URL copiada y activa la opción de solicitarla en segundo plano. Ponle «Marcar momento». Nexus y OBS deben estar abiertos; el botón no crea un clip de vídeo.",
-    deckFeedback: "Las marcas aparecerán aquí. La acción Sitio web no confirma en el botón si OBS estaba disponible; comprueba aquí la primera pulsación. No compartas la URL: lleva tu clave local.",
+    deckSteps: "En Stream Deck añade Sistema → Sitio web por cada acción, pega su URL y activa la solicitud en segundo plano. «Marcar momento» guarda una referencia; «Guardar clip» guarda el vídeo del Replay Buffer. Nexus y OBS deben estar abiertos.",
+    deckFeedback: "Las marcas y los clips confirmados aparecerán aquí. La acción Sitio web no confirma el resultado en el botón; comprueba aquí la primera pulsación. No compartas la URL: lleva tu clave local.",
     localUnavailable: "El servidor local de Nexus debe estar disponible para copiar la URL.",
     moments: "Últimos 200 momentos", copyMoments: "Copiar lista", empty: "Todavía no hay momentos guardados.",
     recordingTime: "Grabación", streamTime: "Directo", filePending: "Archivo sin confirmar por OBS; la marca conserva su tiempo. La ruta puede llegar al detener la grabación mientras Nexus siga conectado.",
@@ -661,6 +672,7 @@ export const es = {
       session_objective: "Objetivos de partida",
       obs_session: "Sesiones de OBS",
       obs_marker: "Momentos de contenido",
+      obs_clip: "Clips de OBS",
     } as Record<string, string>,
   },
   dashboard: {

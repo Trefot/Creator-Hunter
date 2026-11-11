@@ -152,6 +152,15 @@ fn handle_request(app: &AppHandle, key: &str, request: Request) {
     let query = |name: &str| url.query_pairs().find(|(k, _)| k == name).map(|(_, v)| v.to_string());
 
     match segments.iter().map(String::as_str).collect::<Vec<_>>().as_slice() {
+        ["api", "clips", "save"] => {
+            if query("key").as_deref() != Some(key) {
+                return respond_json(request, 403, json!({ "error": "Falta la clave local o no es correcta." }));
+            }
+            match crate::obs::save_replay(app, query("title")) {
+                Ok(clip) => respond_json(request, 200, clip),
+                Err(error) => respond_json(request, 409, json!({"error":error})),
+            }
+        }
         ["api", "moments", "mark"] => {
             if query("key").as_deref() != Some(key) {
                 return respond_json(request, 403, json!({ "error": "Falta la clave local o no es correcta." }));
