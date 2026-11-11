@@ -1,14 +1,15 @@
 {
-  "version": "0.2.13",
+  "version": "0.2.14",
   "notes": [
-    "Guardar clips del Replay Buffer de OBS desde Live Studio o Stream Deck, sin iniciar ni detener el búfer, la grabación o el directo.",
-    "Solo registra el clip cuando OBS confirma un archivo nuevo; informa de búfer apagado, rechazo o espera agotada sin mostrar un guardado falso.",
-    "Historial de clips con juego y ruta, y marca asociada si había una sesión de grabación o directo activa. También funciona con el Replay Buffer solo.",
-    "Clips y marcas se guardan juntos y se incluyen en las copias; conserva la compatibilidad con copias anteriores mediante la migración 017."
+    "Biblioteca con búsqueda, filtro por plataforma, ilustración de portada y sin barras ni recuentos de trofeos vacíos.",
+    "Ficha de Fortnite y juegos sin trofeos con plan diario, objetivos manuales, notas de sesión y portada editable; mantiene rutas, guía y trofeos de PlayStation.",
+    "Clips, momentos, ideas y proyectos reunidos por juego; convierte capturas en ideas sin duplicarlas y conserva el juego al aprobar una idea como proyecto.",
+    "Portadas y notas generales editables, historial de los últimos planes y asociación explícita de proyectos existentes.",
+    "Migración 018 protegida para las relaciones de ideas; copias compatibles con el esquema 17 y exportación sin metadatos SQLite obsoletos tras cambios de esquema."
   ],
   "date": "2026-11-11",
   "installer": "TrophyHunter-setup.exe",
-  "source_commit": "99dd7ed169dd2a4c4dd7e25130ed1fa8aba44a99",
-  "sha256": "f3ddaf12b9e29103c231b4da37ee51d8f83570deb5b3cd54d1ac7e83808e384b",
-  "size": 3359643
+  "source_commit": "2f93606581aeb6ccd5e732691f504ab89b13de08",
+  "sha256": "e5cce87928afca54f6317ff61bc46e591c6ae8c9782dd814d3908fa5d1c694a6",
+  "size": 3363815
 }
