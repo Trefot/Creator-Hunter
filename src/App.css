@@ -4354,3 +4354,18 @@ button.muted-link {
   top: 10px;
   right: 10px;
 }
+
+/* Color personalizado: rueda de color dentro del círculo */
+.counter-custom-color {
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  background: conic-gradient(red, yellow, lime, cyan, blue, magenta, red) !important;
+}
+
+.counter-custom-color input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}

@@ -1,6 +1,6 @@
 [package]
 name = "studio"
-version = "0.2.6"
+version = "0.2.7"
 description = "Creator Studio (nombre de trabajo: TrophyHunter)"
 authors = ["TrefotG"]
 edition = "2024"

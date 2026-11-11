@@ -18,16 +18,21 @@ export interface Counter {
   sound: string | null;
   sound_on: boolean;
   sound_volume: number;
+  /** Tamaño del icono o PNG en % (50–300). */
+  icon_scale: number;
+  title_color: string;
+  number_color: string;
 }
 
 export type CounterStyle = "card" | "gamer";
 
-export type CounterInput = Pick<Counter, "name" | "icon" | "color" | "step" | "game_id" | "image" | "bg_color" | "bg_opacity" | "style" | "sound" | "sound_on" | "sound_volume">;
+export type CounterInput = Pick<Counter, "name" | "icon" | "color" | "step" | "game_id" | "image" | "bg_color" | "bg_opacity" | "style" | "sound" | "sound_on" | "sound_volume" | "icon_scale" | "title_color" | "number_color">;
 
 export async function listCounters(): Promise<Counter[]> {
   const db = await getDb();
   const rows = await db.select<(Omit<Counter, "sound_on"> & { sound_on: 0 | 1 })[]>(
-    `SELECT id, name, icon, color, value, step, game_id, image, bg_color, bg_opacity, style, sound, sound_on, sound_volume
+    `SELECT id, name, icon, color, value, step, game_id, image, bg_color, bg_opacity, style, sound, sound_on, sound_volume,
+            icon_scale, title_color, number_color
        FROM counter WHERE workspace_id = $1 ORDER BY position, created_at`,
     [WORKSPACE_ID],
   );
@@ -42,11 +47,12 @@ export async function createCounter(input: CounterInput): Promise<void> {
   );
   await db.execute(
     `INSERT INTO counter (id, workspace_id, name, icon, color, step, game_id, image, bg_color, bg_opacity,
-                          style, sound, sound_on, sound_volume, position)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)`,
+                          style, sound, sound_on, sound_volume, icon_scale, title_color, number_color, position)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)`,
     [
       newId(), WORKSPACE_ID, input.name.trim(), input.icon, input.color, input.step, input.game_id, input.image, input.bg_color,
-      input.bg_opacity, input.style, input.sound, input.sound_on ? 1 : 0, input.sound_volume, next,
+      input.bg_opacity, input.style, input.sound, input.sound_on ? 1 : 0, input.sound_volume, input.icon_scale,
+      input.title_color, input.number_color, next,
     ],
   );
 }
@@ -55,12 +61,13 @@ export async function updateCounter(id: string, input: CounterInput): Promise<vo
   const db = await getDb();
   await db.execute(
     `UPDATE counter SET name = $1, icon = $2, color = $3, step = $4, game_id = $5, image = $6, bg_color = $7,
-            bg_opacity = $8, style = $9, sound = $10, sound_on = $11, sound_volume = $12,
-            updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
-      WHERE id = $13 AND workspace_id = $14`,
+            bg_opacity = $8, style = $9, sound = $10, sound_on = $11, sound_volume = $12, icon_scale = $13,
+            title_color = $14, number_color = $15, updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
+      WHERE id = $16 AND workspace_id = $17`,
     [
       input.name.trim(), input.icon, input.color, input.step, input.game_id, input.image, input.bg_color, input.bg_opacity,
-      input.style, input.sound, input.sound_on ? 1 : 0, input.sound_volume, id, WORKSPACE_ID,
+      input.style, input.sound, input.sound_on ? 1 : 0, input.sound_volume, input.icon_scale, input.title_color,
+      input.number_color, id, WORKSPACE_ID,
     ],
   );
 }

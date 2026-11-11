@@ -2,7 +2,7 @@
 export const es = {
   appName: "TrophyHunter",
   appTagline: "Creator Studio",
-  version: "Alpha 0.2 · v0.2.6",
+  version: "Alpha 0.2 · v0.2.7",
   /** Marca de la versión de pruebas (D-019). */
   devBadge: "PRUEBAS",
   games: {
@@ -219,6 +219,10 @@ export const es = {
     uploadPng: "Subir tu imagen (PNG con transparencia)",
     pngHint: "Pulsa el primer recuadro para usar tu propio PNG.",
     removePng: "Quitar mi imagen y usar un emoji",
+    iconSize: (n: number) => `Tamaño del icono: ${n} %`,
+    titleColor: "Color del título",
+    numberColor: "Color del número",
+    customColor: "Elegir cualquier color",
     background: "Fondo en OBS",
     opacity: (n: number) => `Opacidad del fondo: ${n} %${n === 0 ? " (transparente)" : n === 100 ? " (sólido)" : ""}`,
     step: "Suma por pulsación",

@@ -38,7 +38,20 @@ export function CounterIcon({ counter }: { counter: Pick<Counter, "icon" | "imag
 }
 
 /** Contadores rápidos para empezar con un clic. */
-const STYLE = { image: null, bg_color: "#0e0c14", bg_opacity: 85, style: "gamer" as const, sound: null, sound_on: true, sound_volume: 70 };
+const STYLE = {
+  image: null,
+  bg_color: "#0e0c14",
+  bg_opacity: 85,
+  style: "gamer" as const,
+  sound: null,
+  sound_on: true,
+  sound_volume: 70,
+  icon_scale: 100,
+  title_color: "#ffffff",
+  number_color: "#ffd34d",
+};
+/** Colores rápidos para los textos. */
+const TEXT_COLORS = ["#ffffff", "#ffd34d", "#f59e0b", "#ef4444", "#22c55e", "#38bdf8", "#c084fc", "#ec4899", "#111111"];
 /** Tamaño máximo del sonido propio (se guarda en la base de datos). */
 const MAX_SOUND_BYTES = 1_500_000;
 const TEMPLATES: CounterInput[] = [
@@ -226,7 +239,31 @@ function CounterForm({
           )}
         </span>
         {imageError && <span className="error small">{imageError}</span>}
+        <label className="counter-opacity">
+          <span className="small muted">{t.iconSize(form.icon_scale)}</span>
+          <input type="range" min={50} max={300} step={10} value={form.icon_scale} onChange={(e) => set({ icon_scale: Number(e.target.value) })} />
+        </label>
       </div>
+      {(["title_color", "number_color"] as const).map((field) => (
+        <div key={field} className="counter-form-row">
+          <span className="small muted">{field === "title_color" ? t.titleColor : t.numberColor}</span>
+          <div className="counter-picks">
+            {TEXT_COLORS.map((color) => (
+              <button
+                type="button"
+                key={color}
+                className={`counter-swatch bg${form[field] === color ? " on" : ""}`}
+                style={{ background: color }}
+                onClick={() => set({ [field]: color })}
+                aria-label={color}
+              />
+            ))}
+            <label className="counter-swatch counter-custom-color" title={t.customColor}>
+              <input type="color" value={form[field]} onChange={(e) => set({ [field]: e.target.value })} />
+            </label>
+          </div>
+        </div>
+      ))}
       <div className="counter-form-row">
         <span className="small muted">{t.color}</span>
         <div className="counter-picks">

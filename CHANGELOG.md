@@ -2,6 +2,12 @@
 
 ## [Sin publicar]
 
+## [0.2.7] · 2026-11-10 · Icono más grande y colores de texto
+
+- Nuevo control «Tamaño del icono» para hacer tu PNG (o el emoji) más grande, hasta el triple.
+- El título del contador se ve mucho más: más grande, con contorno grueso y sombra.
+- Ahora puedes elegir el color del título y el del número (con colores rápidos o cualquier color).
+
 ## [0.2.6] · 2026-11-10 · Sonido más rápido
 
 - El sonido de los contadores suena a la vez que la animación: queda cargado desde que se abre el overlay, en vez de prepararse al sumar.

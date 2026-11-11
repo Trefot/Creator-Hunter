@@ -210,6 +210,7 @@ async fn list_counters(app: &AppHandle) -> Result<serde_json::Value, String> {
     let pool = crate::backup::pool(app).await?;
     let rows = sqlx::query(
         "SELECT id, name, icon, color, value, bg_color, bg_opacity, style, sound_on, sound_volume,
+                icon_scale, title_color, number_color,
                 image IS NOT NULL AS has_image,
                 COALESCE(length(image) || '-' || substr(image, -24), '') AS image_version,
                 sound IS NOT NULL AS has_sound,
@@ -233,6 +234,9 @@ async fn list_counters(app: &AppHandle) -> Result<serde_json::Value, String> {
                 "style": r.get::<String, _>("style"),
                 "sound_on": r.get::<bool, _>("sound_on"),
                 "sound_volume": r.get::<i64, _>("sound_volume"),
+                "icon_scale": r.get::<i64, _>("icon_scale"),
+                "title_color": r.get::<String, _>("title_color"),
+                "number_color": r.get::<String, _>("number_color"),
                 "has_image": r.get::<bool, _>("has_image"),
                 // Solo cambian si cambia el archivo: el overlay lo vuelve a pedir únicamente entonces.
                 "image_version": r.get::<String, _>("image_version"),

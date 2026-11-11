@@ -100,6 +100,12 @@ fn migrations() -> Vec<Migration> {
             sql: include_str!("../migrations/014_counter_fx.sql"),
             kind: MigrationKind::Up,
         },
+        Migration {
+            version: 15,
+            description: "tamaño del icono y colores de texto",
+            sql: include_str!("../migrations/015_counter_text.sql"),
+            kind: MigrationKind::Up,
+        },
     ]
 }
 
