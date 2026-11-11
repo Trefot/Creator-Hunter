@@ -1,14 +1,14 @@
 {
-  "version": "0.2.11",
+  "version": "0.2.12",
   "notes": [
-    "Detección de Fortnite abierto en Windows sin depender de PSN; comprueba el proceso del juego cada 15 segundos.",
-    "Añadir juegos de PC y otras plataformas a la biblioteca y elegir el juego actual manualmente; indica si la actividad procede de PC, PlayStation o selección manual.",
-    "Icono de ventana explícito y accesos del escritorio/Inicio con nombre Nexus Studio e icono propio. Conserva instalación, identificador y datos existentes.",
-    "El instalador actualiza los accesos antiguos que apuntan a esta instalación y solicita a Windows refrescar los iconos."
+    "Conexión local con OBS WebSocket v5: estado de grabación, pausa y directo, reconexión automática y contraseña en las credenciales de Windows.",
+    "Marcar momentos desde Live Studio o Stream Deck con tiempos consultados en OBS y el juego actual; no inicia ni detiene grabaciones o emisiones.",
+    "Historial de los últimos 200 momentos y copia de la lista para editar contenido; guarda la ruta del archivo cuando OBS la confirma al finalizar la grabación.",
+    "Sesiones y marcas incluidas en las copias de seguridad, con migración protegida y compatibilidad con copias de versiones anteriores."
   ],
   "date": "2026-11-11",
   "installer": "TrophyHunter-setup.exe",
-  "source_commit": "6c57f1ca119f5b361ee0e933eb65cd8ecf5d38b9",
-  "sha256": "8cd4fbe894ad0af09aa8bef94d8a5f736ea34369e8e5d72cf45515d4305893e7",
-  "size": 3271804
+  "source_commit": "89b524a94c5cd56032b19bbe75be0144b375fc6e",
+  "sha256": "0f18621a516fa0d7ccaa2bb2e5ef7089c34e57bea8c8a9721455fd249140c480",
+  "size": 3349295
 }
