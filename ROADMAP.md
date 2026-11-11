@@ -224,6 +224,8 @@ Objetivos con progreso (nivel, XP farmeada…) y proyectos del Creator Studio en
 - [x] Imagen PNG propia y fondo ajustable (color y opacidad), pedido del usuario.
 - [x] Estilo gamer, animación, sonido y reacción instantánea (referencia: overlay de cofres de un streamer de Fortnite).
 
+- [x] Actualización automática desde GitHub como Lumen (v0.2.4), confirmada por el usuario el 2026-11-10.
+
 #### ⬜ L2 · Seguidores y suscriptores automáticos
 YouTube (ya conectado) y Twitch (EventSub, pendiente de Alpha 0.2) como contadores de origen automático.
 
