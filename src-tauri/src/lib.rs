@@ -128,7 +128,7 @@ pub fn run() {
             // D-019: la versión de pruebas se distingue a simple vista.
             #[cfg(debug_assertions)]
             if let Some(window) = tauri::Manager::get_webview_window(app, "main") {
-                let _ = window.set_title("TrophyHunter · PRUEBAS");
+                let _ = window.set_title("Nexus Studio · PRUEBAS");
             }
             live::start(app.handle().clone());
             Ok(())

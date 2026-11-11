@@ -1,7 +1,7 @@
 /** Textos de la interfaz en español. Todo texto visible sale de aquí para poder traducir después. */
 export const es = {
-  appName: "TrophyHunter",
-  appTagline: "Creator Studio",
+  appName: "Nexus Studio",
+  appTagline: "Tu espacio para crear",
   version: "Alpha 0.2 · v0.2.9",
   /** Marca de la versión de pruebas (D-019). */
   devBadge: "PRUEBAS",
@@ -68,7 +68,7 @@ export const es = {
     notePlaceholder: "Tus trucos o recordatorios para este trofeo…",
     noRoute: "Este juego aún no tiene ruta al platino.",
     suggestedRouteHint:
-      "Hay una ruta sugerida: fases en orden, perdibles marcados y una nota por trofeo. Es una propuesta escrita para TrophyHunter a partir de guías públicas; luego puedes moverla a tu gusto. Los nombres de jefes están traducidos y pueden variar respecto al juego.",
+      "Hay una ruta sugerida: fases en orden, perdibles marcados y una nota por trofeo. Es una propuesta escrita para Nexus Studio a partir de guías públicas; luego puedes moverla a tu gusto. Los nombres de jefes están traducidos y pueden variar respecto al juego.",
     applySuggested: "Aplicar ruta sugerida",
     applying: "Aplicando…",
     sources: "Fuente:",
@@ -147,14 +147,14 @@ export const es = {
     kinds: { phase: "Fase", guide: "Guía", missable: "Perdible", farm: "Farmeo", custom: "Tuyo" },
   },
   update: {
-    installing: (v: string) => `Actualizando TrophyHunter a la versión ${v}…`,
+    installing: (v: string) => `Actualizando Nexus Studio a la versión ${v}…`,
     newVersion: (v: string) => `Nueva versión ${v}: se está instalando`,
     check: "Buscar actualizaciones",
     checking: "Buscando actualizaciones…",
     latest: "Ya tienes la última versión",
     youHave: (v: string) => `Versión ${v}.`,
     devNoUpdates: "Esta es la versión de pruebas: no se actualiza.",
-    restartHint: "Se instala y TrophyHunter se vuelve a abrir solo en unos segundos. No tienes que cerrar nada.",
+    restartHint: "Se instala y Nexus Studio se vuelve a abrir solo en unos segundos. No tienes que cerrar nada.",
     ok: "Vale",
     updated: (v: string) => `¡Actualizado a la versión ${v}!`,
     noNotes: "Mejoras y arreglos.",
@@ -174,7 +174,7 @@ export const es = {
     serverOn: (port: number) => `Conexión con OBS y Stream Deck activa (puerto ${port})`,
     serverStarting: "Iniciando la conexión con OBS y Stream Deck…",
     serverError: "La conexión con OBS y Stream Deck no pudo arrancar",
-    serverHint: "Solo funciona en este PC y con TrophyHunter abierto.",
+    serverHint: "Solo funciona en este PC y con Nexus Studio abierto.",
     copyOverlayAll: "Copiar overlay (todos)",
     copyOverlay: "Overlay para OBS",
     copied: "¡Copiado!",
@@ -602,7 +602,7 @@ export const es = {
     imported: (rows: number) => `Importación completa: ${rows} registros restaurados.`,
     safetyCopy: "Copia de lo que había antes:",
     reload: "Recargar la app",
-    invalidFile: "El archivo no es una copia de seguridad válida de TrophyHunter.",
+    invalidFile: "El archivo no es una copia de seguridad válida de Nexus Studio.",
     errorPrefix: "No se importó nada.",
     tables: {
       workspace: "Espacio de trabajo",

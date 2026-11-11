@@ -12,6 +12,14 @@ Rama de trabajo: `fix/personal-app-reliability`, basada en `1d77f07` (0.2.9). Ca
 
 La comprobación adicional en Chromium con YouTube simulado confirmó una sola sincronización durante StrictMode y la conservación del formulario de Ideas y su texto sin guardar al finalizar la actualización. No se ha probado el servicio real de YouTube en este entorno.
 
+## Identidad Nexus Studio
+
+Se generó el emblema elegido B con fondo transparente y se verificó RGBA y rango alfa 0–255 en el original y las derivaciones de interfaz. Los iconos de escritorio y de Stream Deck se generaron con la CLI existente de Tauri. La interfaz carga la versión de 256 píxeles; el original completo no se incorpora al bundle por el componente Logo.
+
+Pasan de nuevo las 13 pruebas de frontend, las 8 de datos y la compilación frontend. En Chromium se comprobó el título Nexus Studio, la carga del logo con texto alternativo, estados con y sin datos, navegación, formulario y overlay a 1440/1280/960 píxeles. Las capturas contienen datos de ejemplo.
+
+El título nativo y los iconos están preparados en el código; su apariencia en Windows y la actualización desde TrophyHunter siguen pendientes. No se cambió `productName` del paquete ni se publicó instalador. Se conservaron identificador, archivos de datos, credenciales y protocolo de copias.
+
 ## Interfaz híbrida
 
 Se comprobó el dashboard con adaptaciones, perfiles y registros simulados, y también sin datos. Navegación a Ideas y Live Studio, edición de un formulario y renderizado del overlay dentro del iframe. Ventanas 1440×1040, 1280×800 y 960×640 sin desbordamiento horizontal del contenido ni errores JavaScript. Las cifras y títulos de las capturas son ejemplos de prueba, no métricas privadas del usuario. La compilación del frontend y las 13 pruebas pasan después del cambio visual; no se modificaron migraciones ni operaciones SQLite.

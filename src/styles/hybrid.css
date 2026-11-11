@@ -4,7 +4,7 @@
 .sidebar-main { min-height: 0; overflow-y: auto; }
 .brand { padding: 0 9px 27px; gap: 11px; }
 .brand-name { font-size: 16px; letter-spacing: -.035em; }
-.brand-tagline { margin-top: 5px; font-size: 9px; letter-spacing: .18em; }
+.brand-tagline { margin-top: 5px; font-size: 8px; letter-spacing: .04em; }
 .nav-group-label { font-size: 9px; padding-top: 19px; letter-spacing: .16em; opacity: 1; }
 .nav-item { padding: 10px 12px; margin-bottom: 3px; border: 1px solid transparent; border-radius: 10px; font-size: 13px; }
 .nav-item:hover:not(:disabled) { border: 1px solid var(--border); }
@@ -123,3 +123,7 @@ button.studio-text-action { border: 0; background: transparent; color: var(--tex
   .studio-workbench, .kpi-grid { grid-template-columns: 1fr 1fr; }
   .studio-section-heading > span { display: none; }
 }
+
+/* El emblema es una imagen con transparencia, sin fondo añadido. */
+.app-logo { display: block; object-fit: contain; flex-shrink: 0; }
+@media (max-width: 720px) { .brand .app-logo { width: 30px; height: 30px; } .brand-tagline { font-size: 7px; } }

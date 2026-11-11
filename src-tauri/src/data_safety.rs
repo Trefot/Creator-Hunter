@@ -203,7 +203,7 @@ pub async fn validate(
     let doc: Value = serde_json::from_str(content)
         .map_err(|_| "El archivo no es un JSON válido.".to_string())?;
     if doc["format"] != FORMAT {
-        return Err("El archivo no es una copia de seguridad de TrophyHunter.".into());
+        return Err("El archivo no es una copia de seguridad de Nexus Studio.".into());
     }
     if doc["format_version"] != FORMAT_VERSION {
         return Err("La copia usa un formato de archivo que esta versión no reconoce.".into());
@@ -228,7 +228,7 @@ pub async fn validate(
         if table == "workspace"
             && (rows.len() != 1 || rows[0]["id"] != "00000000-0000-4000-8000-000000000001")
         {
-            return Err("La copia debe contener el espacio de trabajo de TrophyHunter.".into());
+            return Err("La copia debe contener el espacio de trabajo de Nexus Studio.".into());
         }
         let allowed = columns(pool, table).await?;
         let mut list = Vec::with_capacity(rows.len());

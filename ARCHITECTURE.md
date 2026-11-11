@@ -247,6 +247,13 @@ Cuentan lo recibido en USD desde la fecha local de creación de la meta, filtrad
 - No se muestra un manager de IA ni un estado de conexión con OBS simulado. Esas funciones continúan en el plan de automatización.
 - Validado en Chromium a 1440×1040, 1280×800 y 960×640 con datos simulados y sin ellos. La validación de WebView2 en Windows sigue pendiente.
 
+### D-027 · Identidad Nexus Studio y compatibilidad (2026-11-11)
+- El usuario eligió el nombre Nexus Studio y el emblema B: una criatura violeta con ojos dorados que sostiene un farol. Original RGBA transparente en `src/assets/nexus-emblem.png`, preparado con generación de imagen a partir de la propuesta aprobada. Es identidad estática, no implementación del manager de IA.
+- Logo carga una derivación de 256 píxeles, no el original completo. El favicon y los iconos de Tauri se regeneran con `tauri icon`; tamaños de Stream Deck preparados en PNG. Sin nuevas dependencias.
+- Se cambia el nombre visible, el título HTML y el título de ventana (incluida PRUEBAS). Se conserva `com.trefotg.studio`, los archivos SQLite, las claves de credenciales, el protocolo de backups y las rutas Documentos/TrophyHunter para mantener compatibilidad.
+- `productName` de Tauri y los nombres de instaladores permanecen temporalmente en TrophyHunter. Renombrarlos requiere validar las claves del instalador, el script de publicación y el actualizador con una actualización real en Windows; no se trata como una mera sustitución de texto. Los nuevos iconos se usarán al volver a compilar el instalador.
+- Fuente anterior `src-tauri/app-icon.svg` retirada como receta de generación; se conserva como recurso histórico. La receta vigente está en IDENTIDAD.md.
+
 ## Dependencias
 
 | Dependencia | Para qué |

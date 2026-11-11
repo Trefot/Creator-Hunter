@@ -2,6 +2,13 @@
 
 ## [Sin publicar]
 
+### 2026-11-11 · Identidad Nexus Studio (sin instalador publicado)
+
+- Nombre Nexus Studio y lema «Tu espacio para crear» en la interfaz, título HTML, título de ventana y mensajes visibles. Las rutas de copias de seguridad conservan su nombre real anterior.
+- Emblema aprobado: el compañero violeta con ojos dorados sosteniendo el farol, con transparencia real. Logo del menú, favicon e iconos de escritorio regenerados desde el mismo original.
+- Versiones PNG de 72 y 144 píxeles preparadas para personalizar teclas de Stream Deck; no añaden acciones ni configuración al dispositivo.
+- Se conservan identificador, base de datos, credenciales, formato de copias y mecanismo de actualización. El nombre del paquete instalador sigue siendo TrophyHunter hasta validar el cambio y la actualización en Windows.
+
 ### 2026-11-11 · Interfaz híbrida (pendiente de prueba en Windows)
 
 - Tema grafito con acentos violeta y dorado, navegación más definida y formularios con controles de mayor contraste.

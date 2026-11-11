@@ -60,7 +60,7 @@ export function Sidebar({ current, onSelect }: Props) {
   return (
     <nav className="sidebar">
       <div className="brand">
-        <Logo size={36} />
+        <Logo size={42} />
         <div className="brand-text">
           <span className="brand-name">{es.appName}</span>
           <span className="brand-tagline">{es.appTagline}</span>

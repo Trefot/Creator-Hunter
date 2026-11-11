@@ -34,6 +34,12 @@ Diseño y orden de entrega en AUTOMATIZACION.md. Se mantiene pendiente la valida
 - [x] Comprobar estados con datos de ejemplo, sin datos, navegación, formulario de Ideas y vista previa del overlay a distintos tamaños en Chromium.
 - [ ] Validar apariencia y uso en WebView2/Windows antes de publicar el instalador.
 
+## Identidad definitiva · Nexus Studio
+
+- [x] Emblema B aprobado por el usuario: compañero sosteniendo el farol; preparar original transparente y tamaños de escritorio/Stream Deck.
+- [x] Aplicar nombre y símbolo en la interfaz, favicon y título de ventana sin cambiar datos ni credenciales.
+- [ ] Verificar icono y título en Windows, actualización desde la versión instalada y cambio del nombre de empaquetado. No publicar hasta completar la validación.
+
 ## Fases
 
 | Fase | Contenido | Estado |

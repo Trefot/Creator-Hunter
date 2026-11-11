@@ -158,7 +158,7 @@ fn wait_for_code(listener: TcpListener, expected_state: &str) -> Result<String, 
                 }
                 let ok = param("code").is_some() && param("state").as_deref() == Some(expected_state);
                 let body = if ok {
-                    "<h2>TrophyHunter conectado con YouTube.</h2><p>Ya puedes cerrar esta pestaña y volver a la app.</p>"
+                    "<h2>Nexus Studio conectado con YouTube.</h2><p>Ya puedes cerrar esta pestaña y volver a la app.</p>"
                 } else {
                     "<h2>No se completó la conexión.</h2><p>Vuelve a la app e inténtalo de nuevo.</p>"
                 };

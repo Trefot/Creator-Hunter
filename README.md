@@ -1,6 +1,6 @@
-# TrophyHunter (nombre de trabajo)
+# Nexus Studio
 
-Sistema operativo para creadores de TrefotG. Versión actual: **v0.2.9**.
+Estudio personal de creación de contenido de TrefotG. Versión actual: **v0.2.9**.
 
 Aplicación de escritorio para Windows, construida con React, TypeScript, Tauri 2 y SQLite. Incluye Creator Studio, conexión con YouTube, biblioteca de juegos con trofeos de PSN y contadores para OBS y Stream Deck. Twitch sigue pendiente.
 
@@ -50,3 +50,7 @@ cargo test --locked --manifest-path tests/data-safety/Cargo.toml
 Las pruebas de datos usan el código real de SQLite con bases temporales, sin arrancar Tauri. Para comprobar también el núcleo de escritorio en Windows: `cargo test --locked --manifest-path src-tauri/Cargo.toml`.
 
 La versión de pruebas necesita configurar sus propias conexiones de YouTube y PSN. Sus copias se guardan en `Documentos\TrophyHunter\Copias\Pruebas`. No reutiliza ni copia automáticamente las credenciales de producción.
+
+## Identidad
+
+Nombre definitivo: **Nexus Studio**. Emblema elegido: el compañero violeta sosteniendo el farol (concepto B); lema «Tu espacio para crear». Recursos y regeneración de iconos en [IDENTIDAD.md](IDENTIDAD.md). El nombre anterior TrophyHunter se conserva en rutas y claves compatibles; no se han migrado los datos ni publicado un instalador con la nueva marca.

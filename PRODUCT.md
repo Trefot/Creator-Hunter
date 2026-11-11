@@ -1,5 +1,7 @@
 # PRODUCT.md — Visión y alcance
 
+Nombre definitivo: **Nexus Studio**. Identidad visual aprobada en [IDENTIDAD.md](IDENTIDAD.md).
+
 ## Visión
 
 Un "sistema operativo" para **creadores de contenido, comunidades y jugadores**: módulos conectados que comparten identidad, datos, permisos y automatizaciones, en lugar de aplicaciones sueltas.
