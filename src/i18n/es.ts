@@ -2,7 +2,7 @@
 export const es = {
   appName: "TrophyHunter",
   appTagline: "Creator Studio",
-  version: "Alpha 0.2 · v0.2.4",
+  version: "Alpha 0.2 · v0.2.5",
   /** Marca de la versión de pruebas (D-019). */
   devBadge: "PRUEBAS",
   games: {
@@ -172,7 +172,8 @@ export const es = {
       "En OBS: Fuentes → + → «Navegador».",
       "Pega la dirección en «URL»; ancho 800 y alto 200 (ajústalo a tu gusto).",
       "Deja el fondo transparente: no hace falta CSS personalizado.",
-      "Para que el sonido salga en el directo, marca «Controlar audio mediante OBS» en la fuente.",
+      "Sonido: si marcas «Controlar audio mediante OBS», sale en el directo pero tú no lo oyes salvo que en el Mezclador → ⚙ Propiedades de audio avanzadas pongas esa fuente en «Monitorizar y emitir».",
+      "Si cambias de versión y no ves lo nuevo en OBS, en la fuente pulsa «Actualizar caché de la página actual» (desde la 0.2.5 se recarga sola).",
     ],
     deckTitle: "En el Stream Deck",
     deckSteps: [

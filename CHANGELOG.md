@@ -2,6 +2,13 @@
 
 ## [Sin publicar]
 
+## [0.2.5] · 2026-11-10 · Arreglos de la vista previa y el sonido
+
+- Arreglada la vista previa del editor de contadores: «Probar animación y sonido» ya se ve y se oye.
+- El sonido de los contadores ya no se queda bloqueado en silencio.
+- El overlay de OBS se recarga solo cuando TrophyHunter se actualiza: ya no hace falta refrescarlo a mano.
+- Instrucciones de OBS corregidas: cómo oír tú también el sonido cuando lo controla OBS.
+
 ## [0.2.4] · 2026-11-10 · Se actualiza como Lumen
 
 - TrophyHunter ahora se actualiza desde GitHub, igual que Lumen: cada versión nueva llega sola al abrir la app.

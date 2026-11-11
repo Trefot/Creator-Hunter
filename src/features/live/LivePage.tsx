@@ -3,6 +3,8 @@ import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { Check, ChevronDown, Copy, ImagePlus, Minus, MonitorPlay, Music, Pencil, Play, Plus, RotateCcw, Trash2, Volume2, VolumeX, X } from "lucide-react";
 import { fitPng } from "../../components/images";
+// El mismo overlay de OBS, incrustado: la vista previa no depende del servidor local.
+import overlayHtml from "../../../src-tauri/overlay/counters.html?raw";
 import { EmptyState } from "../../components/EmptyState";
 import { PageTitle } from "../../components/PageTitle";
 import {
@@ -71,16 +73,18 @@ function CopyButton({ text, label }: { text: string; label: string }) {
 }
 
 /**
- * Vista previa real: el mismo overlay de OBS dentro de un iframe, alimentado con lo que se está
- * editando (sin guardar). "Probar" suma 1 para ver la animación y oír el sonido.
+ * Vista previa real: el mismo overlay de OBS dentro de un iframe (incrustado con srcdoc, sin red),
+ * alimentado con lo que se está editando (sin guardar). "Probar" suma 1 para ver la animación y oír el sonido.
  */
-function OverlayPreview({ base, form }: { base: string; form: CounterInput }) {
+function OverlayPreview({ form }: { form: CounterInput }) {
   const frame = useRef<HTMLIFrameElement>(null);
   const [ready, setReady] = useState(false);
   const [value, setValue] = useState(27);
 
   useEffect(() => {
-    const onMessage = (e: MessageEvent) => e.data?.overlayReady && setReady(true);
+    const onMessage = (e: MessageEvent) => {
+      if (e.source === frame.current?.contentWindow && e.data?.overlayReady) setReady(true);
+    };
     window.addEventListener("message", onMessage);
     return () => window.removeEventListener("message", onMessage);
   }, []);
@@ -104,11 +108,26 @@ function OverlayPreview({ base, form }: { base: string; form: CounterInput }) {
     <div className="counter-preview-stage">
       <div className="counter-preview-head">
         <span className="small muted">{t.preview}</span>
-        <button type="button" className="small-button" onClick={() => setValue((v) => v + 1)}>
+        <button
+          type="button"
+          className="small-button"
+          onClick={() => {
+            // El clic desbloquea el audio dentro de la vista previa antes de sumar.
+            frame.current?.contentWindow?.postMessage({ unlockAudio: true }, "*");
+            setValue((v) => v + 1);
+          }}
+        >
           <Play size={13} /> {t.testFx}
         </button>
       </div>
-      <iframe ref={frame} className="counter-preview-frame" src={`${base}/overlay?preview=1`} title={t.preview} allow="autoplay" />
+      <iframe
+        ref={frame}
+        className="counter-preview-frame"
+        srcDoc={overlayHtml}
+        title={t.preview}
+        allow="autoplay"
+        onLoad={() => setReady(true)}
+      />
     </div>
   );
 }
@@ -117,14 +136,11 @@ function OverlayPreview({ base, form }: { base: string; form: CounterInput }) {
 function CounterForm({
   initial,
   games,
-  overlayBase,
   onSave,
   onCancel,
 }: {
   initial: CounterInput;
   games: Game[];
-  /** Dirección del servidor local (para la vista previa real); null si no está activo. */
-  overlayBase: string | null;
   onSave: (input: CounterInput) => Promise<void>;
   onCancel: () => void;
 }) {
@@ -166,20 +182,7 @@ function CounterForm({
   return (
     <form className="card counter-form" onSubmit={onSubmit}>
       {/* Vista previa tal cual se verá en OBS (sobre un fondo de tablero para notar la transparencia) */}
-      {overlayBase ? (
-        <OverlayPreview base={overlayBase} form={form} />
-      ) : (
-        <div className="counter-preview-stage">
-          <span className="small muted">{t.preview}</span>
-          <div className="overlay-card" style={{ ["--c" as string]: form.color, background: cardBackground(form.bg_color, form.bg_opacity) }}>
-            <span className="overlay-icon">{form.image ? <img src={form.image} alt="" /> : form.icon}</span>
-            <span className="overlay-text">
-              <span className="overlay-name">{form.name || t.namePlaceholder}</span>
-              <span className="overlay-value">27</span>
-            </span>
-          </div>
-        </div>
-      )}
+      <OverlayPreview form={form} />
       <div className="counter-form-row">
         <span className="small muted">{t.style}</span>
         <div className="counter-styles">
@@ -411,7 +414,6 @@ export function LivePage() {
         <CounterForm
           initial={{ name: "", icon: COUNTER_ICONS[0], color: COUNTER_COLORS[0], step: 1, game_id: null, ...STYLE }}
           games={games}
-          overlayBase={info?.running ? base : null}
           onCancel={() => setCreating(false)}
           onSave={async (input) => {
             await act(() => createCounter(input));
@@ -441,7 +443,6 @@ export function LivePage() {
                   key={c.id}
                   initial={c}
                   games={games}
-                  overlayBase={info?.running ? base : null}
                   onCancel={() => setEditing(null)}
                   onSave={async (input) => {
                     await act(() => updateCounter(c.id, input));

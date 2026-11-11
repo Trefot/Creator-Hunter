@@ -171,7 +171,11 @@ fn handle_request(app: &AppHandle, key: &str, request: Request) {
                 _ => current,
             };
             match tauri::async_runtime::block_on(list_counters(app)) {
-                Ok(list) => respond_json(request, 200, json!({ "change": change, "counters": list })),
+                Ok(list) => respond_json(
+                    request,
+                    200,
+                    json!({ "change": change, "counters": list, "app_version": app.package_info().version.to_string() }),
+                ),
                 Err(e) => respond_json(request, 503, json!({ "error": e })),
             }
         }

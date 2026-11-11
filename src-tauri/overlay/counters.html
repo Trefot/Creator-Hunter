@@ -96,7 +96,8 @@
   // y ?preview=1 (vista previa del editor: recibe los datos por postMessage, sin red).
   const params = new URLSearchParams(location.search);
   const only = (params.get("c") || "").split(",").filter(Boolean);
-  const preview = params.get("preview") === "1";
+  // Vista previa del editor: con ?preview=1 o incrustado en la app (srcdoc).
+  const preview = params.get("preview") === "1" || location.protocol === "about:";
   const list = document.getElementById("list");
   if (params.get("layout") === "column") list.classList.add("column");
   const last = new Map();
@@ -111,6 +112,7 @@
   /** Sonido por defecto: un arpegio corto y brillante (tipo "cofre abierto"), generado sin archivos. */
   function defaultSound(volume) {
     audio ??= new AudioContext();
+    if (audio.state === "suspended") audio.resume().catch(() => {});
     const now = audio.currentTime;
     [784, 988, 1319, 1568].forEach((freq, i) => {
       const osc = audio.createOscillator();
@@ -226,6 +228,10 @@
     // El editor manda { counters } para pintar y { bump: true } para probar la animación y el sonido.
     let current = [];
     window.addEventListener("message", (e) => {
+      if (e.data?.unlockAudio) {
+        audio ??= new AudioContext();
+        audio.resume().catch(() => {});
+      }
       if (e.data?.counters) {
         current = e.data.counters;
         render(current);
@@ -239,6 +245,7 @@
   } else {
     // Espera larga: el servidor responde en cuanto algo cambia, así el número salta al instante.
     let change = -1;
+    let appVersion = null;
     async function loop() {
       try {
         const url = change < 0 ? "/api/counters/live" : `/api/counters/live?since=${change}`;
@@ -246,6 +253,11 @@
         if (res.ok) {
           const data = await res.json();
           change = data.change;
+          // La app se actualizó: recarga la página para usar el overlay nuevo (OBS no lo hace solo).
+          if (data.app_version) {
+            if (appVersion && appVersion !== data.app_version) return location.reload();
+            appVersion = data.app_version;
+          }
           render(data.counters);
         } else await new Promise((r) => setTimeout(r, 1500));
       } catch (_) {
