@@ -1,6 +1,15 @@
-# Validación de estabilidad · 2026-11-11
+# Validación de estabilidad · 2026-11-12
 
-Versión publicada 0.2.15, preparada desde `1d77f07` (0.2.9). El instalador ya se ha compilado en GitHub Actions para Windows; la instalación y revisión en el equipo del usuario siguen pendientes.
+Versión publicada 0.2.16, preparada desde `1d77f07` (0.2.9). El instalador ya se ha compilado en GitHub Actions para Windows; la instalación y revisión en el equipo del usuario siguen pendientes.
+
+## 0.2.16 · Fuentes de alertas independientes
+
+- Motor: 4 pruebas verifican aislamiento de colas, coordinación de audio, pausa/silencio, repetición, titularidad de una fuente y límites de entrada/cola.
+- Datos: 17 pruebas con 20 migraciones; importación de una copia real del esquema 19 y exportación/restauración de preferencias de Twitch/YouTube. Las 27 tablas siguen incluidas.
+- Frontend: 20 pruebas y 6 de publicación; TypeScript/Vite y versiones coherentes.
+- Chromium con SQLite real en memoria y RPC simulados: controles y URLs separados, guardado, adaptación a 960 px, texto seguro en el HTML real del overlay, ocultación al terminar y recuperación de un error 503 sin repetir audio y control para activar sonido cuando el navegador bloquea el audio. Prueba reproducible opcional: tests/alerts-browser.py.
+- No hay recepción automática de eventos de Twitch/YouTube ni bot de Discord en esta entrega. El audio físico y las fuentes en el OBS del usuario requieren prueba real.
+- La ejecución [43126432738](https://github.com/Trefot/Creator-Hunter/actions/runs/43126432738) terminó correctamente: pruebas, compilación NSIS, actualización desde 0.2.15, verificación de integridad y publicación. Release y canal verificados: instaladores idénticos, 3.881.253 bytes, SHA-256 `9ac8693e5fd0089e5f3b4bd9e0c273647edd59d90a4eae2ee991d5e8cba374da`, origen `45b3112fdc002766138295e779f0e8a5261a3538`.
 
 ## 0.2.15 · Platinos, objetos y detección visual
 

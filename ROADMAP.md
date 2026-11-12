@@ -353,3 +353,16 @@ Guardar Replay Buffer se implementa en 0.2.13; recortar/editar vídeo sigue pend
 - [x] Prueba de interfaz, detección sintética y progreso del overlay.
 - [x] Publicar y verificar Windows desde 0.2.14 (43099483059).
 - [ ] Calibrar avisos reales de Wukong y el token de Fortnite en el OBS del usuario; comprobar falsos positivos y duración de avisos.
+
+## Entrega 0.2.16 · Fuentes separadas de alertas
+
+- [x] Dos fuentes locales para OBS, con preferencias y colas independientes.
+- [x] Pruebas identificadas y anuncios manuales, sin fingir recepción de eventos sociales.
+- [x] Controles de prueba, pausa, silencio y repetición para Live Studio y Stream Deck.
+- [x] Coordinación opcional de sonidos y exclusión de una segunda fuente simultánea.
+- [x] Preferencias en copias de seguridad y compatibilidad con esquema 19.
+- [x] Pruebas del motor, restauración e interfaz/overlay.
+- [x] Publicar y verificar Windows desde 0.2.15 (43126432738).
+- [ ] Comprobar las dos fuentes y su audio en el OBS del usuario.
+- [ ] Implementar autorización y recepción real de eventos de Twitch y YouTube.
+- [ ] Implementar anuncios de directos en Discord por separado.

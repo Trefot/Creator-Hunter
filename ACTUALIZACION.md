@@ -1,5 +1,13 @@
 # Actualizaciones de Nexus Studio
 
+## 0.2.16 publicada
+
+[Descargar instalador 0.2.16](https://github.com/Trefot/Creator-Hunter/releases/download/v0.2.16/Nexus-Studio_0.2.16_x64-setup.exe) o «Buscar actualizaciones» → «Actualizar ahora».
+
+Dos fuentes locales de alertas separadas para OBS, Twitch y YouTube: preferencias y colas independientes, coordinación de sonido, controles de Stream Deck, pruebas identificadas y anuncios manuales. **La recepción automática de eventos sociales y Discord todavía no están implementados.** Guía en [ALERTAS.md](ALERTAS.md).
+
+La ejecución [43126432738](https://github.com/Trefot/Creator-Hunter/actions/runs/43126432738) terminó correctamente: pruebas, compilación NSIS, actualización desde 0.2.15, verificación de integridad y publicación. Release y canal verificados: instaladores idénticos, 3.881.253 bytes, SHA-256 `9ac8693e5fd0089e5f3b4bd9e0c273647edd59d90a4eae2ee991d5e8cba374da`, origen `45b3112fdc002766138295e779f0e8a5261a3538`. Prueba de las fuentes y del audio en el OBS del usuario pendiente. Migración 020 protegida por copia previa; preferencias incluidas en copias y compatibilidad con esquema 19.
+
 ## 0.2.15 publicada
 
 [Descargar instalador 0.2.15](https://github.com/Trefot/Creator-Hunter/releases/download/v0.2.15/Nexus-Studio_0.2.15_x64-setup.exe) o «Buscar actualizaciones» → «Actualizar ahora».
