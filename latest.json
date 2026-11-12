@@ -1,17 +1,17 @@
 {
-  "version": "0.2.18",
+  "version": "0.2.19",
   "notes": [
-    "Sustituye los marcos simplificados y el logo estático por artes completos preparados desde la muestra aprobada: personaje saludando, marcos detallados, placas y efectos propios de Twitch, YouTube y TikTok.",
-    "Texto dinámico sobre el arte, con Inter integrada y ajustes de posición para respetar la composición. Mensaje en cursiva y etiqueta dorada independiente.",
-    "Botón Cargar diseño de la muestra para recuperar textos, tamaños y colores de referencia antes de guardar.",
-    "La ilustración conserva su paleta; etiqueta, nombre y mensaje mantienen color y tipografía editables. Se conservan las colas y controles existentes.",
-    "Vista previa y OBS comparten artes, fuente y renderer; las modificaciones del overlay también se actualizan durante el desarrollo.",
-    "Las fuentes nuevas recargan el documento cuando cambia la versión de Nexus; al actualizar desde 0.2.17 hay que refrescar la fuente una vez.",
-    "Sin nueva migración ni recepción automática de eventos sociales."
+    "16 plantillas: seguidores, suscripciones, renovaciones, regalos, bits y raids en Twitch; suscriptores, miembros, membresías regaladas, Super Chat y Super Sticker en YouTube; seguidores, suscripciones, regalos, me gusta y compartir en TikTok.",
+    "Un enlace y una cola por plataforma. Cada evento guarda su ilustración, melodía, duración, volumen, texto, tipografía y activación independientemente.",
+    "Nuevas poses de celebración, regalo, aporte, portal y corazones, sobre los marcos de referencia de cada red.",
+    "Variables de prueba {usuario}, {cantidad} y {mensaje}; borradores conservados al cambiar de evento y pruebas de Stream Deck con selección de tipo.",
+    "Las alertas en cola conservan la configuración con la que se enviaron; repetir recupera también el tipo y el diseño originales. Pausa y silencio siguen siendo globales por plataforma.",
+    "Ilustraciones compartidas entre OBS y la vista previa sin duplicarlas en el bundle del frontend. Preferencias incluidas en las copias, sin nueva migración.",
+    "La recepción automática de eventos sociales sigue pendiente. Las plantillas se pueden probar y los anuncios manuales permanecen disponibles."
   ],
   "date": "2026-11-12",
   "installer": "TrophyHunter-setup.exe",
-  "source_commit": "a98597149fce53b68f64c6d9de5608c6c2c2c35b",
-  "sha256": "d5e0774dd950cf4b0ca8ff987d6197270a0e5a25254f1bc8f2b571b76d71032d",
-  "size": 12405941
+  "source_commit": "ab59887e24771cb8357044fcd42176ea01cd6240",
+  "sha256": "a96b9cbbdfa4832082f33e603fe144509b4bfdb767c3f0aabbcd12c375f427ef",
+  "size": 18180233
 }
