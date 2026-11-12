@@ -4480,3 +4480,5 @@ button.muted-link {
 .platinum-manual summary { cursor: pointer; }
 .platinum-manual form { margin-top: 14px; align-items: end; }
 .platinum-manual label { display: grid; gap: 6px; }
+
+.discord-panel details{margin-top:14px}.discord-panel summary{cursor:pointer;font-weight:650}.discord-panel form{display:grid;gap:12px;margin-top:16px;max-width:760px}.discord-panel label{display:grid;gap:6px}.discord-panel input,.discord-panel select{min-width:0;max-width:100%}.discord-panel .discord-check{display:flex;align-items:center;gap:10px}.discord-panel .discord-check input{width:auto}.discord-panel fieldset{display:grid;gap:10px;border:1px solid var(--border,#39313f);border-radius:10px;padding:16px}.discord-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
