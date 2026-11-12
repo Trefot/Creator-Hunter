@@ -468,3 +468,15 @@ async fn alert_preferences_roundtrip_and_schema_19_import() {
     restore(&current,&doc.to_string()).await.unwrap();
     let raw:String=sqlx::query_scalar("SELECT alert_settings FROM workspace LIMIT 1").fetch_one(&current).await.unwrap();assert_eq!(raw,prefs);
 }
+
+#[tokio::test]
+async fn schema_twenty_upgrade_preserves_alert_preferences_and_new_media_roundtrip(){
+ let temp=Temp::new();let pool=database(&temp.0.join("db"),20).await;
+ let preferences=r#"{"event_templates":{"twitch/follow":{"tone":"heart","duration":8}}}"#;
+ sqlx::query("UPDATE workspace SET alert_settings=?").bind(preferences).execute(&pool).await.unwrap();
+ sqlx::raw_sql(MIGRATIONS[20]).execute(&pool).await.unwrap();
+ sqlx::query("INSERT INTO _sqlx_migrations VALUES(21,1)").execute(&pool).await.unwrap();
+ let after:String=sqlx::query_scalar("SELECT alert_settings FROM workspace").fetch_one(&pool).await.unwrap();assert_eq!(after,preferences);
+ sqlx::query("INSERT INTO alert_audio VALUES(?,?,?)").bind("a".repeat(64)).bind("audio/wav").bind("UklGRg==").execute(&pool).await.unwrap();
+ let (doc,_)=snapshot(&pool,&TABLES,"new").await.unwrap();sqlx::query("DELETE FROM alert_audio").execute(&pool).await.unwrap();restore(&pool,&doc.to_string()).await.unwrap();assert_eq!(doc,snapshot(&pool,&TABLES,"new").await.unwrap().0);
+}

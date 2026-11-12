@@ -162,13 +162,17 @@ with sync_playwright() as p:
  group.get_by_role('button',name='Usar melodía de Nexus',exact=True).click();audio_page.get_by_role('button',name='Guardar twitch',exact=True).click();audio_page.wait_for_timeout(200);assert entry('twitch','follow')['config']['audio_id']==''
  # El renderer descarga el audio una vez por evento y corta al silenciar.
  custom_page=context.new_page();custom_page.route('http://127.0.0.1:1420/alerts/youtube?*',lambda r:r.fulfill(body=overlay_document(),content_type='text/html'))
- custom_page.add_init_script("window.customPlays=0;window.customPauses=0;window.Audio=class{currentTime=0;volume=1;load(){setTimeout(()=>this.onloadedmetadata(),0)}play(){window.customPlays++;return Promise.resolve()}pause(){window.customPauses++}}")
+ custom_page.add_init_script("window.customPlays=0;window.customPauses=0;window.Audio=class{constructor(){window.lastCustom=this}currentTime=0;volume=1;load(){setTimeout(()=>this.onloadedmetadata(),250)}play(){window.customPlays++;return Promise.resolve()}pause(){window.customPauses++}}")
  now=int(time.time()*1000);custom_cfg=cfg('YouTube','#ff3355');custom_cfg.update(audio_id='a'*64,audio_start=.2,audio_end=2,sound=True,muted=False)
  custom_packet=dict(config=custom_cfg,event=dict(event=dict(id=99,title='REAL',message='Gracias',kind='super_chat',test=False,replay=False),started_at=now+400,ends_at=now+6400,sound_at=now+400))
- custom_page.route('**/api/alerts/youtube/poll?*',lambda r:r.fulfill(json=custom_packet));custom_page.goto('http://127.0.0.1:1420/alerts/youtube?key=test');custom_page.wait_for_timeout(1000);assert custom_page.evaluate('window.customPlays')==1
+ custom_page.route('**/api/alerts/youtube/poll?*',lambda r:r.fulfill(json=custom_packet));custom_page.goto('http://127.0.0.1:1420/alerts/youtube?key=test');custom_page.wait_for_timeout(1000);assert custom_page.evaluate('window.customPlays')==1;assert custom_page.evaluate('window.lastCustom.currentTime')>.3
  assert custom_page.locator('#badge').inner_text()=='';assert custom_page.locator('#label').inner_text()!='ANUNCIO'
  custom_page.wait_for_timeout(600);assert custom_page.evaluate('window.customPlays')==1
  custom_cfg['muted']=True;custom_page.wait_for_timeout(650);assert custom_page.evaluate('window.customPauses')>=1
+ # Un archivo que llega después de su turno no se reproduce fuera de tiempo.
+ late=context.new_page();late.route('http://127.0.0.1:1420/alerts/youtube?*',lambda r:r.fulfill(body=overlay_document(),content_type='text/html'))
+ late.add_init_script("window.latePlays=0;window.Audio=class{currentTime=0;load(){setTimeout(()=>this.onloadedmetadata(),750)}play(){window.latePlays++;return Promise.resolve()}pause(){}}")
+ now=int(time.time()*1000);late_cfg=copy.deepcopy(custom_cfg);late_cfg.update(muted=False,audio_start=0,audio_end=.4);late_packet=dict(config=late_cfg,event=dict(event=dict(id=100,title='Tarde',message='',kind='subscriber',test=False,replay=False),started_at=now+300,ends_at=now+6300,sound_at=now+300));late.route('**/api/alerts/youtube/poll?*',lambda r:r.fulfill(json=late_packet));late.goto('http://127.0.0.1:1420/alerts/youtube?key=test');late.wait_for_timeout(1400);assert late.evaluate('window.latePlays')==0
  # Las fuentes nuevas se recargan al cambiar la versión de Nexus.
  versioned=context.new_page();version_state={'app_version':'0.2.18'};loads=[0]
  def version_document(r):
@@ -186,5 +190,5 @@ with sync_playwright() as p:
  versioned.wait_for_timeout(600);assert loads[0]==2
  assert all(n==1 for n in asset_calls.values()),asset_calls
  assert not errors,errors
- print(json.dumps(dict(custom_audio_import_trim_and_mute=True,real_event_label=True,per_event_drafts_and_save=True,shared_queue=True,variables=True,disabled_event=True,assets_loaded_once=True,auto_refresh_on_version_change=True,approved_art=True,reference_preset=True,animated_mascot=True,editable_type_and_text=True,isolated_silent_preview=True,tiktok=True,independent_controls=True,separate_urls=True,save_preferences=True,responsive=True,overlay_safe_text=True,overlay_hides=True,no_audio_repeat_on_reconnect=True,audio_permission_control=True,js_errors=errors)))
+ print(json.dumps(dict(custom_audio_import_trim_and_mute=True,late_audio_respects_its_slot=True,real_event_label=True,per_event_drafts_and_save=True,shared_queue=True,variables=True,disabled_event=True,assets_loaded_once=True,auto_refresh_on_version_change=True,approved_art=True,reference_preset=True,animated_mascot=True,editable_type_and_text=True,isolated_silent_preview=True,tiktok=True,independent_controls=True,separate_urls=True,save_preferences=True,responsive=True,overlay_safe_text=True,overlay_hides=True,no_audio_repeat_on_reconnect=True,audio_permission_control=True,js_errors=errors)))
  b.close()
