@@ -49,6 +49,37 @@ pub fn content_url(platform: &str, raw: &str) -> Result<String, String> {
     }
     // Ignore tracking parameters when identifying the same publication.
     let clean = raw.split('#').next().unwrap_or(raw);
+    if platform == "youtube" && (path.starts_with("shorts/") || path.starts_with("live/")) {
+        let id = path
+            .split('/')
+            .nth(1)
+            .unwrap_or("")
+            .split(['?', '#'])
+            .next()
+            .unwrap_or("");
+        return content_url("youtube", &format!("https://www.youtube.com/watch?v={id}"));
+    }
+    if platform == "twitch" {
+        let clean_path = path
+            .split(['?', '#'])
+            .next()
+            .unwrap_or(path)
+            .trim_end_matches('/');
+        let clip = if host == "clips.twitch.tv" {
+            Some(clean_path)
+        } else {
+            clean_path.split_once("/clip/").map(|(_, id)| id)
+        };
+        if let Some(id) = clip.filter(|id| {
+            !id.is_empty()
+                && id
+                    .bytes()
+                    .all(|c| c.is_ascii_alphanumeric() || c == b'_' || c == b'-')
+        }) {
+            return Ok(format!("https://clips.twitch.tv/{id}"));
+        }
+    }
+
     if platform == "youtube" && host != "youtu.be" && path.starts_with("watch?") {
         let id = path
             .split_once('?')
