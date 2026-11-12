@@ -465,7 +465,7 @@ async fn twitch(app: &AppHandle, s: &Settings) -> Result<(), String> {
             Some(&client),
         )
         .await?;
-        let items=data["data"].as_array().into_iter().flatten().filter(|i|i["type"]!="archive").map(|i|json!({"id":i["id"],"title":i["title"],"url":i["url"],"thumbnail":i["thumbnail_url"]})).collect::<Vec<_>>();
+        let items=data["data"].as_array().into_iter().flatten().filter(|i|i["type"]!="archive").map(|i|json!({"id":i["id"],"title":i["title"],"url":i["url"],"thumbnail":i["thumbnail_url"].as_str().map(|s|s.replace("%{width}","640").replace("%{height}","360").replace("{width}","640").replace("{height}","360"))})).collect::<Vec<_>>();
         videos(app, "twitch", &format!("videos-{user}"), &items).await?;
         // Clips sorted by views: bounded to the last day and 100 results, not a complete archive.
         let pool = crate::backup::pool(app).await?;
@@ -485,7 +485,7 @@ async fn twitch(app: &AppHandle, s: &Settings) -> Result<(), String> {
             Some(&client),
         )
         .await?;
-        let items=clips["data"].as_array().into_iter().flatten().map(|i|json!({"id":i["id"],"title":i["title"],"url":i["url"],"thumbnail":i["thumbnail_url"]})).collect::<Vec<_>>();
+        let items=clips["data"].as_array().into_iter().flatten().map(|i|json!({"id":i["id"],"title":i["title"],"url":i["url"],"thumbnail":i["thumbnail_url"].as_str().map(|s|s.replace("%{width}","640").replace("%{height}","360").replace("{width}","640").replace("{height}","360"))})).collect::<Vec<_>>();
         videos(app, "twitch", &format!("clips-{user}"), &items).await?;
     }
     Ok(())
