@@ -1,5 +1,15 @@
 # Actualizaciones de Nexus Studio
 
+## 0.2.17 publicada
+
+[Descargar instalador 0.2.17](https://github.com/Trefot/Creator-Hunter/releases/download/v0.2.17/Nexus-Studio_0.2.17_x64-setup.exe) o «Buscar actualizaciones» → «Actualizar ahora».
+
+Primera alerta animada de Trefot con el personaje de Nexus, movimiento suave, farol y destellos. Variantes de Twitch, YouTube y TikTok; editor de texto, tipografía, tamaños y colores, con vista previa aislada. TikTok tiene fuente y cola locales propias. Conserva los ajustes de 0.2.16 sin migración adicional. Uso en [ALERTAS.md](ALERTAS.md).
+
+**La recepción automática y las plantillas múltiples por cada tipo de evento siguen pendientes.** Esta versión ofrece pruebas identificadas y anuncios manuales. El sonido físico y las fuentes en el OBS del usuario requieren comprobación en su equipo.
+
+La ejecución [43135451689](https://github.com/Trefot/Creator-Hunter/actions/runs/43135451689) pasó pruebas, compilación NSIS, actualización desde 0.2.16 y publicación. Descarga y canal verificados: instaladores idénticos, 3.893.894 bytes, SHA-256 `b9809589749e28385f58e76b1347f1dd3788d30770f4700c1dd76599e281de4f`, origen `68080beb8af7c6dd0a2a588327a665244be0494a`.
+
 ## 0.2.16 publicada
 
 [Descargar instalador 0.2.16](https://github.com/Trefot/Creator-Hunter/releases/download/v0.2.16/Nexus-Studio_0.2.16_x64-setup.exe) o «Buscar actualizaciones» → «Actualizar ahora».

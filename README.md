@@ -1,6 +1,6 @@
 # Nexus Studio
 
-Estudio personal de creación de contenido de TrefotG. Versión publicada: **[v0.2.16](https://github.com/Trefot/Creator-Hunter/releases/tag/v0.2.16)**. Actualiza desde «Buscar actualizaciones» o descarga el instalador de la release.
+Estudio personal de creación de contenido de TrefotG. Versión publicada: **[v0.2.17](https://github.com/Trefot/Creator-Hunter/releases/tag/v0.2.17)**. Actualiza desde «Buscar actualizaciones» o descarga el instalador de la release.
 
 Aplicación de escritorio para Windows, construida con React, TypeScript, Tauri 2 y SQLite. Incluye Creator Studio, conexión con YouTube, biblioteca de juegos con trofeos de PSN y contadores para OBS y Stream Deck. Los overlays se pueden emitir en Twitch desde OBS; no hay sincronización de métricas de Twitch.
 
@@ -74,4 +74,4 @@ Biblioteca con búsqueda y plataformas. Fortnite y juegos sin trofeos tienen pla
 
 ## Alertas por plataforma
 
-Live Studio incluye dos fuentes locales separadas para OBS, Twitch y YouTube, con preferencias, colas y controles de Stream Deck independientes. Permite pruebas identificadas y anuncios manuales. La recepción automática de eventos de las redes sigue pendiente de implementar. Configuración y límites en [ALERTAS.md](ALERTAS.md).
+Live Studio incluye tres fuentes locales separadas para OBS: Twitch, YouTube y TikTok. La primera alerta animada utiliza el personaje de Trefot y permite editar tipografía, tamaños, texto y colores, con una vista previa aislada. Preferencias, colas y controles de Stream Deck independientes; pruebas identificadas y anuncios manuales. La recepción automática de eventos de las redes sigue pendiente de implementar. Configuración y límites en [ALERTAS.md](ALERTAS.md).

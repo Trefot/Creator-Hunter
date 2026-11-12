@@ -366,3 +366,16 @@ Guardar Replay Buffer se implementa en 0.2.13; recortar/editar vídeo sigue pend
 - [ ] Comprobar las dos fuentes y su audio en el OBS del usuario.
 - [ ] Implementar autorización y recepción real de eventos de Twitch y YouTube.
 - [ ] Implementar anuncios de directos en Discord por separado.
+
+## Entrega 0.2.17 · Identidad animada de Trefot
+
+- [x] Primera plantilla con el personaje de Nexus, movimiento, farol y destellos.
+- [x] Variantes Twitch violeta/dorado, YouTube rojo/dorado y TikTok cian/rosa.
+- [x] Fuente y cola locales independientes para TikTok, sin fingir integración social.
+- [x] Editor de etiqueta, nombre/mensaje de prueba, tipografía, tamaños y colores.
+- [x] Vista previa aislada con el mismo renderer de OBS, sin sonido ni consumo de eventos.
+- [x] Conservar preferencias anteriores; pruebas de estilos, copia/restauración e interfaz.
+- [x] Grabar una muestra real con las tres variantes y eventos ficticios.
+- [x] Publicar y verificar actualización Windows desde 0.2.16 (43135451689).
+- [ ] Verificar audio y fuentes en el OBS real del usuario.
+- [ ] Plantillas por cada tipo de evento y recepción automática de eventos sociales.

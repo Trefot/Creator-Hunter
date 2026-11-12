@@ -1,6 +1,16 @@
 # Validación de estabilidad · 2026-11-12
 
-Versión publicada 0.2.16, preparada desde `1d77f07` (0.2.9). El instalador ya se ha compilado en GitHub Actions para Windows; la instalación y revisión en el equipo del usuario siguen pendientes.
+Versión publicada 0.2.17, preparada desde `1d77f07` (0.2.9). El instalador ya se ha compilado en GitHub Actions para Windows; la instalación y revisión en el equipo del usuario siguen pendientes.
+
+## 0.2.17 · Primera alerta animada de Trefot
+
+- Motor: 7 pruebas pasan; incluyen compatibilidad con preferencias de 0.2.16, valores predeterminados de estilo/TikTok, texto de prueba editable e invalidación de tipografías o tamaños fuera de rango.
+- Datos: 17 pruebas pasan, incluidas exportación/restauración de tipografía y ajustes de las tres plataformas. Sin migración nueva: se mantiene esquema 20 y 27 tablas.
+- Frontend: 20 pruebas y 6 de publicación; TypeScript/Vite y coherencia de versiones correctos.
+- Chromium con SQLite en memoria y RPC simulados: texto, tipografía y tamaño reflejados en el mismo HTML de la vista previa, nombres insertados literalmente (incluido $&), animación del personaje, vista previa sin audio ni lecturas de cola, controles y URLs de TikTok, aislamiento de plataformas, texto seguro y recuperación de audio/conexión. Sin errores JavaScript ni desbordamiento a 960 px.
+- Grabación reproducible con tests/alerts-demo.py del HTML real y personaje original: Twitch, YouTube y TikTok, eventos simulados, entrada/movimiento/salida. Captura y vídeo en artifacts/trefot-alertas-animadas.png y .webm fuera del repositorio.
+- Recepción automática, plantillas múltiples por tipo de evento, medios/fuentes tipográficas importados y poses articuladas pendientes. Audio físico y fuentes en el OBS del usuario pendientes de prueba.
+- La ejecución [43135451689](https://github.com/Trefot/Creator-Hunter/actions/runs/43135451689) pasó pruebas, compilación NSIS, actualización desde 0.2.16 y publicación. Descarga y canal verificados: instaladores idénticos, 3.893.894 bytes, SHA-256 `b9809589749e28385f58e76b1347f1dd3788d30770f4700c1dd76599e281de4f`, origen `68080beb8af7c6dd0a2a588327a665244be0494a`.
 
 ## 0.2.16 · Fuentes de alertas independientes
 
