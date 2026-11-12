@@ -35,7 +35,7 @@ keyring = { version = "3", features = ["windows-native"] }
 # Servidor HTTP local y pequeño para el overlay de OBS y el Stream Deck (D-018).
 tiny_http = "0.12"
 # Cliente local OBS WebSocket v5; no se necesitan TLS ni servicios externos.
-tungstenite = { version = "0.28", default-features = false, features = ["handshake"] }
+tungstenite = { version = "0.28", default-features = false, features = ["handshake", "native-tls"] }
 
 
 # Read the optimization guideline for more details: https://tauri.app/concept/size/#cargo-configuration

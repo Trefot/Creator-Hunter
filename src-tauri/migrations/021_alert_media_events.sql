@@ -1,0 +1,2 @@
+CREATE TABLE alert_audio (id TEXT PRIMARY KEY, mime TEXT NOT NULL, content TEXT NOT NULL);
+CREATE TABLE alert_cursor (id TEXT PRIMARY KEY, content TEXT NOT NULL);

@@ -152,6 +152,11 @@ fn handle_request(app: &AppHandle, key: &str, request: Request) {
     let query = |name: &str| url.query_pairs().find(|(k, _)| k == name).map(|(_, v)| v.to_string());
 
     match segments.iter().map(String::as_str).collect::<Vec<_>>().as_slice() {
+        ["api","alert-audio",id] => {
+            if query("key").as_deref()!=Some(key){return respond_json(request,403,json!({"error":"Clave local no válida."}));}
+            let result=tauri::async_runtime::block_on(crate::alerts::audio_blob(app,id));
+            match result{Ok((mime,bytes))=>{let _=request.respond(Response::from_data(bytes).with_header(header("Content-Type",&mime)).with_header(header("Cache-Control","private, max-age=86400")));},Err(error)=>respond_json(request,404,json!({"error":error}))}
+        }
         ["assets","alerts",file] => {
             let Some((mime,bytes))=crate::alerts_assets::get(file) else {return respond_json(request,404,json!({"error":"Recurso no disponible."}));};
             let response=Response::from_data(bytes.to_vec()).with_header(header("Content-Type",mime)).with_header(header("Cache-Control","public, max-age=86400"));let _=request.respond(response);

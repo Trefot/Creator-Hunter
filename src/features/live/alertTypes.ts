@@ -1,5 +1,6 @@
 export type Platform="twitch"|"youtube"|"tiktok";
 export interface AlertConfig {
+ audio_id:string;audio_start:number;audio_end:number;
  enabled:boolean;design:string;tone:string;sample_amount:string;sample_note:string;
  title:string;color:string;secondary_color:string;label_color:string;text_color:string;message_color:string;
  font_family:string;name_size:number;message_size:number;event_label:string;sample_name:string;message_template:string;

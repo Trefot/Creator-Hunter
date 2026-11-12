@@ -2,7 +2,7 @@ use sqlx::sqlite::{SqliteConnectOptions, SqlitePoolOptions};
 use std::path::{Path, PathBuf};
 use studio_data_safety::{TABLES, backup_if_pending, restore, snapshot, validate};
 
-const MIGRATIONS: [&str; 20] = [
+const MIGRATIONS: [&str; 21] = [
     include_str!("../../../src-tauri/migrations/001_initial.sql"),
     include_str!("../../../src-tauri/migrations/002_twitch_payout.sql"),
     include_str!("../../../src-tauri/migrations/003_images.sql"),
@@ -23,6 +23,7 @@ const MIGRATIONS: [&str; 20] = [
     include_str!("../../../src-tauri/migrations/018_game_ideas.sql"),
     include_str!("../../../src-tauri/migrations/019_game_broadcast.sql"),
     include_str!("../../../src-tauri/migrations/020_alert_settings.sql"),
+    include_str!("../../../src-tauri/migrations/021_alert_media_events.sql"),
 ];
 
 struct Temp(PathBuf);
@@ -108,6 +109,9 @@ async fn populate(pool: &sqlx::SqlitePool) {
         sqlx::raw_sql("INSERT INTO obs_clip(id,workspace_id,marker_id,title,output_path,game_id,game_title,record_ms) VALUES('clip','00000000-0000-4000-8000-000000000001','obs-marker','Victoria','D:/Vídeos/Replay.mkv','game','Juego',123450)").execute(pool).await.unwrap();
     }
 
+    if version>=21 {
+        sqlx::raw_sql("INSERT INTO alert_audio VALUES('audio','audio/wav','UklGRg=='); INSERT INTO alert_cursor VALUES('youtube-subs-channel','[\"s1\"]');").execute(pool).await.unwrap();
+    }
     if version>=19 {
         sqlx::raw_sql("INSERT INTO game_target(id,workspace_id,game_id,title,collection_key) VALUES('target','00000000-0000-4000-8000-000000000001','game','Buscar objeto','curio-1'); UPDATE game_overlay SET game_id='game',target_id='target';").execute(pool).await.unwrap();
     }
@@ -118,10 +122,10 @@ async fn populate(pool: &sqlx::SqlitePool) {
 async fn round_trip_all_tables_survives_reopen() {
     let temp = Temp::new();
     let path = temp.0.join("test.db");
-    let pool = database(&path, 19).await;
+    let pool = database(&path, 21).await;
     populate(&pool).await;
     let (original, count) = snapshot(&pool, &TABLES, "20261111-120000").await.unwrap();
-    assert_eq!(count, 27);
+    assert_eq!(count, 29);
     sqlx::query("UPDATE counter SET value=999")
         .execute(&pool)
         .await
@@ -152,7 +156,7 @@ async fn round_trip_all_tables_survives_reopen() {
 #[tokio::test]
 async fn failed_import_rolls_back_deletes_and_inserts() {
     let temp = Temp::new();
-    let pool = database(&temp.0.join("db"), 19).await;
+    let pool = database(&temp.0.join("db"), 21).await;
     populate(&pool).await;
     let (original, _) = snapshot(&pool, &TABLES, "stamp").await.unwrap();
     let mut broken = original.clone();
@@ -165,7 +169,7 @@ async fn failed_import_rolls_back_deletes_and_inserts() {
 #[tokio::test]
 async fn rejects_missing_workspace_required_tables_and_malformed_rows() {
     let temp = Temp::new();
-    let pool = database(&temp.0.join("db"), 19).await;
+    let pool = database(&temp.0.join("db"), 21).await;
     populate(&pool).await;
     let (original, _) = snapshot(&pool, &TABLES, "stamp").await.unwrap();
     for mode in 0..6 {
@@ -209,7 +213,7 @@ async fn imports_actual_schema_one_backup() {
         .filter(|t| studio_data_safety::introduced_in(t) == 1)
         .collect::<Vec<_>>();
     let (backup, _) = snapshot(&old, &old_tables, "stamp").await.unwrap();
-    let current = database(&temp.0.join("current"), 19).await;
+    let current = database(&temp.0.join("current"), 21).await;
     restore(&current, &backup.to_string()).await.unwrap();
     let title: String = sqlx::query_scalar("SELECT title FROM idea")
         .fetch_one(&current)
@@ -252,15 +256,15 @@ async fn no_backup_for_first_install_or_current_schema() {
     let path = temp.0.join("db");
     let copies = temp.0.join("copies");
     assert!(
-        backup_if_pending(&path, &copies, 19)
+        backup_if_pending(&path, &copies, 21)
             .await
             .unwrap()
             .is_none()
     );
     assert!(!path.exists());
-    let pool = database(&path, 19).await;
+    let pool = database(&path, 21).await;
     assert!(
-        backup_if_pending(&path, &copies, 19)
+        backup_if_pending(&path, &copies, 21)
             .await
             .unwrap()
             .is_none()
@@ -353,7 +357,7 @@ async fn imports_schema_fifteen_and_preserves_new_obs_tables_on_roundtrip() {
     let old=database(&temp.0.join("old"),15).await;populate(&old).await;
     let tables:Vec<_>=TABLES.iter().copied().filter(|t|studio_data_safety::introduced_in(t)<=15).collect();
     let (doc,_) = snapshot(&old,&tables,"old").await.unwrap();
-    let current=database(&temp.0.join("new"),19).await;
+    let current=database(&temp.0.join("new"),21).await;
     restore(&current,&doc.to_string()).await.unwrap();
     let count:i64=sqlx::query_scalar("SELECT COUNT(*) FROM obs_marker").fetch_one(&current).await.unwrap();assert_eq!(count,0);
     obs_store::open_session(&current,"session","recording",Some("game")).await.unwrap();
@@ -367,7 +371,7 @@ async fn imports_schema_fifteen_and_preserves_new_obs_tables_on_roundtrip() {
 
 #[tokio::test]
 async fn obs_marks_require_active_session_and_confirmed_time() {
-    let temp=Temp::new();let pool=database(&temp.0.join("db"),19).await;
+    let temp=Temp::new();let pool=database(&temp.0.join("db"),21).await;
     obs_store::open_session(&pool,"s","recording",None).await.unwrap();
     assert!(obs_store::insert_marker(&pool,"a","s","Momento",None,None,None).await.is_err());
     assert!(obs_store::insert_marker(&pool,"b","s","Momento",Some(-1),None,None).await.is_err());
@@ -379,7 +383,7 @@ async fn obs_marks_require_active_session_and_confirmed_time() {
 
 #[tokio::test]
 async fn replay_clip_and_marker_are_atomic_and_survive_backups() {
-    let temp=Temp::new();let pool=database(&temp.0.join("db"),19).await;
+    let temp=Temp::new();let pool=database(&temp.0.join("db"),21).await;
     obs_store::open_session(&pool,"s","recording",None).await.unwrap();
     obs_store::insert_clip(&pool,"c1",Some("m1"),Some("s"),"Jugada","D:/Vídeos/replay.mkv",Some(4567),None,None).await.unwrap();
     assert!(obs_store::insert_clip(&pool,"c2",Some("m2"),Some("s"),"Duplicado","D:/Vídeos/replay.mkv",Some(5000),None,None).await.is_err());
@@ -394,7 +398,7 @@ async fn replay_clip_and_marker_are_atomic_and_survive_backups() {
 async fn actual_schema_sixteen_backup_imports_without_clips() {
     let temp=Temp::new();let old=database(&temp.0.join("old"),16).await;populate(&old).await;
     let tables:Vec<_>=TABLES.iter().copied().filter(|t|studio_data_safety::introduced_in(t)<=16).collect();
-    let (doc,_) = snapshot(&old,&tables,"old").await.unwrap();let new=database(&temp.0.join("new"),19).await;
+    let (doc,_) = snapshot(&old,&tables,"old").await.unwrap();let new=database(&temp.0.join("new"),21).await;
     restore(&new,&doc.to_string()).await.unwrap();assert_eq!(obs_store::list_markers(&new).await.unwrap().as_array().unwrap().len(),1);
     assert!(obs_store::list_clips(&new).await.unwrap().as_array().unwrap().is_empty());old.close().await;new.close().await;
 }
@@ -404,7 +408,7 @@ async fn imports_schema_seventeen_and_keeps_game_idea_relations_on_roundtrip() {
     let temp=Temp::new();let old=database(&temp.0.join("old"),17).await;populate(&old).await;
     let old_tables:Vec<_>=TABLES.iter().copied().filter(|t|studio_data_safety::introduced_in(t)<=17).collect();
     let (legacy,_) = snapshot(&old,&old_tables,"old").await.unwrap();
-    let current=database(&temp.0.join("new"),19).await;
+    let current=database(&temp.0.join("new"),21).await;
     restore(&current,&legacy.to_string()).await.unwrap();
     sqlx::query("UPDATE idea SET game_id='game',capture_key='clip:clip' WHERE id='idea'").execute(&current).await.unwrap();
     let (before,_) = snapshot(&current,&TABLES,"new").await.unwrap();
@@ -418,7 +422,7 @@ async fn imports_schema_seventeen_and_keeps_game_idea_relations_on_roundtrip() {
 mod game_broadcast;
 #[tokio::test]
 async fn broadcast_controls_are_idempotent_and_share_collection_progress() {
- let temp=Temp::new();let pool=database(&temp.0.join("db"),19).await;populate(&pool).await;
+ let temp=Temp::new();let pool=database(&temp.0.join("db"),21).await;populate(&pool).await;
  assert_eq!(game_broadcast::targets(&pool,"game").await.unwrap().as_array().unwrap().len(),1);
  game_broadcast::current_action(&pool,"complete").await.unwrap();game_broadcast::current_action(&pool,"complete").await.unwrap();
  let s=game_broadcast::state(&pool).await.unwrap();assert_eq!(s["done"],1);assert_eq!(s["target"]["done"],true);assert!(s["target"].get("detector_reference").is_none());
@@ -430,7 +434,7 @@ async fn broadcast_controls_are_idempotent_and_share_collection_progress() {
 }
 #[tokio::test]
 async fn broadcast_counts_each_game_once_and_distinguishes_manual_records() {
- let temp=Temp::new();let pool=database(&temp.0.join("db"),19).await;populate(&pool).await;
+ let temp=Temp::new();let pool=database(&temp.0.join("db"),21).await;populate(&pool).await;
  sqlx::query("UPDATE game SET status='platinum',platinum_at='2026-11-11' WHERE id='game'").execute(&pool).await.unwrap();
  let s=game_broadcast::state(&pool).await.unwrap();assert_eq!(s["platinos"],1);assert_eq!(s["manual"],1);assert_eq!(s["verified"],0);
  sqlx::query("UPDATE trophy SET type='platinum',earned_at='2026-11-11T12:00:00Z' WHERE game_id='game'").execute(&pool).await.unwrap();
@@ -441,7 +445,7 @@ async fn broadcast_counts_each_game_once_and_distinguishes_manual_records() {
 async fn schema_eighteen_import_and_target_backup_preserve_selection() {
  let temp=Temp::new();let old=database(&temp.0.join("old"),18).await;populate(&old).await;
  let old_tables:Vec<_>=TABLES.iter().copied().filter(|t|studio_data_safety::introduced_in(t)<=18).collect();
- let (doc,_) = snapshot(&old,&old_tables,"old").await.unwrap();let pool=database(&temp.0.join("new"),19).await;restore(&pool,&doc.to_string()).await.unwrap();
+ let (doc,_) = snapshot(&old,&old_tables,"old").await.unwrap();let pool=database(&temp.0.join("new"),21).await;restore(&pool,&doc.to_string()).await.unwrap();
  assert_eq!(game_broadcast::state(&pool).await.unwrap()["target"],serde_json::Value::Null);
  sqlx::query("INSERT INTO game_target(id,workspace_id,game_id,title) VALUES('t','00000000-0000-4000-8000-000000000001','game','Objeto')").execute(&pool).await.unwrap();
  sqlx::query("INSERT INTO game_overlay(workspace_id,game_id,target_id) VALUES('00000000-0000-4000-8000-000000000001','game','t')").execute(&pool).await.unwrap();
@@ -452,8 +456,9 @@ async fn schema_eighteen_import_and_target_backup_preserve_selection() {
 #[tokio::test]
 async fn alert_preferences_roundtrip_and_schema_19_import() {
     let temp=Temp::new(); let old=database(&temp.0.join("old"),19).await;populate(&old).await;
-    let (old_doc,_)=snapshot(&old,&TABLES,"old").await.unwrap();
-    let current=database(&temp.0.join("current"),20).await;
+    let tables:Vec<_>=TABLES.iter().copied().filter(|t|studio_data_safety::introduced_in(t)<=19).collect();
+    let (old_doc,_)=snapshot(&old,&tables,"old").await.unwrap();
+    let current=database(&temp.0.join("current"),21).await;
     restore(&current,&old_doc.to_string()).await.unwrap();
     let raw:Option<String>=sqlx::query_scalar("SELECT alert_settings FROM workspace LIMIT 1").fetch_one(&current).await.unwrap();assert!(raw.is_none());
     let prefs=r##"{"twitch":{"title":"Twitch","color":"#9146ff","font_family":"mono","name_size":44,"label_color":"#ffd27b"},"youtube":{"title":"YouTube","color":"#ff3355"},"tiktok":{"title":"TikTok","color":"#25f4ee","secondary_color":"#ff2d86"},"coordinate_audio":true,"event_templates":{"twitch/subscribe":{"enabled":true,"design":"celebrate","duration":10,"tone":"heart"},"youtube/super_chat":{"enabled":true,"sample_amount":"7 €","message_template":"{cantidad} · {mensaje}"},"tiktok/gift":{"enabled":false,"design":"gift"}}}"##;

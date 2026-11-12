@@ -5,6 +5,8 @@ mod live;
 mod alerts;
 mod alerts_core;
 mod alerts_assets;
+mod social_alerts;
+mod social_events;
 mod game_broadcast;
 mod game_tracking;
 mod obs;
@@ -146,6 +148,7 @@ fn migrations() -> Vec<Migration> {
             sql: include_str!("../migrations/020_alert_settings.sql"),
             kind: MigrationKind::Up,
         },
+        Migration {version:21,description:"Audio personalizado y eventos sociales",sql:include_str!("../migrations/021_alert_media_events.sql"),kind:MigrationKind::Up},
     ]
 }
 
@@ -162,6 +165,7 @@ pub fn run() {
         .manage(psn::PsnState::default())
         .manage(live::LiveState::default())
         .manage(alerts::AlertsState::default())
+        .manage(social_alerts::SocialState::default())
         .manage(obs::ObsState::default())
         .manage(premigrate::Preparation::default())
         .setup(|app| {
@@ -175,6 +179,7 @@ pub fn run() {
                 let _ = window.set_title("Nexus Studio · PRUEBAS");
             }
             live::start(app.handle().clone());
+            social_alerts::start(app.handle().clone());
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
@@ -211,6 +216,13 @@ pub fn run() {
             game_tracking::game_broadcast_action,
             game_tracking::obs_capture,
             game_tracking::obs_sources,
+            social_alerts::social_status,
+            social_alerts::social_enable,
+            social_alerts::twitch_begin,
+            social_alerts::twitch_finish,
+            social_alerts::twitch_disconnect,
+            alerts::alerts_import_audio,
+            alerts::alerts_audio_data,
             alerts::alerts_status,
             alerts::alerts_save,
             alerts::alerts_save_event,

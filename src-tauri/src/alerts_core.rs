@@ -7,6 +7,9 @@ pub struct Config {
     pub enabled: bool,
     pub design: String,
     pub tone: String,
+    pub audio_id: String,
+    pub audio_start: f64,
+    pub audio_end: f64,
     pub sample_amount: String,
     pub sample_note: String,
     pub title: String,
@@ -33,6 +36,7 @@ impl Default for Config {
             enabled: true,
             design: "reference".into(),
             tone: "soft".into(),
+            audio_id: String::new(), audio_start: 0.0, audio_end: 0.0,
             sample_amount: "1".into(),
             sample_note: "¡Vamos por ese platino!".into(),
             title: "Alertas".into(),
@@ -57,6 +61,8 @@ impl Default for Config {
 }
 impl Config {
     pub fn validate(&self) -> Result<(), String> {
+        if !self.audio_id.is_empty() && (self.audio_id.len()!=64 || !self.audio_id.bytes().all(|b|b.is_ascii_hexdigit())) {return Err("Audio no válido.".into());}
+        if !self.audio_start.is_finite() || !self.audio_end.is_finite() || self.audio_start<0.0 || self.audio_end<0.0 || self.audio_end>600.0 || (!self.audio_id.is_empty() && (self.audio_end<=self.audio_start || self.audio_end-self.audio_start>self.duration as f64-0.4)) {return Err("El recorte del audio debe caber en la alerta (reserva 0,4 s para la salida).".into());}
         if self.title.trim().is_empty() || self.title.chars().count() > 60 {
             return Err("El título debe tener entre 1 y 60 caracteres.".into());
         }
@@ -571,6 +577,15 @@ impl Engine {
             cfg,
         )
     }
+    pub fn receive(&mut self, platform:&str, kind:&str, name:&str, amount:&str, note:&str)->Result<(),String>{
+        let mut cfg=self.settings.template(platform,kind)?;
+        if !cfg.enabled {return Ok(());}
+        cfg.sample_name=name.chars().take(40).collect();
+        if cfg.sample_name.trim().is_empty(){cfg.sample_name="Anónimo".into();}
+        cfg.sample_amount=amount.chars().take(24).collect();cfg.sample_note=note.chars().take(120).collect();
+        let message=render_text(&cfg.message_template,&cfg).chars().take(240).collect();
+        self.push(platform,cfg.sample_name.clone(),message,false,kind,cfg)
+    }
     pub fn action(&mut self, platform: &str, action: &str) -> Result<(), String> {
         let i = index(platform)?;
         match action {
@@ -631,7 +646,8 @@ impl Engine {
                     } else {
                         now
                     };
-                    self.audio_until = t + 800;
+                    let length=if event.config.audio_id.is_empty(){800}else{((event.config.audio_end-event.config.audio_start)*1000.0).ceil() as u64+200};
+                    self.audio_until = t + length;
                     Some(t)
                 } else {
                     None
@@ -640,8 +656,8 @@ impl Engine {
                 channel.last = Some(event.clone());
                 channel.current = Some(Playback {
                     event,
-                    started_at: now,
-                    ends_at: now + event_duration * 1000,
+                    started_at: sound_at.unwrap_or(now),
+                    ends_at: sound_at.unwrap_or(now) + event_duration * 1000,
                     sound_at,
                 });
             }

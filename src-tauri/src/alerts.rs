@@ -163,3 +163,32 @@ pub async fn alerts_announce(
     e.enqueue(&platform, title, message, false)?;
     Ok(json!({"queued":true}))
 }
+
+/// Medios separados de las plantillas: el estado y los sondeos no llevan megabytes de audio.
+#[tauri::command]
+pub async fn alerts_import_audio(app:AppHandle, mime:String, content:String)->Result<String,String>{
+    use sha2::{Digest,Sha256};
+    if !["audio/mpeg","audio/wav","audio/ogg"].contains(&mime.as_str()) || content.len()>2_800_000{return Err("Usa MP3, WAV u OGG de hasta 2 MB.".into());}
+    let bytes=base64::engine::general_purpose::STANDARD.decode(&content).map_err(|_|"Audio no válido.")?;
+    let valid=match mime.as_str(){"audio/wav"=>bytes.starts_with(b"RIFF")&&bytes.get(8..12)==Some(b"WAVE"),"audio/ogg"=>bytes.starts_with(b"OggS"),_=>bytes.starts_with(b"ID3")||(bytes.len()>1&&bytes[0]==255&&bytes[1]&224==224)};
+    if !valid || bytes.len()>2_097_152{return Err("El contenido no coincide con un audio MP3, WAV u OGG válido de hasta 2 MB.".into());}
+    let id=format!("{:x}",Sha256::digest(&bytes));let pool=crate::backup::pool(&app).await?;
+    let count:i64=sqlx::query_scalar("SELECT COUNT(*) FROM alert_audio").fetch_one(&pool).await.map_err(|e|e.to_string())?;
+    // Reutiliza el mismo fichero sin duplicarlo. Límite de biblioteca para mantener las copias manejables.
+    let exists:bool=sqlx::query_scalar("SELECT EXISTS(SELECT 1 FROM alert_audio WHERE id=?)").bind(&id).fetch_one(&pool).await.map_err(|e|e.to_string())?;
+    if count>=64&&!exists{return Err("La biblioteca llegó a 64 audios.".into());}
+    sqlx::query("INSERT OR IGNORE INTO alert_audio(id,mime,content) VALUES(?,?,?)").bind(&id).bind(mime).bind(content).execute(&pool).await.map_err(|e|e.to_string())?;Ok(id)
+}
+#[tauri::command]
+pub async fn alerts_audio_data(app:AppHandle,id:String)->Result<String,String>{
+    let (mime,bytes)=audio_blob(&app,&id).await?;Ok(format!("data:{mime};base64,{}",base64::engine::general_purpose::STANDARD.encode(bytes)))
+}
+pub async fn audio_blob(app:&AppHandle,id:&str)->Result<(String,Vec<u8>),String>{
+    if id.len()!=64||!id.bytes().all(|b|b.is_ascii_hexdigit()){return Err("Audio no válido.".into());}
+    let pool=crate::backup::pool(app).await?;
+    let (mime,content):(String,String)=sqlx::query_as("SELECT mime,content FROM alert_audio WHERE id=?").bind(id).fetch_one(&pool).await.map_err(|_|"Audio no disponible.".to_string())?;
+    let bytes=base64::engine::general_purpose::STANDARD.decode(content).map_err(|_|"Audio dañado.")?;Ok((mime,bytes))
+}
+pub async fn receive(app:&AppHandle,platform:&str,kind:&str,name:&str,amount:&str,note:&str)->Result<(),String>{
+    let state=app.state::<AlertsState>();let mut engine=state.0.lock().await;engine.settings=read(app).await?;engine.receive(platform,kind,name,amount,note)
+}

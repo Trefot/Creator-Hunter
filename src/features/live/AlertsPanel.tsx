@@ -3,6 +3,8 @@ import {invoke} from "@tauri-apps/api/core";
 import {AlertPreview} from "./AlertPreview";
 import {getDb} from "../../db/database";
 import {AlertConfig,AlertEvent,AlertStatus,Platform} from "./alertTypes";
+import {AlertAudio} from "./AlertAudio";
+import {SocialAlerts} from "./SocialAlerts";
 interface Live{running:boolean;port:number;key:string}
 const platformNames={twitch:'Twitch',youtube:'YouTube',tiktok:'TikTok'};
 const designs=[['reference','Saludo de la muestra'],['celebrate','Celebración'],['gift','Regalo'],['support','Aporte y diamante'],['raid','Portal de raid'],['heart','Corazones']] as const;
@@ -12,7 +14,8 @@ export function AlertsPanel(){
  useEffect(()=>{let cancelled=false,timer:ReturnType<typeof setTimeout>;async function poll(){try{await getDb();const [s,l]=await Promise.all([invoke<AlertStatus>('alerts_status'),invoke<Live>('live_status')]);if(!cancelled){setStatus(s);setLive(l);setLoadError('')}}catch(e){if(!cancelled)setLoadError(String(e))}finally{if(!cancelled)timer=setTimeout(poll,2000)}}void poll();return()=>{cancelled=true;clearTimeout(timer)}},[]);
  async function action(platform:Platform,action:string,eventKind?:string){try{setStatus(await invoke<AlertStatus>('alerts_action',{platform,action,eventKind:eventKind??null}));setError('');setNotice(action==='test'?'Prueba guardada en la cola de esa plataforma.':'Control aplicado.')}catch(e){setError(String(e))}}
  async function copy(platform:Platform,action?:string,eventKind?:string){if(!live?.running)return;const base=`http://127.0.0.1:${live.port}`,url=action?`${base}/api/alerts/${platform}/${action}?key=${encodeURIComponent(live.key)}${action==='test'&&eventKind?'&event='+encodeURIComponent(eventKind):''}`:`${base}/alerts/${platform}?key=${encodeURIComponent(live.key)}`;try{await navigator.clipboard.writeText(url);setNotice('URL copiada. La fuente de OBS es la misma para todos los eventos de esta plataforma.');setError('')}catch(e){setError(String(e))}}
- return <section className="card alerts-manager"><h2>Alertas por plataforma</h2><p className="muted">Un enlace y una cola por plataforma, con una plantilla para cada evento. La recepción automática de Twitch, YouTube y TikTok sigue pendiente; las pruebas y los anuncios manuales funcionan desde Nexus.</p>
+ return <section className="card alerts-manager"><h2>Alertas por plataforma</h2><p className="muted">Un enlace y una cola por plataforma, con una plantilla para cada evento. Configura las conexiones de Twitch y YouTube para recibir eventos reales. TikTok ofrece pruebas y anuncios manuales.</p>
+ <SocialAlerts/>
  {(error||loadError)&&<p className="error" role="alert">{error||loadError}</p>}{notice&&<p className="small" role="status">{notice}</p>}
  {status&&<><label className="alerts-check"><input type="checkbox" checked={status.settings.coordinate_audio} onChange={async e=>{try{setStatus(await invoke<AlertStatus>('alerts_audio',{coordinate:e.target.checked}));setError('')}catch(e){setError(String(e))}}}/> Evitar sonidos simultáneos entre plataformas</label>
  <div className="alerts-grid">{(['twitch','youtube','tiktok'] as const).map(platform=><Channel key={platform} platform={platform} control={status.settings[platform]} events={status.events[platform]} pending={status[`${platform}_pending`]} ready={!!live?.running} action={(a,kind)=>action(platform,a,kind)} copy={(a,kind)=>copy(platform,a,kind)} save={async(kind,config)=>{setStatus(await invoke<AlertStatus>('alerts_save_event',{platform,eventKind:kind,config}));setNotice(`Plantilla guardada en ${platformNames[platform]}.`);setError('');}}/>)}</div></>}
@@ -26,7 +29,7 @@ function Channel({platform,control,events,pending,ready,action,copy,save}:{platf
  const update=(patch:Partial<AlertConfig>)=>setDrafts(prev=>({...prev,[kind]:{...(prev[kind]||entry.config),...patch}}));
  async function store(){const submitted=draft,target=kind;setBusy(true);try{await save(target,submitted);setDrafts(prev=>{if(prev[target]!==submitted)return prev;const next={...prev};delete next[target];return next});setError('')}catch(e){setError(String(e))}finally{setBusy(false)}}
  async function announce(){setBusy(true);try{await invoke('alerts_announce',{platform,title,message});setTitle('');setMessage('');setError('')}catch(e){setError(String(e))}finally{setBusy(false)}}
- return <section className={`alerts-channel ${platform}`}><header><h3>{platformNames[platform]}</h3><span className="muted small">{pending} en cola · {control.paused?'Cola pausada':'Cola activa'} · {control.muted?'Silenciada':'Sin silencio global'}</span></header><span className="alerts-disconnected">Eventos de la red sin conectar</span>
+ return <section className={`alerts-channel ${platform}`}><header><h3>{platformNames[platform]}</h3><span className="muted small">{pending} en cola · {control.paused?'Cola pausada':'Cola activa'} · {control.muted?'Silenciada':'Sin silencio global'}</span></header><span className="alerts-disconnected">Conexión y limitaciones en el panel superior</span>
  <label className="alert-event-picker">Tipo de alerta de {platform}<select aria-label={`Tipo de alerta de ${platform}`} value={kind} disabled={busy} onChange={e=>{setSelected(e.target.value);setError('')}}>{events.map(e=><option value={e.kind} key={e.kind}>{e.name}{drafts[e.kind]?' · sin guardar':''}</option>)}</select></label>
  <p className="muted small">La fuente de OBS y su posición son las mismas. Cada evento conserva su configuración y los borradores sobreviven al cambiar de evento.</p>
  <AlertPreview key={kind} platform={platform} config={draft}/>
@@ -40,6 +43,7 @@ function Channel({platform,control,events,pending,ready,action,copy,save}:{platf
  <label>Melodía de {platform}<select aria-label={`Melodía de ${platform}`} value={draft.tone} onChange={e=>update({tone:e.target.value})}>{tones.map(([value,label])=><option key={value} value={value}>{label}</option>)}</select></label>
  <label className="alerts-check"><input type="checkbox" checked={draft.sound} onChange={e=>update({sound:e.target.checked})}/> Sonido de {platform}</label>
  </div>
+ <AlertAudio config={draft} update={update}/>
  <details open><summary>Identidad y texto de {platform}</summary><div className="alerts-fields">
  <label>Color de la etiqueta de {platform}<input type="color" value={draft.label_color} onChange={e=>update({label_color:e.target.value})}/></label>
  <label>Color del nombre de {platform}<input type="color" value={draft.text_color} onChange={e=>update({text_color:e.target.value})}/></label>
