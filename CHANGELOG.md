@@ -2,6 +2,16 @@
 
 ## [Sin publicar]
 
+## [0.2.20] · 2026-11-12 · Eventos reales y sonidos propios
+
+- Recepción oficial de Twitch mediante EventSub WebSocket: seguidores, suscripciones, renovaciones, regalos, bits y raids según permisos y afiliación. Autorización de aplicación pública con código de dispositivo y tokens guardados en el Administrador de credenciales de Windows.
+- YouTube consulta nuevos suscriptores públicos cada 2 minutos y el chat del directo para miembros, membresías regaladas, Super Chat y Super Stickers. La primera lectura establece una base sin emitir eventos antiguos; no se identifican suscripciones privadas ni se garantiza un aviso por volver a suscribirse.
+- Panel de conexiones con errores visibles, estado parcial y último evento recibido. TikTok mantiene pruebas y anuncios manuales; no se anuncia como conectado automáticamente.
+- Audios MP3, WAV y OGG propios por evento, hasta 2 MB, con inicio, fin, volumen, escucha del recorte y salida suave. Biblioteca local separada de las plantillas e incluida en las copias.
+- Coordinación del audio según la duración real del recorte. Las alertas esperan su turno de sonido antes de entrar; silencio, pausa y repetición conservan sus controles.
+- Entrada escalonada del marco y texto, brillos y partículas por celebración, regalo, portal y corazones, respetando los artes aprobados y la preferencia de reducir movimiento.
+- Migración aditiva 21 para medios y cursores, con copia previa y compatibilidad con respaldos antiguos. Las cuentas se autorizan en el equipo del usuario; las pruebas automatizadas no sustituyen un evento real con OBS.
+
 ## [0.2.19] · 2026-11-12 · Alertas por evento
 
 - 16 plantillas: seguidores, suscripciones, renovaciones, regalos, bits y raids en Twitch; suscriptores, miembros, membresías regaladas, Super Chat y Super Sticker en YouTube; seguidores, suscripciones, regalos, me gusta y compartir en TikTok.

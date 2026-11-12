@@ -1,8 +1,8 @@
-# En un runner desechable: actualizar una instalación real 0.2.18 sin iniciar la app.
+# En un runner desechable: actualizar una instalación real 0.2.19 sin iniciar la app.
 $ErrorActionPreference = 'Stop'
 $installDir = Join-Path $env:RUNNER_TEMP 'NexusCompatibility'
 $previous = Join-Path $env:RUNNER_TEMP 'nexus-previous.exe'
-Invoke-WebRequest 'https://github.com/Trefot/Creator-Hunter/releases/download/v0.2.18/TrophyHunter-setup.exe' -OutFile $previous
+Invoke-WebRequest 'https://github.com/Trefot/Creator-Hunter/releases/download/v0.2.19/TrophyHunter-setup.exe' -OutFile $previous
 function Install-AndWait($file) {
   $p = Start-Process -FilePath $file -ArgumentList '/S', "/D=$installDir" -Wait -PassThru
   if ($p.ExitCode -ne 0) { throw "Instalador falló: $($p.ExitCode)" }
@@ -26,4 +26,4 @@ if (!(Test-Path "$installDir\nexus-studio.ico")) { throw 'Falta icono instalado'
 $entry = Get-ItemProperty 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\TrophyHunter'
 if ($entry.DisplayName -ne 'Nexus Studio') { throw 'Nombre visible incorrecto' }
 if ($entry.DisplayVersion -ne (Get-Content '.release/latest.json' | ConvertFrom-Json).version) { throw 'Versión instalada incorrecta' }
-Write-Host 'Actualización desde 0.2.18: ejecutable, accesos, iconos y nombre verificados.'
+Write-Host 'Actualización desde 0.2.19: ejecutable, accesos, iconos y nombre verificados.'

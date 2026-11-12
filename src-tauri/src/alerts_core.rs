@@ -36,7 +36,9 @@ impl Default for Config {
             enabled: true,
             design: "reference".into(),
             tone: "soft".into(),
-            audio_id: String::new(), audio_start: 0.0, audio_end: 0.0,
+            audio_id: String::new(),
+            audio_start: 0.0,
+            audio_end: 0.0,
             sample_amount: "1".into(),
             sample_note: "¡Vamos por ese platino!".into(),
             title: "Alertas".into(),
@@ -61,8 +63,25 @@ impl Default for Config {
 }
 impl Config {
     pub fn validate(&self) -> Result<(), String> {
-        if !self.audio_id.is_empty() && (self.audio_id.len()!=64 || !self.audio_id.bytes().all(|b|b.is_ascii_hexdigit())) {return Err("Audio no válido.".into());}
-        if !self.audio_start.is_finite() || !self.audio_end.is_finite() || self.audio_start<0.0 || self.audio_end<0.0 || self.audio_end>600.0 || (!self.audio_id.is_empty() && (self.audio_end<=self.audio_start || self.audio_end-self.audio_start>self.duration as f64-0.4)) {return Err("El recorte del audio debe caber en la alerta (reserva 0,4 s para la salida).".into());}
+        if !self.audio_id.is_empty()
+            && (self.audio_id.len() != 64 || !self.audio_id.bytes().all(|b| b.is_ascii_hexdigit()))
+        {
+            return Err("Audio no válido.".into());
+        }
+        if !self.audio_start.is_finite()
+            || !self.audio_end.is_finite()
+            || self.audio_start < 0.0
+            || self.audio_end < 0.0
+            || self.audio_end > 600.0
+            || (!self.audio_id.is_empty()
+                && (self.audio_end <= self.audio_start
+                    || self.audio_end - self.audio_start > self.duration as f64 - 0.4))
+        {
+            return Err(
+                "El recorte del audio debe caber en la alerta (reserva 0,4 s para la salida)."
+                    .into(),
+            );
+        }
         if self.title.trim().is_empty() || self.title.chars().count() > 60 {
             return Err("El título debe tener entre 1 y 60 caracteres.".into());
         }
@@ -577,14 +596,30 @@ impl Engine {
             cfg,
         )
     }
-    pub fn receive(&mut self, platform:&str, kind:&str, name:&str, amount:&str, note:&str)->Result<(),String>{
-        let mut cfg=self.settings.template(platform,kind)?;
-        if !cfg.enabled {return Ok(());}
-        cfg.sample_name=name.chars().take(40).collect();
-        if cfg.sample_name.trim().is_empty(){cfg.sample_name="Anónimo".into();}
-        cfg.sample_amount=amount.chars().take(24).collect();cfg.sample_note=note.chars().take(120).collect();
-        let message=render_text(&cfg.message_template,&cfg).chars().take(240).collect();
-        self.push(platform,cfg.sample_name.clone(),message,false,kind,cfg)
+    pub fn receive(
+        &mut self,
+        platform: &str,
+        kind: &str,
+        name: &str,
+        amount: &str,
+        note: &str,
+    ) -> Result<(), String> {
+        let cfg = self.settings.template(platform, kind)?;
+        if !cfg.enabled {
+            return Ok(());
+        }
+        let mut values = cfg.clone();
+        values.sample_name = name.chars().take(40).collect();
+        if values.sample_name.trim().is_empty() {
+            values.sample_name = "Anónimo".into();
+        }
+        values.sample_amount = amount.chars().take(24).collect();
+        values.sample_note = note.chars().take(120).collect();
+        let message = render_text(&cfg.message_template, &values)
+            .chars()
+            .take(240)
+            .collect();
+        self.push(platform, values.sample_name, message, false, kind, cfg)
     }
     pub fn action(&mut self, platform: &str, action: &str) -> Result<(), String> {
         let i = index(platform)?;
@@ -646,7 +681,12 @@ impl Engine {
                     } else {
                         now
                     };
-                    let length=if event.config.audio_id.is_empty(){800}else{((event.config.audio_end-event.config.audio_start)*1000.0).ceil() as u64+200};
+                    let length = if event.config.audio_id.is_empty() {
+                        800
+                    } else {
+                        ((event.config.audio_end - event.config.audio_start) * 1000.0).ceil() as u64
+                            + 200
+                    };
                     self.audio_until = t + length;
                     Some(t)
                 } else {
@@ -902,5 +942,57 @@ mod tests {
         c.design = "reference".into();
         c.tone = "external".into();
         assert!(c.validate().is_err());
+    }
+}
+
+#[cfg(test)]
+mod live_audio_tests {
+    use super::*;
+    #[test]
+    fn received_events_use_real_data_and_keep_saved_design() {
+        let mut e = Engine::default();
+        let mut c = e.settings.defaults("youtube", "super_chat").unwrap();
+        c.message_template = "{usuario} · {cantidad} · {mensaje}".into();
+        c.sample_note = "prueba".into();
+        e.settings
+            .event_templates
+            .insert("youtube/super_chat".into(), c);
+        e.receive("youtube", "super_chat", "Ana", "5 €", "<img>")
+            .unwrap();
+        let p = e.poll("youtube", "viewer-real", 10000).unwrap();
+        assert_eq!(p["event"]["event"]["test"], false);
+        assert_eq!(p["event"]["event"]["kind"], "super_chat");
+        assert_eq!(p["event"]["event"]["message"], "Ana · 5 € · <img>");
+        assert_eq!(p["config"]["sample_note"], "prueba");
+    }
+    #[test]
+    fn custom_audio_waits_for_previous_audio_and_fits_its_visual() {
+        let mut e = Engine::default();
+        let mut c = e.settings.template("twitch", "follow").unwrap();
+        c.audio_id = "a".repeat(64);
+        c.audio_end = 5.0;
+        e.settings.event_templates.insert("twitch/follow".into(), c);
+        e.test_event("twitch", "follow").unwrap();
+        e.test_event("youtube", "subscriber").unwrap();
+        e.poll("twitch", "viewer-twitch", 10000).unwrap();
+        let p = e.poll("youtube", "viewer-youtube", 10000).unwrap();
+        assert_eq!(p["event"]["sound_at"], 15200);
+        assert_eq!(p["event"]["started_at"], 15200);
+        assert_eq!(p["event"]["ends_at"], 21200);
+    }
+    #[test]
+    fn invalid_audio_paths_and_ranges_are_rejected() {
+        let mut c = Config::default();
+        c.audio_id = "../secret".into();
+        assert!(c.validate().is_err());
+        c.audio_id = "a".repeat(64);
+        c.audio_start = 3.0;
+        c.audio_end = 2.0;
+        assert!(c.validate().is_err());
+        c.audio_start = 0.0;
+        c.audio_end = 6.0;
+        assert!(c.validate().is_err());
+        c.audio_end = 5.0;
+        c.validate().unwrap();
     }
 }

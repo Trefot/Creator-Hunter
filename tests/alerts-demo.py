@@ -7,7 +7,7 @@ root=Path(__file__).resolve().parents[1];out=root.parent/'artifacts';out.mkdir(e
 state=catalog();html=overlay_document();platforms=['twitch','youtube','tiktok'];offsets={'twitch':5,'youtube':3,'tiktok':2};names={'twitch':'TWITCH','youtube':'YOUTUBE','tiktok':'TIKTOK'};colors={'twitch':'#a363ff','youtube':'#ff3355','tiktok':'#25f4ee'}
 board='''<!doctype html><meta charset="utf-8"><style>*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at top left,#281537,#0b0911 65%);color:#fff;font:16px system-ui}h1{margin:20px 0 0;text-align:center;letter-spacing:7px;font-size:30px}header p,footer{text-align:center;color:#bcb1cb;font-size:13px;margin:8px}section{display:flex;align-items:center;justify-content:center;gap:15px;height:300px}strong{width:130px;text-align:right;letter-spacing:2px}iframe{width:640px;height:300px;border:0}footer{margin-top:8px}</style><header><h1>TREFOT</h1><p>16 plantillas · una fuente por plataforma</p></header>'''
 for platform in platforms:board+=f'<section><strong style="color:{colors[platform]}">{names[platform]}</strong><iframe src="/alerts/{platform}?key=demostracion" title="{platform}"></iframe></section>'
-board+='<footer>Pruebas simuladas · duraciones abreviadas · recepción automática pendiente</footer>'
+board+='<footer>Pruebas simuladas · duraciones abreviadas · eventos simulados · audio desactivado</footer>'
 with sync_playwright() as p:
  browser=p.chromium.launch(executable_path='/usr/bin/chromium',headless=True,args=['--no-sandbox'])
  context=browser.new_context(viewport={'width':980,'height':1040},record_video_dir=str(out/'trefot-video'),record_video_size={'width':980,'height':1040})
@@ -31,11 +31,11 @@ with sync_playwright() as p:
   f=page.frame_locator(f'iframe[title="{platform}"]');f.locator('#alert.visible').wait_for();assert f.locator('#art').evaluate('(el)=>el.complete&&el.naturalWidth===2172');assert f.locator('#event-mascot').evaluate('(el)=>el.complete&&el.naturalWidth>0')
   art=f.locator('#art').bounding_box();message=f.locator('#message').bounding_box();assert message['y']+message['height']<=art['y']+art['height']*.88-6
   assert f.locator('#label').evaluate('(el)=>el.scrollWidth<=el.clientWidth')
- page.screenshot(path=str(out/'trefot-alertas-eventos.png'))
+ page.screenshot(path=str(out/'trefot-alertas-0220.png'))
  start=int(time.time()*1000);playing[0]=True
  for phase in range(6):
   page.wait_for_timeout(2800 if phase==0 else 3500)
   for platform in platforms:
    f=page.frame_locator(f'iframe[title="{platform}"]');assert f.locator('#label').evaluate('(el)=>el.scrollWidth<=el.clientWidth')
  assert len(seen)==16,seen;assert not errors,errors
- video=page.video;context.close();video.save_as(str(out/'trefot-alertas-eventos.webm'));browser.close();print(json.dumps({'templates_shown':len(seen),'screenshot':str(out/'trefot-alertas-eventos.png'),'video':str(out/'trefot-alertas-eventos.webm')}))
+ video=page.video;context.close();video.save_as(str(out/'trefot-alertas-0220.webm'));browser.close();print(json.dumps({'templates_shown':len(seen),'screenshot':str(out/'trefot-alertas-0220.png'),'video':str(out/'trefot-alertas-0220.webm')}))

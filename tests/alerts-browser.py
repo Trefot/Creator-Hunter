@@ -1,7 +1,7 @@
 # Opcional: Vite en :1420, Playwright/Chromium. Solo datos y RPC ficticios.
 from playwright.sync_api import sync_playwright
 from pathlib import Path
-import sqlite3,json,time,copy
+import sqlite3,json,time,copy,base64,hashlib,io,wave,struct,math
 from alert_fixtures import catalog,asset_path,image_data,overlay_document
 root=Path(__file__).resolve().parents[1];artifacts=root/'.browser-artifacts';artifacts.mkdir(exist_ok=True)
 db=sqlite3.connect(':memory:');db.row_factory=sqlite3.Row
@@ -10,12 +10,15 @@ def sql_call(a):
  c=db.execute(a['query'],{str(i+1):v for i,v in enumerate(a.get('values',[]))});
  if a['select']:return [dict(r) for r in c.fetchall()]
  db.commit();return [c.rowcount,c.lastrowid or 0]
-state=catalog();queued=[];asset_calls={}
+state=catalog();queued=[];asset_calls={};audio_files={}
 def cfg(title,color):
  c=copy.deepcopy(state['settings']['twitch']);c.update(title=title,color=color);return c
 def entry(platform,kind):return next(e for e in state['events'][platform] if e['kind']==kind)
 def rpc(cmd,a):
  if cmd=='alerts_status':return state
+ if cmd=='alerts_import_audio':
+  raw=base64.b64decode(a['content']);key=hashlib.sha256(raw).hexdigest();audio_files[key]='data:'+a['mime']+';base64,'+a['content'];return key
+ if cmd=='alerts_audio_data':return audio_files[a['id']]
  if cmd=='alerts_asset':
   asset_calls[a['name']]=asset_calls.get(a['name'],0)+1
   return image_data(a['name'])
@@ -35,6 +38,7 @@ window.__TAURI_INTERNALS__={transformCallback:()=>++callback,metadata:{currentWi
 if(cmd==='prepare_database'||cmd==='obs_initialize'||cmd==='obs_context')return;
 if(cmd==='plugin:sql|load')return args.db;
 if(cmd==='plugin:sql|select'||cmd==='plugin:sql|execute')return await window.studioSql({...args,select:cmd.endsWith('select')});
+if(cmd==='social_status')return {settings:{},platforms:{}};
 if(cmd.startsWith('alerts_'))return await window.alertRpc(cmd,args);
 if(cmd==='live_status')return {running:true,port:7879,key:'local-alert-test-key'};
 if(cmd==='obs_status')return {enabled:false,connected:false,port:4455};
@@ -143,6 +147,28 @@ with sync_playwright() as p:
  blocked.route('**/api/alerts/youtube/poll?*',lambda r:r.fulfill(json=packet))
  blocked.add_init_script("window.AudioContext=class {state='suspended';resume(){return new Promise(()=>{})}}")
  blocked.goto('http://127.0.0.1:1420/alerts/youtube?key=test');blocked.get_by_role('button',name='Activar sonido',exact=True).wait_for(timeout=5000)
+ assert all(n==1 for n in asset_calls.values()),asset_calls
+ asset_calls.clear()
+ # Archivo real: el navegador decodifica WAV, importa y guarda el recorte por evento.
+ audio_page=context.new_page();audio_page.expose_function('studioSql',sql_call);audio_page.expose_function('alertRpc',rpc);audio_page.add_init_script(mock);audio_page.goto('http://127.0.0.1:1420');audio_page.get_by_role('button',name='Live Studio',exact=True).click()
+ group=audio_page.get_by_role('group',name='Mi sonido').first
+ wav=io.BytesIO()
+ with wave.open(wav,'wb') as w:
+  w.setnchannels(1);w.setsampwidth(2);w.setframerate(8000);w.writeframes(b''.join(struct.pack('<h',int(9000*math.sin(2*math.pi*440*i/8000))) for i in range(8000)))
+ group.locator('input[type=file]').set_input_files({'name':'bienvenida.wav','mimeType':'audio/wav','buffer':wav.getvalue()})
+ group.get_by_role('button',name='Escuchar recorte',exact=True).wait_for();group.get_by_label('Inicio (segundos)').fill('0.2');group.get_by_label('Fin (segundos)').fill('0.8');audio_page.get_by_role('button',name='Guardar twitch',exact=True).click();audio_page.wait_for_timeout(250)
+ saved=entry('twitch','follow')['config'];assert len(saved['audio_id'])==64 and saved['audio_start']==.2 and saved['audio_end']==.8
+ group.get_by_role('button',name='Escuchar recorte',exact=True).click();audio_page.wait_for_timeout(1100);assert group.locator('audio').evaluate('(a)=>a.paused')
+ group.get_by_role('button',name='Usar melodía de Nexus',exact=True).click();audio_page.get_by_role('button',name='Guardar twitch',exact=True).click();audio_page.wait_for_timeout(200);assert entry('twitch','follow')['config']['audio_id']==''
+ # El renderer descarga el audio una vez por evento y corta al silenciar.
+ custom_page=context.new_page();custom_page.route('http://127.0.0.1:1420/alerts/youtube?*',lambda r:r.fulfill(body=overlay_document(),content_type='text/html'))
+ custom_page.add_init_script("window.customPlays=0;window.customPauses=0;window.Audio=class{currentTime=0;volume=1;load(){setTimeout(()=>this.onloadedmetadata(),0)}play(){window.customPlays++;return Promise.resolve()}pause(){window.customPauses++}}")
+ now=int(time.time()*1000);custom_cfg=cfg('YouTube','#ff3355');custom_cfg.update(audio_id='a'*64,audio_start=.2,audio_end=2,sound=True,muted=False)
+ custom_packet=dict(config=custom_cfg,event=dict(event=dict(id=99,title='REAL',message='Gracias',kind='super_chat',test=False,replay=False),started_at=now+400,ends_at=now+6400,sound_at=now+400))
+ custom_page.route('**/api/alerts/youtube/poll?*',lambda r:r.fulfill(json=custom_packet));custom_page.goto('http://127.0.0.1:1420/alerts/youtube?key=test');custom_page.wait_for_timeout(1000);assert custom_page.evaluate('window.customPlays')==1
+ assert custom_page.locator('#badge').inner_text()=='';assert custom_page.locator('#label').inner_text()!='ANUNCIO'
+ custom_page.wait_for_timeout(600);assert custom_page.evaluate('window.customPlays')==1
+ custom_cfg['muted']=True;custom_page.wait_for_timeout(650);assert custom_page.evaluate('window.customPauses')>=1
  # Las fuentes nuevas se recargan al cambiar la versión de Nexus.
  versioned=context.new_page();version_state={'app_version':'0.2.18'};loads=[0]
  def version_document(r):
@@ -160,5 +186,5 @@ with sync_playwright() as p:
  versioned.wait_for_timeout(600);assert loads[0]==2
  assert all(n==1 for n in asset_calls.values()),asset_calls
  assert not errors,errors
- print(json.dumps(dict(per_event_drafts_and_save=True,shared_queue=True,variables=True,disabled_event=True,assets_loaded_once=True,auto_refresh_on_version_change=True,approved_art=True,reference_preset=True,animated_mascot=True,editable_type_and_text=True,isolated_silent_preview=True,tiktok=True,independent_controls=True,separate_urls=True,save_preferences=True,responsive=True,overlay_safe_text=True,overlay_hides=True,no_audio_repeat_on_reconnect=True,audio_permission_control=True,js_errors=errors)))
+ print(json.dumps(dict(custom_audio_import_trim_and_mute=True,real_event_label=True,per_event_drafts_and_save=True,shared_queue=True,variables=True,disabled_event=True,assets_loaded_once=True,auto_refresh_on_version_change=True,approved_art=True,reference_preset=True,animated_mascot=True,editable_type_and_text=True,isolated_silent_preview=True,tiktok=True,independent_controls=True,separate_urls=True,save_preferences=True,responsive=True,overlay_safe_text=True,overlay_hides=True,no_audio_repeat_on_reconnect=True,audio_permission_control=True,js_errors=errors)))
  b.close()
