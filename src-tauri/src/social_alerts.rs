@@ -435,7 +435,7 @@ pub async fn twitch_disconnect(app: AppHandle) -> Result<(), String> {
     entry()?.delete_credential().map_err(|e| e.to_string())?;
     Ok(())
 }
-async fn twitch_token() -> Result<(String, String, String), String> {
+pub(crate) async fn twitch_token() -> Result<(String, String, String), String> {
     let raw = entry()?
         .get_password()
         .map_err(|_| "Conecta Twitch desde Alertas.".to_string())?;
