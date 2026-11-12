@@ -1,5 +1,15 @@
 # Actualizaciones de Nexus Studio
 
+## 0.2.18 publicada
+
+[Descargar instalador 0.2.18](https://github.com/Trefot/Creator-Hunter/releases/download/v0.2.18/Nexus-Studio_0.2.18_x64-setup.exe) o «Buscar actualizaciones» → «Actualizar ahora».
+
+Corrige la aproximación de 0.2.17 con artes completos preparados desde la muestra elegida: personajes saludando, marcos detallados y placas por plataforma. Inter integrada y texto superpuesto editable. Los marcos conservan su paleta; etiqueta, nombre y mensaje permiten cambiar sus colores.
+
+En Live Studio pulsa **Cargar diseño de la muestra → Guardar** en cada plataforma. **Refresca una vez cada fuente de navegador de OBS** para dejar atrás el documento anterior. Las fuentes nuevas detectan futuras versiones y recargan automáticamente. No cambia la configuración de conexión, colas ni sonido.
+
+La ejecución [43140822089](https://github.com/Trefot/Creator-Hunter/actions/runs/43140822089) pasó pruebas, compilación NSIS, actualización desde 0.2.17 y publicación. Descarga y canal verificados: instaladores idénticos, 12.405.941 bytes, SHA-256 `d5e0774dd950cf4b0ca8ff987d6197270a0e5a25254f1bc8f2b571b76d71032d`, origen `a98597149fce53b68f64c6d9de5608c6c2c2c35b`. Sin migración adicional. Recepción automática de eventos pendiente; configuración y límites en [ALERTAS.md](ALERTAS.md). Referencia de diseño en [design](design/README.md).
+
 ## 0.2.17 publicada
 
 [Descargar instalador 0.2.17](https://github.com/Trefot/Creator-Hunter/releases/download/v0.2.17/Nexus-Studio_0.2.17_x64-setup.exe) o «Buscar actualizaciones» → «Actualizar ahora».

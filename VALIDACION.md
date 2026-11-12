@@ -1,6 +1,16 @@
 # Validación de estabilidad · 2026-11-12
 
-Versión publicada 0.2.17, preparada desde `1d77f07` (0.2.9). El instalador ya se ha compilado en GitHub Actions para Windows; la instalación y revisión en el equipo del usuario siguen pendientes.
+Versión publicada 0.2.18, preparada desde `1d77f07` (0.2.9). El instalador ya se ha compilado en GitHub Actions para Windows; la instalación y revisión en el equipo del usuario siguen pendientes.
+
+## 0.2.18 · Corrección del arte de referencia
+
+- Reemplaza la aproximación gráfica de 0.2.17 por tres artes completos preparados desde la muestra elegida: poses de saludo, placas y marcos detallados. Referencia conservada en design/alertas-referencia-aprobada.png.
+- Siete pruebas del motor y 17 de datos pasan, incluidas preferencias de color de etiqueta, tipografía y compatibilidad con copias anteriores. Sin nueva migración; esquema 20 y 27 tablas.
+- 20 pruebas frontend y 6 de publicación; TypeScript/Vite y versiones coherentes. No se cambian dependencias npm.
+- Chromium: carga de la fuente Inter integrada dentro de la vista previa aislada, arte por plataforma, preset de referencia, texto editable/seguro y controles de colas/audio pasan. Recarga automática ante cambio de versión sin bucle. Sin errores JavaScript.
+- Grabación del HTML real con eventos ficticios: artifacts/trefot-alertas-corregidas.png y .webm fuera del repositorio. Se comprueba que el texto no toque el borde inferior.
+- Las fuentes antiguas de 0.2.17 necesitan refrescarse una vez en OBS. Los artes conservan su paleta; el texto sigue siendo editable. La animación consiste en entrada/salida y luz del farol, no en movimiento articulado de las poses.
+- La ejecución [43140822089](https://github.com/Trefot/Creator-Hunter/actions/runs/43140822089) pasó pruebas, compilación NSIS, actualización desde 0.2.17 y publicación. Descarga y canal verificados: instaladores idénticos, 12.405.941 bytes, SHA-256 `d5e0774dd950cf4b0ca8ff987d6197270a0e5a25254f1bc8f2b571b76d71032d`, origen `a98597149fce53b68f64c6d9de5608c6c2c2c35b`. Recepción automática de eventos y prueba física de OBS pendientes.
 
 ## 0.2.17 · Primera alerta animada de Trefot
 

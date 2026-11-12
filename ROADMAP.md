@@ -379,3 +379,14 @@ Guardar Replay Buffer se implementa en 0.2.13; recortar/editar vídeo sigue pend
 - [x] Publicar y verificar actualización Windows desde 0.2.16 (43135451689).
 - [ ] Verificar audio y fuentes en el OBS real del usuario.
 - [ ] Plantillas por cada tipo de evento y recepción automática de eventos sociales.
+
+## Entrega 0.2.18 · Fidelidad a la muestra aprobada
+
+- [x] Conservar la muestra de referencia y sustituir marcos simplificados por artes completos.
+- [x] Poses de saludo y marcos propios de Twitch, YouTube y TikTok.
+- [x] Inter integrada, composición del texto sobre el arte y preset para recuperar la muestra.
+- [x] Etiqueta dorada editable y texto colocado dentro del marco.
+- [x] Recarga de las fuentes nuevas al cambiar la versión de Nexus.
+- [x] Pruebas de interfaz, tipografía real y grabación de la composición corregida.
+- [x] Publicar y verificar Windows desde 0.2.17 (43140822089).
+- [ ] Refrescar las fuentes antiguas y comprobar el resultado en el OBS del usuario.
