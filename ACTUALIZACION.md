@@ -1,5 +1,15 @@
 # Actualizaciones de Nexus Studio
 
+## 0.2.19 publicada
+
+[Descargar instalador 0.2.19](https://github.com/Trefot/Creator-Hunter/releases/download/v0.2.19/Nexus-Studio_0.2.19_x64-setup.exe) o «Buscar actualizaciones» → «Actualizar ahora».
+
+16 plantillas por evento: seis de Twitch, cinco de YouTube y cinco de TikTok. Nuevas poses de celebración, regalo, aporte, portal y corazones; ilustración, melodía, duración, volumen y texto independientes. Los borradores se conservan al cambiar de tipo y las alertas en cola mantienen la configuración con que se enviaron.
+
+**Conserva los mismos enlaces de OBS.** En Live Studio elige Tipo de alerta, personaliza y guarda antes de probar. La prueba copiada para Stream Deck identifica el tipo seleccionado. Pausa, silencio y repetición siguen controlando toda la plataforma.
+
+La ejecución [43149295294](https://github.com/Trefot/Creator-Hunter/actions/runs/43149295294) pasó pruebas, compilación NSIS, actualización desde 0.2.18 y publicación. Descarga y canal verificados: instaladores idénticos, 18.180.233 bytes, SHA-256 `a96b9cbbdfa4832082f33e603fe144509b4bfdb767c3f0aabbcd12c375f427ef`, origen `ab59887e24771cb8357044fcd42176ea01cd6240`. Preferencias incluidas en las copias sin nueva migración. La recepción automática desde las redes y la prueba física de sonido en OBS siguen pendientes. Guía en [ALERTAS.md](ALERTAS.md).
+
 ## 0.2.18 publicada
 
 [Descargar instalador 0.2.18](https://github.com/Trefot/Creator-Hunter/releases/download/v0.2.18/Nexus-Studio_0.2.18_x64-setup.exe) o «Buscar actualizaciones» → «Actualizar ahora».

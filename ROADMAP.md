@@ -390,3 +390,17 @@ Guardar Replay Buffer se implementa en 0.2.13; recortar/editar vídeo sigue pend
 - [x] Pruebas de interfaz, tipografía real y grabación de la composición corregida.
 - [x] Publicar y verificar Windows desde 0.2.17 (43140822089).
 - [ ] Refrescar las fuentes antiguas y comprobar el resultado en el OBS del usuario.
+
+## Entrega 0.2.19 · Otras alertas por evento
+
+- [x] 16 plantillas: seis de Twitch, cinco de YouTube y cinco de TikTok.
+- [x] Nuevas poses y diseños de celebración, regalo, aporte, portal y corazones.
+- [x] Configuración, sonido y activación propios por evento, manteniendo las tres fuentes de OBS.
+- [x] Borradores conservados y pruebas del tipo seleccionado desde Stream Deck.
+- [x] Variables de usuario/cantidad/mensaje insertadas literalmente.
+- [x] Colas con instantáneas de configuración y repetición del tipo original.
+- [x] Copias de las preferencias nuevas sin migración adicional y registro único de imágenes.
+- [x] Pruebas de interfaz y grabación de las 16 plantillas con datos ficticios.
+- [x] Publicar y verificar Windows desde 0.2.18 (43149295294).
+- [ ] Verificar el audio y los eventos de prueba en el OBS del usuario.
+- [ ] Integrar la recepción automática de las redes y Discord por separado.

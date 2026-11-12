@@ -1,6 +1,16 @@
 # Validación de estabilidad · 2026-11-12
 
-Versión publicada 0.2.18, preparada desde `1d77f07` (0.2.9). El instalador ya se ha compilado en GitHub Actions para Windows; la instalación y revisión en el equipo del usuario siguen pendientes.
+Versión publicada 0.2.19, preparada desde `1d77f07` (0.2.9). El instalador ya se ha compilado en GitHub Actions para Windows; la instalación y revisión en el equipo del usuario siguen pendientes.
+
+## 0.2.19 · Plantillas por evento y fuentes compartidas
+
+- 13 pruebas del motor y 2 de recursos pasan: las 16 configuraciones predeterminadas, eventos válidos por plataforma, instantánea de configuración en cola/repetición, desactivación sin bloquear otros tipos, serialización y variables literales sin expansión recursiva. Imágenes/fuente/licencia verificadas en el registro nativo real.
+- 17 pruebas de datos pasan; copia/restauración incluye plantillas de Twitch/YouTube/TikTok, cantidad, texto y activación. Sin nueva migración; esquema 20 y 27 tablas.
+- 20 pruebas frontend y 6 de publicación; TypeScript/Vite correctos, sin cambios de dependencias npm.
+- Chromium con catálogo generado por la biblioteca Rust de producción y RPC simulados: borradores por evento, guardado aislado, bloqueo de pruebas sin guardar/desactivadas, variables, URLs estables y prueba de Stream Deck con event=raid. Cambio de evento conserva borradores, tipografía y vista previa sin audio/lecturas de cola; ilustraciones cargadas una vez por archivo. Texto seguro, control de sonido y recarga por versión pasan sin errores JS.
+- Grabación del HTML real recorriendo las 16 plantillas con eventos simulados y duración abreviada; revisión de etiquetas dentro del marco. Artefactos locales: artifacts/trefot-alertas-eventos.png y .webm, fuera del repositorio.
+- El registro de imágenes se comparte por IPC/HTTP sin incluir otra copia de los PNG en el bundle de frontend. Se conservan las URLs y las preferencias anteriores como evento inicial de cada red.
+- La ejecución [43149295294](https://github.com/Trefot/Creator-Hunter/actions/runs/43149295294) pasó pruebas, compilación NSIS, actualización desde 0.2.18 y publicación. Descarga y canal verificados: instaladores idénticos, 18.180.233 bytes, SHA-256 `a96b9cbbdfa4832082f33e603fe144509b4bfdb767c3f0aabbcd12c375f427ef`, origen `ab59887e24771cb8357044fcd42176ea01cd6240`. Recepción automática y prueba física en OBS siguen pendientes.
 
 ## 0.2.18 · Corrección del arte de referencia
 
