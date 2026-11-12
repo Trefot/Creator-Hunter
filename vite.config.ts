@@ -25,8 +25,8 @@ export default defineConfig(() => ({
         }
       : undefined,
     watch: {
-      // 3. tell Vite to ignore watching `src-tauri`
-      ignored: ["**/src-tauri/**"],
+      // Ignorar Rust y sus artefactos; el HTML/CSS compartido del overlay sí necesita HMR.
+      ignored: [/[\\/]src-tauri[\\/](?!overlay(?:[\\/]|$))/],
     },
   },
 }));

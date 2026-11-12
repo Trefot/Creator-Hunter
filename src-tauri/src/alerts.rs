@@ -106,7 +106,9 @@ pub async fn poll(app: &AppHandle, platform: &str, viewer: &str) -> Result<Value
         .duration_since(UNIX_EPOCH)
         .map_err(|e| e.to_string())?
         .as_millis() as u64;
-    e.poll(platform, viewer, now)
+    let mut data = e.poll(platform, viewer, now)?;
+    data["app_version"] = json!(app.package_info().version.to_string());
+    Ok(data)
 }
 #[tauri::command]
 pub async fn alerts_announce(

@@ -1,6 +1,6 @@
-# Alertas de Trefot para OBS · 0.2.17
+# Alertas de Trefot para OBS · 0.2.18
 
-Primera plantilla animada y editable con el personaje de Nexus: entrada y salida, movimiento suave del personaje, destellos y luz del farol. Tres variantes: Twitch violeta/dorado, YouTube rojo/dorado y TikTok cian/rosa, con un pequeño efecto glitch en la entrada. El personaje conserva su identidad en todas ellas. La animación utiliza el logo existente y CSS; no es una animación articulada del personaje ni un vídeo generado.
+Plantilla con artes completos preparados desde la muestra visual aprobada, en lugar de los bordes simplificados y la pose del icono de 0.2.17. Cada plataforma tiene su propia ilustración del personaje saludando, marco, placa y decoraciones: Twitch violeta/dorado, YouTube rojo/dorado y TikTok cian/rosa. Entrada/salida y luz del farol animadas. Los textos se colocan encima del arte y siguen siendo editables. Se incluye Inter para que la tipografía no dependa de la fuente predeterminada de Windows.
 
 **Todavía no recibe automáticamente eventos de Twitch, YouTube o TikTok.** La conexión de YouTube para métricas no activa las alertas. La interfaz muestra que los eventos de las redes están sin conectar. No incluye bot ni webhook de Discord. Esta versión ofrece una plantilla por plataforma, pruebas identificadas y anuncios manuales; las variantes por cada tipo de evento serán un paso adicional.
 
@@ -13,24 +13,26 @@ Primera plantilla animada y editable con el personaje de Nexus: entrada y salida
 5. Activa «Controlar audio mediante OBS» en cada fuente y revisa mezclador y pistas. Si se bloquea el audio automático, abre Interactuar y pulsa Activar sonido. El sonido físico de tu OBS requiere comprobación en tu equipo.
 6. Pulsa Probar en la plataforma correspondiente: la alerta lleva la marca PRUEBA. Entre alertas el fondo es transparente.
 
-Si ya utilizabas las fuentes de 0.2.16, conserva sus URLs y tamaño. El nuevo diseño se sirve después de actualizar Nexus; si OBS conserva el documento anterior, refresca la fuente.
+Si ya utilizabas las fuentes de 0.2.16 o 0.2.17, conserva sus URLs y tamaño. El nuevo diseño se sirve después de actualizar Nexus; refresca la fuente de OBS una vez para dejar atrás el documento de 0.2.17. La versión nueva detecta cambios de versión de Nexus y recarga el documento en las siguientes actualizaciones.
 
 Las URLs llevan la clave local; no compartirlas. El servidor solo escucha en el propio equipo. Desarrollo usa 7879 y producción 7878. Nexus debe permanecer abierto. Estas fuentes no requieren OBS WebSocket; la conexión de grabación continúa en su panel existente.
 
 ## Editor y vista previa
 
+Pulsa **Cargar diseño de la muestra** para cargar en el borrador la tipografía Inter, nombre de 40 px, etiqueta dorada, texto blanco, LUNA_27 y el mensaje de referencia. Después pulsa Guardar para aplicarlo a OBS. No cambia el volumen ni la pausa de la cola.
+
 La vista previa incrustada utiliza el mismo documento y estilos que OBS, aislados y sin sonido ni lecturas de la cola. Puedes repetirla sin enviar eventos a OBS. Los cambios del borrador se ven de inmediato; solo Guardar cambia la fuente real.
 
 Por plataforma puedes editar:
 
-- Título de la fuente, color principal y secundario.
-- Color del nombre y del mensaje, tipografía moderna/clásica/monoespaciada.
+- Título de la fuente, mostrado como texto auxiliar si es distinto del nombre de la plataforma. Los marcos ilustrados conservan su paleta aprobada; no se recolorean al editar el texto.
+- Color de la etiqueta, del nombre y del mensaje; tipografía Inter/clásica/monoespaciada.
 - Tamaño del nombre (24–48 px) y del mensaje (12–22 px).
-- Etiqueta de la alerta; vacía usa NUEVO SEGUIDOR o NUEVO SUSCRIPTOR en YouTube.
+- Etiqueta de la alerta; vacía usa el texto de ejemplo NUEVO SEGUIDOR de la muestra. Puedes personalizarlo, por ejemplo como NUEVO SUSCRIPTOR en YouTube.
 - Nombre de prueba y mensaje de hasta 160 caracteres. `{usuario}` inserta el nombre de prueba. No se admite HTML ni CSS personalizados.
 - Duración (3–15 s), volumen y activación del sonido. Cada plataforma tiene un aviso breve distinto.
 
-Los nombres largos reducen su tamaño hasta 20 px para caber y después muestran puntos suspensivos si es necesario. El mensaje se limita visualmente a dos líneas. Se respeta la preferencia del sistema de reducir movimiento. La primera plantilla usa la pose original del logo, con movimiento del conjunto y luz del farol; las poses articuladas, vídeos/audios importados y fuentes tipográficas propias no están implementados.
+Los nombres largos reducen su tamaño hasta 20 px para caber y después muestran puntos suspensivos si es necesario. El mensaje se muestra en una línea y utiliza puntos suspensivos si no cabe. Se respeta la preferencia del sistema de reducir movimiento. Las poses de saludo forman parte de los artes; las poses articuladas, vídeos/audios importados y fuentes tipográficas propias no están implementados.
 
 ## Controles y Stream Deck
 
@@ -46,7 +48,7 @@ Cada cola admite 50 pendientes. Las colas y la última alerta viven solo durante
 
 ## Preferencias y compatibilidad
 
-Se conservan las preferencias de 0.2.16. Los campos de estilo y TikTok obtienen valores predeterminados cuando no existen. Las preferencias están en workspace.alert_settings, incluidas en las copias de las 27 tablas; no hace falta una nueva migración y se mantiene el esquema 20. Se probó la exportación/restauración de la tipografía y los colores nuevos.
+Se conservan las preferencias de colas, sonido y texto de las versiones anteriores. Los bordes configurables se sustituyen por la paleta fija del arte de referencia. Los campos de estilo y TikTok obtienen valores predeterminados cuando no existen. Las preferencias están en workspace.alert_settings, incluidas en las copias de las 27 tablas; no hace falta una nueva migración y se mantiene el esquema 20. Se probó la exportación/restauración de la tipografía y los colores nuevos.
 
 ## Validación y próximos pasos
 
@@ -54,3 +56,7 @@ Se conservan las preferencias de 0.2.16. Los campos de estilo y TikTok obtienen 
 - Prueba de interfaz con RPC simulados: tipografía/tamaños/texto, vista previa silenciosa sin consumo de cola, tres plataformas, URLs, texto seguro, recuperación y permiso de audio.
 - `tests/alerts-demo.py` graba el HTML real con eventos ficticios; no acredita recepción de servicios externos.
 - Pendientes: recepción oficial de eventos sociales, plantillas por cada evento, archivos propios y comprobación de sonido/fuentes en el OBS del usuario. Discord se implementará por separado.
+
+## Recursos visuales y fuente
+
+Los tres PNG con transparencia están en src/assets/alerts y se distribuyen con Nexus. La vista previa y el servidor local usan esos mismos archivos. La fuente Inter se acompaña de su licencia SIL OFL (Inter-LICENSE.txt); el servidor local también ofrece la licencia junto al recurso de fuente. No se accede a Streamlabs ni se usan archivos de su paquete.

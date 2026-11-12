@@ -456,7 +456,7 @@ async fn alert_preferences_roundtrip_and_schema_19_import() {
     let current=database(&temp.0.join("current"),20).await;
     restore(&current,&old_doc.to_string()).await.unwrap();
     let raw:Option<String>=sqlx::query_scalar("SELECT alert_settings FROM workspace LIMIT 1").fetch_one(&current).await.unwrap();assert!(raw.is_none());
-    let prefs=r##"{"twitch":{"title":"Twitch","color":"#9146ff","font_family":"mono","name_size":44},"youtube":{"title":"YouTube","color":"#ff3355"},"tiktok":{"title":"TikTok","color":"#25f4ee","secondary_color":"#ff2d86"},"coordinate_audio":true}"##;
+    let prefs=r##"{"twitch":{"title":"Twitch","color":"#9146ff","font_family":"mono","name_size":44,"label_color":"#ffd27b"},"youtube":{"title":"YouTube","color":"#ff3355"},"tiktok":{"title":"TikTok","color":"#25f4ee","secondary_color":"#ff2d86"},"coordinate_audio":true}"##;
     sqlx::query("UPDATE workspace SET alert_settings=?").bind(prefs).execute(&current).await.unwrap();
     let (doc,_)=snapshot(&current,&TABLES,"new").await.unwrap();
     sqlx::query("UPDATE workspace SET alert_settings=NULL").execute(&current).await.unwrap();

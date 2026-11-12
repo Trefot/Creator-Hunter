@@ -7,6 +7,7 @@ pub struct Config {
     pub title: String,
     pub color: String,
     pub secondary_color: String,
+    pub label_color: String,
     pub text_color: String,
     pub message_color: String,
     pub font_family: String,
@@ -27,10 +28,11 @@ impl Default for Config {
             title: "Alertas".into(),
             color: "#9146ff".into(),
             secondary_color: "#ffd166".into(),
+            label_color: "#ffd27b".into(),
             text_color: "#ffffff".into(),
-            message_color: "#eee6ff".into(),
+            message_color: "#ffffff".into(),
             font_family: "sans".into(),
-            name_size: 38,
+            name_size: 40,
             message_size: 16,
             event_label: String::new(),
             sample_name: "LUNA_27".into(),
@@ -51,6 +53,7 @@ impl Config {
         for color in [
             &self.color,
             &self.secondary_color,
+            &self.label_color,
             &self.text_color,
             &self.message_color,
         ] {
@@ -358,7 +361,7 @@ mod tests {
         settings.validate().unwrap();
         assert_eq!(settings.twitch.color, "#123456");
         assert!(settings.twitch.muted);
-        assert_eq!(settings.twitch.name_size, 38);
+        assert_eq!(settings.twitch.name_size, 40);
         assert_eq!(settings.tiktok.color, "#25f4ee");
         assert!(!settings.coordinate_audio);
         let restored: Settings =

@@ -2,6 +2,16 @@
 
 ## [Sin publicar]
 
+## [0.2.18] · 2026-11-12 · Arte de las alertas de referencia
+
+- Sustituye los marcos simplificados y el logo estático por artes completos preparados desde la muestra aprobada: personaje saludando, marcos detallados, placas y efectos propios de Twitch, YouTube y TikTok.
+- Texto dinámico sobre el arte, con Inter integrada y ajustes de posición para respetar la composición. Mensaje en cursiva y etiqueta dorada independiente.
+- Botón Cargar diseño de la muestra para recuperar textos, tamaños y colores de referencia antes de guardar.
+- La ilustración conserva su paleta; etiqueta, nombre y mensaje mantienen color y tipografía editables. Se conservan las colas y controles existentes.
+- Vista previa y OBS comparten artes, fuente y renderer; las modificaciones del overlay también se actualizan durante el desarrollo.
+- Las fuentes nuevas recargan el documento cuando cambia la versión de Nexus; al actualizar desde 0.2.17 hay que refrescar la fuente una vez.
+- Sin nueva migración ni recepción automática de eventos sociales.
+
 ## [0.2.17] · 2026-11-12 · Primera alerta animada de Trefot
 
 - Primera plantilla animada con el personaje de Nexus, farol iluminado, destellos y entrada/salida sobre fondo transparente.

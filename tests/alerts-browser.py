@@ -9,7 +9,7 @@ def sql_call(a):
  c=db.execute(a['query'],{str(i+1):v for i,v in enumerate(a.get('values',[]))});
  if a['select']:return [dict(r) for r in c.fetchall()]
  db.commit();return [c.rowcount,c.lastrowid or 0]
-def cfg(title,color):return dict(title=title,color=color,secondary_color='#ffd166',text_color='#ffffff',message_color='#eee6ff',font_family='sans',name_size=38,message_size=16,event_label='',sample_name='LUNA_27',message_template='¡Bienvenido a la aventura!',duration=6,volume=50,muted=False,paused=False,sound=True)
+def cfg(title,color):return dict(title=title,color=color,secondary_color='#ffd166',label_color='#ffd27b',text_color='#ffffff',message_color='#eee6ff',font_family='sans',name_size=38,message_size=16,event_label='',sample_name='LUNA_27',message_template='¡Bienvenido a la aventura!',duration=6,volume=50,muted=False,paused=False,sound=True)
 state=dict(settings=dict(twitch=cfg('Twitch','#9146ff'),youtube=cfg('YouTube','#ff3355'),tiktok=cfg('TikTok','#25f4ee'),coordinate_audio=True),twitch_pending=0,youtube_pending=0,tiktok_pending=0,connected=False)
 def rpc(cmd,a):
  if cmd=='alerts_status':return state
@@ -38,8 +38,11 @@ throw Error('Unexpected native command: '+cmd);
 with sync_playwright() as p:
  b=p.chromium.launch(executable_path='/usr/bin/chromium',headless=True,args=['--no-sandbox']);context=b.new_context(viewport={'width':1440,'height':1100},permissions=['clipboard-read','clipboard-write']);page=context.new_page();errors=[];preview_requests=[]
  page.on('request',lambda r:preview_requests.append(r.url) if '/api/alerts/' in r.url else None)
- context.route('**/assets/alert-mascot.png',lambda r:r.fulfill(body=(root/'src/assets/nexus-mark.png').read_bytes(),content_type='image/png'))
- page.on('pageerror',lambda e:errors.append(str(e)));page.expose_function('studioSql',sql_call);page.expose_function('alertRpc',rpc);page.add_init_script(mock);page.goto('http://127.0.0.1:1420');page.get_by_role('button',name='Live Studio',exact=True).click()
+ def asset(route):
+  file=route.request.url.split('?')[0].split('/')[-1];name=file.replace('-v2.png','-approved.png');p=root/'src/assets/alerts'/name
+  route.fulfill(body=p.read_bytes(),content_type='font/woff2' if file.endswith('woff2') else 'image/png')
+ context.route('http://127.0.0.1:1420/assets/alerts/*',asset)
+ page.on('pageerror',lambda e:errors.append(str(e)));page.expose_function('studioSql',sql_call);page.expose_function('alertRpc',rpc);page.add_init_script(mock);page.goto('http://127.0.0.1:1420',wait_until='domcontentloaded');page.get_by_role('button',name='Live Studio',exact=True).click()
  page.get_by_role('heading',name='Alertas por plataforma').wait_for();page.get_by_role('button',name='Probar twitch',exact=True).click();page.wait_for_timeout(200)
  assert state['twitch_pending']==1 and state['youtube_pending']==0
  page.get_by_role('button',name='Silenciar youtube',exact=True).click();page.wait_for_timeout(200);assert state['settings']['youtube']['muted'] and not state['settings']['twitch']['muted']
@@ -54,7 +57,8 @@ with sync_playwright() as p:
  assert preview.locator('#message').inner_text()=='¡Hola, TREFOT!'
  assert preview.locator('#title').evaluate('(el)=>getComputedStyle(el).fontSize')=='44px'
  assert 'monospace' in preview.locator('#title').evaluate('(el)=>getComputedStyle(el).fontFamily')
- assert 'arrive' in preview.locator('.mascot-wrap').evaluate('(el)=>getComputedStyle(el).animationName')
+ assert 'lantern' in preview.locator('.lantern-light').evaluate('(el)=>getComputedStyle(el).animationName')
+ assert 'twitch-approved' in preview.locator('#art').get_attribute('src')
  page.get_by_label('Nombre de prueba de twitch',exact=True).fill('$&')
  page.wait_for_timeout(300)
  preview.locator('#message').get_by_text('¡Hola, $&!',exact=True).wait_for()
@@ -65,13 +69,17 @@ with sync_playwright() as p:
  assert state['settings']['twitch']['name_size']==44 and state['settings']['twitch']['sample_name']=='TREFOT'
  page.get_by_role('button',name='Probar tiktok',exact=True).click();page.wait_for_timeout(200);assert state['tiktok_pending']==1 and state['twitch_pending']==1
  page.get_by_role('button',name='Copiar URL de tiktok',exact=True).click();assert '/alerts/tiktok?' in page.evaluate('navigator.clipboard.readText()')
+ page.get_by_role('button',name='Cargar diseño de la muestra de twitch',exact=True).click()
+ preview.locator('#title').get_by_text('LUNA_27',exact=True).wait_for()
+ assert preview.locator('#title').evaluate('(el)=>getComputedStyle(el).fontWeight')=='900'
+ assert preview.locator('body').evaluate("()=>[...document.fonts].some(f=>f.family.includes('Trefot Inter')&&f.status==='loaded')")
  page.get_by_role('heading',name='Alertas por plataforma').scroll_into_view_if_needed()
  page.screenshot(path=str(artifacts/'alertas-live.png'),full_page=True)
  page.set_viewport_size({'width':960,'height':900});assert page.evaluate('document.documentElement.scrollWidth<=innerWidth')
  # El HTML real trata el título como texto, aísla plataforma y oculta al finalizar.
  overlay=context.new_page();overlay.set_viewport_size({'width':640,'height':300});overlay.on('pageerror',lambda e:errors.append(str(e)))
  now=int(time.time()*1000);packet=dict(config=cfg('YouTube','#ff3355'),event=dict(event=dict(id=1,title='<img src=x onerror=alert(1)>',message='Anuncio de ejemplo',test=True,replay=False),started_at=now,ends_at=now+3000,sound_at=now),pending=0,duplicate=False)
- overlay.route('**/alerts/youtube?*',lambda r:r.fulfill(body=(root/'src-tauri/overlay/alerts.html').read_text().replace('/*NEXUS_ALERT_STYLE*/',(root/'src-tauri/overlay/alerts.css').read_text()),content_type='text/html'))
+ overlay.route('**/alerts/youtube?*',lambda r:r.fulfill(body=(root/'src-tauri/overlay/alerts.html').read_text().replace('/*NEXUS_ALERT_STYLE*/',(root/'src-tauri/overlay/alerts.css').read_text().replace('__NEXUS_ALERT_FONT__','/assets/alerts/inter-latin.woff2')),content_type='text/html'))
  calls=[0]
  def poll_response(r):
   calls[0]+=1
@@ -86,11 +94,26 @@ with sync_playwright() as p:
  packet['event']=None;overlay.locator('#alert.visible').wait_for(state='hidden',timeout=5000)
  # Un navegador que bloquea audio debe ofrecer un control, sin esperar para siempre.
  blocked=context.new_page();blocked.set_viewport_size({'width':640,'height':300});blocked.on('pageerror',lambda e:errors.append(str(e)))
- blocked.route('**/alerts/youtube?*',lambda r:r.fulfill(body=(root/'src-tauri/overlay/alerts.html').read_text().replace('/*NEXUS_ALERT_STYLE*/',(root/'src-tauri/overlay/alerts.css').read_text()),content_type='text/html'))
+ blocked.route('**/alerts/youtube?*',lambda r:r.fulfill(body=(root/'src-tauri/overlay/alerts.html').read_text().replace('/*NEXUS_ALERT_STYLE*/',(root/'src-tauri/overlay/alerts.css').read_text().replace('__NEXUS_ALERT_FONT__','/assets/alerts/inter-latin.woff2')),content_type='text/html'))
  now=int(time.time()*1000);packet['event']=dict(event=dict(id=2,title='Prueba de audio',message='',test=True,replay=False),started_at=now,ends_at=now+3000,sound_at=now)
  blocked.route('**/api/alerts/youtube/poll?*',lambda r:r.fulfill(json=packet))
  blocked.add_init_script("window.AudioContext=class {state='suspended';resume(){return new Promise(()=>{})}}")
  blocked.goto('http://127.0.0.1:1420/alerts/youtube?key=test');blocked.get_by_role('button',name='Activar sonido',exact=True).wait_for(timeout=5000)
+ # Las fuentes nuevas se recargan al cambiar la versión de Nexus.
+ versioned=context.new_page();version_state={'app_version':'0.2.18'};loads=[0]
+ def version_document(r):
+  loads[0]+=1
+  html=(root/'src-tauri/overlay/alerts.html').read_text().replace('/*NEXUS_ALERT_STYLE*/',(root/'src-tauri/overlay/alerts.css').read_text().replace('__NEXUS_ALERT_FONT__','/assets/alerts/inter-latin.woff2')).replace('__NEXUS_ALERT_VERSION__',version_state['app_version'])
+  r.fulfill(body=html,content_type='text/html')
+ versioned.route('**/alerts/twitch?*',version_document)
+ versioned.route('**/api/alerts/twitch/poll?*',lambda r:r.fulfill(json=dict(config=cfg('Twitch','#9146ff'),event=None,pending=0,duplicate=False,app_version=version_state['app_version'])))
+ versioned.goto('http://127.0.0.1:1420/alerts/twitch?key=test');versioned.wait_for_timeout(600);assert loads[0]==1
+ version_state['app_version']='0.2.19'
+ for _ in range(20):
+  if loads[0]>=2:break
+  versioned.wait_for_timeout(100)
+ assert loads[0]==2
+ versioned.wait_for_timeout(600);assert loads[0]==2
  assert not errors,errors
- print(json.dumps(dict(animated_mascot=True,editable_type_and_text=True,isolated_silent_preview=True,tiktok=True,independent_controls=True,separate_urls=True,save_preferences=True,responsive=True,overlay_safe_text=True,overlay_hides=True,no_audio_repeat_on_reconnect=True,audio_permission_control=True,js_errors=errors)))
+ print(json.dumps(dict(auto_refresh_on_version_change=True,approved_art=True,reference_preset=True,animated_mascot=True,editable_type_and_text=True,isolated_silent_preview=True,tiktok=True,independent_controls=True,separate_urls=True,save_preferences=True,responsive=True,overlay_safe_text=True,overlay_hides=True,no_audio_repeat_on_reconnect=True,audio_permission_control=True,js_errors=errors)))
  b.close()
