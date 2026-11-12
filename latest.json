@@ -1,17 +1,17 @@
 {
-  "version": "0.2.19",
+  "version": "0.2.20",
   "notes": [
-    "16 plantillas: seguidores, suscripciones, renovaciones, regalos, bits y raids en Twitch; suscriptores, miembros, membresías regaladas, Super Chat y Super Sticker en YouTube; seguidores, suscripciones, regalos, me gusta y compartir en TikTok.",
-    "Un enlace y una cola por plataforma. Cada evento guarda su ilustración, melodía, duración, volumen, texto, tipografía y activación independientemente.",
-    "Nuevas poses de celebración, regalo, aporte, portal y corazones, sobre los marcos de referencia de cada red.",
-    "Variables de prueba {usuario}, {cantidad} y {mensaje}; borradores conservados al cambiar de evento y pruebas de Stream Deck con selección de tipo.",
-    "Las alertas en cola conservan la configuración con la que se enviaron; repetir recupera también el tipo y el diseño originales. Pausa y silencio siguen siendo globales por plataforma.",
-    "Ilustraciones compartidas entre OBS y la vista previa sin duplicarlas en el bundle del frontend. Preferencias incluidas en las copias, sin nueva migración.",
-    "La recepción automática de eventos sociales sigue pendiente. Las plantillas se pueden probar y los anuncios manuales permanecen disponibles."
+    "Recepción oficial de Twitch mediante EventSub WebSocket: seguidores, suscripciones, renovaciones, regalos, bits y raids según permisos y afiliación. Autorización de aplicación pública con código de dispositivo y tokens guardados en el Administrador de credenciales de Windows.",
+    "YouTube consulta nuevos suscriptores públicos cada 2 minutos y el chat del directo para miembros, membresías regaladas, Super Chat y Super Stickers. La primera lectura establece una base sin emitir eventos antiguos; no se identifican suscripciones privadas ni se garantiza un aviso por volver a suscribirse.",
+    "Panel de conexiones con errores visibles, estado parcial y último evento recibido. TikTok mantiene pruebas y anuncios manuales; no se anuncia como conectado automáticamente.",
+    "Audios MP3, WAV y OGG propios por evento, hasta 2 MB, con inicio, fin, volumen, escucha del recorte y salida suave. Biblioteca local separada de las plantillas e incluida en las copias.",
+    "Coordinación del audio según la duración real del recorte. Las alertas esperan su turno de sonido antes de entrar; silencio, pausa y repetición conservan sus controles.",
+    "Entrada escalonada del marco y texto, brillos y partículas por celebración, regalo, portal y corazones, respetando los artes aprobados y la preferencia de reducir movimiento.",
+    "Migración aditiva 21 para medios y cursores, con copia previa y compatibilidad con respaldos antiguos. Las cuentas se autorizan en el equipo del usuario; las pruebas automatizadas no sustituyen un evento real con OBS."
   ],
   "date": "2026-11-12",
   "installer": "TrophyHunter-setup.exe",
-  "source_commit": "ab59887e24771cb8357044fcd42176ea01cd6240",
-  "sha256": "a96b9cbbdfa4832082f33e603fe144509b4bfdb767c3f0aabbcd12c375f427ef",
-  "size": 18180233
+  "source_commit": "5909112214be33f72546eb65ec57831e2ac6080b",
+  "sha256": "469dbdeccec2dee314ba329aa9376704243bec424251e0d32f24e45c74c2fc24",
+  "size": 18271584
 }
