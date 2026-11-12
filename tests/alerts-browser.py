@@ -61,6 +61,13 @@ with sync_playwright() as p:
  overlay.screenshot(path=str(artifacts/'alerta-youtube.png'))
  overlay.wait_for_timeout(1600);assert overlay.evaluate('window.audioStarts')==1
  packet['event']=None;overlay.locator('#alert.visible').wait_for(state='hidden',timeout=5000)
+ # Un navegador que bloquea audio debe ofrecer un control, sin esperar para siempre.
+ blocked=context.new_page();blocked.set_viewport_size({'width':640,'height':300});blocked.on('pageerror',lambda e:errors.append(str(e)))
+ blocked.route('**/alerts/youtube?*',lambda r:r.fulfill(body=(root/'src-tauri/overlay/alerts.html').read_text(),content_type='text/html'))
+ now=int(time.time()*1000);packet['event']=dict(event=dict(id=2,title='Prueba de audio',message='',test=True,replay=False),started_at=now,ends_at=now+3000,sound_at=now)
+ blocked.route('**/api/alerts/youtube/poll?*',lambda r:r.fulfill(json=packet))
+ blocked.add_init_script("window.AudioContext=class {state='suspended';resume(){return new Promise(()=>{})}}")
+ blocked.goto('http://127.0.0.1:1420/alerts/youtube?key=test');blocked.get_by_role('button',name='Activar sonido',exact=True).wait_for(timeout=5000)
  assert not errors,errors
- print(json.dumps(dict(independent_controls=True,separate_urls=True,save_preferences=True,responsive=True,overlay_safe_text=True,overlay_hides=True,no_audio_repeat_on_reconnect=True,js_errors=errors)))
+ print(json.dumps(dict(independent_controls=True,separate_urls=True,save_preferences=True,responsive=True,overlay_safe_text=True,overlay_hides=True,no_audio_repeat_on_reconnect=True,audio_permission_control=True,js_errors=errors)))
  b.close()
