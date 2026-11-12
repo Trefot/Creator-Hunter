@@ -4,6 +4,7 @@ mod backup;
 mod live;
 mod alerts;
 mod alerts_core;
+mod alerts_assets;
 mod game_broadcast;
 mod game_tracking;
 mod obs;
@@ -212,6 +213,8 @@ pub fn run() {
             game_tracking::obs_sources,
             alerts::alerts_status,
             alerts::alerts_save,
+            alerts::alerts_save_event,
+            alerts::alerts_asset,
             alerts::alerts_audio,
             alerts::alerts_action,
             alerts::alerts_announce,

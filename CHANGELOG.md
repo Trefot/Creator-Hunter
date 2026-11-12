@@ -2,6 +2,16 @@
 
 ## [Sin publicar]
 
+## [0.2.19] · 2026-11-12 · Alertas por evento
+
+- 16 plantillas: seguidores, suscripciones, renovaciones, regalos, bits y raids en Twitch; suscriptores, miembros, membresías regaladas, Super Chat y Super Sticker en YouTube; seguidores, suscripciones, regalos, me gusta y compartir en TikTok.
+- Un enlace y una cola por plataforma. Cada evento guarda su ilustración, melodía, duración, volumen, texto, tipografía y activación independientemente.
+- Nuevas poses de celebración, regalo, aporte, portal y corazones, sobre los marcos de referencia de cada red.
+- Variables de prueba {usuario}, {cantidad} y {mensaje}; borradores conservados al cambiar de evento y pruebas de Stream Deck con selección de tipo.
+- Las alertas en cola conservan la configuración con la que se enviaron; repetir recupera también el tipo y el diseño originales. Pausa y silencio siguen siendo globales por plataforma.
+- Ilustraciones compartidas entre OBS y la vista previa sin duplicarlas en el bundle del frontend. Preferencias incluidas en las copias, sin nueva migración.
+- La recepción automática de eventos sociales sigue pendiente. Las plantillas se pueden probar y los anuncios manuales permanecen disponibles.
+
 ## [0.2.18] · 2026-11-12 · Arte de las alertas de referencia
 
 - Sustituye los marcos simplificados y el logo estático por artes completos preparados desde la muestra aprobada: personaje saludando, marcos detallados, placas y efectos propios de Twitch, YouTube y TikTok.

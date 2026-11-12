@@ -35,3 +35,6 @@ dist-ssr
 /.browser-artifacts/
 
 /tests/alerts/target/
+
+# Caché de las pruebas Python
+**/__pycache__/

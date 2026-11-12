@@ -1,7 +1,7 @@
 <!doctype html><html lang="es"><meta charset="utf-8"><title>Trefot · Alertas</title>
 <style>/*NEXUS_ALERT_STYLE*/</style>
 <div id="alert" aria-live="polite" data-platform="twitch">
- <img id="art" alt="Arte de la alerta de Twitch"><div class="lantern-light"></div>
+ <img id="art" alt="Arte de la alerta de Twitch"><img id="event-mascot" alt="Personaje de la alerta" hidden><div class="lantern-light"></div>
  <div class="content"><div id="label"></div><h1 id="title"></h1><p id="message"></p></div>
  <div id="source-name"></div><div id="badge"></div><div id="progress"></div>
 </div><button id="audio" hidden>Activar sonido</button>
@@ -11,7 +11,8 @@ const key=new URLSearchParams(location.search).get('key')||'',viewer=crypto.rand
 const names={twitch:'Twitch',youtube:'YouTube',tiktok:'TikTok'},fonts={sans:"'Trefot Inter', system-ui, sans-serif",serif:'Georgia, serif',mono:'ui-monospace, monospace'};
 let last=null,context=null,tone=null,soundTimer=null,ends=0,desiredSize=40;
 function fitName(){const el=$('title');el.style.fontSize='';let size=desiredSize;while((el.scrollWidth>el.clientWidth||$('message').getBoundingClientRect().bottom>$('art').getBoundingClientRect().top+$('art').clientHeight*.88-6)&&size>20)el.style.fontSize=(--size)+'px';}
-document.fonts?.addEventListener('loadingdone',fitName);
+function fitLabel(){const el=$('label');el.style.fontSize='14px';el.style.letterSpacing='1.4px';let size=14;while(el.scrollWidth>el.clientWidth&&size>9){size-=.5;el.style.fontSize=size+'px';if(size<12)el.style.letterSpacing='.5px';}}
+document.fonts?.addEventListener('loadingdone',()=>{fitLabel();fitName()});
 function color(value,fallback){return /^#[a-f\d]{6}$/i.test(value||'')?value:fallback}
 function render(s){const p=s.event,c=s.config,a=$('alert');
  if(!preview&&(c.muted||!c.sound||!c.volume))stopSound();
@@ -21,21 +22,24 @@ function render(s){const p=s.event,c=s.config,a=$('alert');
  a.style.setProperty('--label',color(c.label_color,'#ffd27b'));a.style.setProperty('--ink',color(c.text_color,'#ffffff'));a.style.setProperty('--message',color(c.message_color,'#eee6ff'));a.style.setProperty('--type',fonts[c.font_family]||fonts.sans);
  a.style.setProperty('--name-size',Math.max(24,Math.min(48,Number(c.name_size)||40))+'px');a.style.setProperty('--message-size',Math.max(12,Math.min(22,Number(c.message_size)||16))+'px');
  $('source-name').textContent=c.title&&c.title.toLowerCase()!==network.toLowerCase()?c.title:'';
- $('art').alt='Arte de la alerta de '+network;const artUrl=preview?(s.art||''):`/assets/alerts/${platform}-v2.png?v=${rendererVersion}`;if($('art').getAttribute('src')!==artUrl)$('art').src=artUrl;
+ const design=['reference','celebrate','gift','support','raid','heart'].includes(c.design)?c.design:'reference';a.dataset.design=design;
+ $('art').alt='Arte de la alerta de '+network;const artUrl=preview?(s.art||''):`/assets/alerts/${platform}${design==='reference'?'-v2.png':'-frame-v3.png'}?v=${rendererVersion}`;if($('art').getAttribute('src')!==artUrl)$('art').src=artUrl;
+ const figure=$('event-mascot');figure.hidden=design==='reference';if(design!=='reference'){const url=preview?s.figure:`/assets/alerts/pose-${design}-v1.png?v=${rendererVersion}`;if(figure.getAttribute('src')!==url)figure.src=url;}
  $('label').textContent=p.event.test?(c.event_label||'NUEVO SEGUIDOR'):'ANUNCIO';
- $('title').textContent=p.event.title;$('message').textContent=p.event.message;desiredSize=Math.max(24,Math.min(48,Number(c.name_size)||40));fitName();$('badge').textContent=(p.event.test?'PRUEBA':'ANUNCIO MANUAL')+(p.event.replay?' · REPETICIÓN':'');
+ fitLabel();$('title').textContent=p.event.title;$('message').textContent=p.event.message;desiredSize=Math.max(24,Math.min(48,Number(c.name_size)||40));fitName();$('badge').textContent=(p.event.test?'PRUEBA':'ANUNCIO MANUAL')+(p.event.replay?' · REPETICIÓN':'');
  $('progress').hidden=preview;
  ends=preview?0:p.ends_at;
  if(!preview)$('progress').style.transform=`scaleX(${Math.max(0,Math.min(1,(p.ends_at-Date.now())/(p.ends_at-p.started_at)))})`;
  const eventKey=`${p.event.id}:${p.started_at}`;
- if(last!==eventKey){if(!preview)stopSound();last=eventKey;a.classList.remove('visible','leaving');void a.offsetWidth;a.classList.add('visible');if(!preview&&p.sound_at!==null&&!c.muted&&c.sound&&p.sound_at+1000>=Date.now())soundTimer=setTimeout(()=>sound(c.volume),Math.max(0,p.sound_at-Date.now()));}
+ if(last!==eventKey){if(!preview)stopSound();last=eventKey;a.classList.remove('visible','leaving');void a.offsetWidth;a.classList.add('visible');if(!preview&&p.sound_at!==null&&!c.muted&&c.sound&&p.sound_at+1000>=Date.now())soundTimer=setTimeout(()=>sound(c.volume,c.tone),Math.max(0,p.sound_at-Date.now()));}
 }
 function stopSound(){clearTimeout(soundTimer);if(tone){try{tone.stop()}catch{}tone=null;}}
-async function sound(volume){try{context??=new AudioContext();await Promise.race([context.resume(),new Promise(resolve=>setTimeout(resolve,100))]);if(context.state!=='running')throw Error();$('audio').hidden=true;const osc=context.createOscillator(),gain=context.createGain(),now=context.currentTime;osc.type='sine';const base=platform==='twitch'?660:platform==='youtube'?880:740;osc.frequency.setValueAtTime(base,now);osc.frequency.setValueAtTime(base*4/3,now+.22);gain.gain.setValueAtTime(0,now);gain.gain.linearRampToValueAtTime(volume/100*.2,now+.04);gain.gain.exponentialRampToValueAtTime(.001,now+.55);osc.connect(gain);gain.connect(context.destination);osc.start();osc.stop(now+.6);tone=osc;}catch{$('audio').hidden=false;}}
+async function sound(volume,style){try{context??=new AudioContext();await Promise.race([context.resume(),new Promise(resolve=>setTimeout(resolve,100))]);if(context.state!=='running')throw Error();$('audio').hidden=true;const osc=context.createOscillator(),gain=context.createGain(),now=context.currentTime;osc.type=style==='portal'?'triangle':'sine';const base=platform==='twitch'?660:platform==='youtube'?880:740,patterns={soft:[1,4/3],celebrate:[1,1.25,1.5],sparkle:[2,1.5,2],portal:[.5,.75,1],heart:[1,1.125]},notes=patterns[style]||patterns.soft;notes.forEach((note,i)=>osc.frequency.setValueAtTime(base*note,now+i*(notes.length===2?.22:.17)));gain.gain.setValueAtTime(0,now);gain.gain.linearRampToValueAtTime(volume/100*.2,now+.04);gain.gain.exponentialRampToValueAtTime(.001,now+.55);osc.connect(gain);gain.connect(context.destination);osc.start();osc.stop(now+.6);tone=osc;}catch{$('audio').hidden=false;}}
 $('audio').onclick=async()=>{context??=new AudioContext();await context.resume();$('audio').hidden=context.state==='running';};
 async function tick(){try{const r=await fetch(`/api/alerts/${platform}/poll?key=${encodeURIComponent(key)}&viewer=${viewer}`,{cache:'no-store'});if(!r.ok)throw Error();const packet=await r.json();if(packet.app_version&&packet.app_version!==rendererVersion){location.reload();return;}render(packet);}catch{stopSound();$('alert').classList.remove('visible','leaving');ends=0;}finally{setTimeout(tick,500);}}
 if(preview){
- window.addEventListener('message',e=>{if(e.source!==parent||e.data?.type!=='nexus-alert-preview')return;const data=e.data;platform=names[data.platform]?data.platform:'twitch';const c=data.config;const name=c.sample_name||'LUNA_27';render({art:data.art,config:c,event:{event:{id:data.play||0,title:name,message:(c.message_template??'¡Bienvenido a la aventura!').replaceAll('{usuario}',()=>name),test:true,replay:false},started_at:0,ends_at:0,sound_at:null}});});
+ let previewArt='',previewFigure='';
+ window.addEventListener('message',e=>{if(e.source!==parent||e.data?.type!=='nexus-alert-preview')return;const data=e.data;platform=names[data.platform]?data.platform:'twitch';if(typeof data.art==='string')previewArt=data.art;if(typeof data.figure==='string')previewFigure=data.figure;const c=data.config;const name=c.sample_name||'LUNA_27';render({art:previewArt,figure:previewFigure,config:c,event:{event:{id:data.play||0,title:name,message:(c.message_template??'¡Bienvenido a la aventura!').replace(/\{(usuario|cantidad|mensaje)\}/g,(_,token)=>({usuario:name,cantidad:c.sample_amount??'1',mensaje:c.sample_note??''})[token]),test:true,replay:false},started_at:0,ends_at:0,sound_at:null}});});
 }else{
  setInterval(()=>{if(!ends)return;const remaining=ends-Date.now();if(remaining<=400)$('alert').classList.add('leaving');if(remaining<=0){$('alert').classList.remove('visible','leaving');stopSound();ends=0;last=null;}},100);tick();
 }

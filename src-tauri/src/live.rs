@@ -153,14 +153,7 @@ fn handle_request(app: &AppHandle, key: &str, request: Request) {
 
     match segments.iter().map(String::as_str).collect::<Vec<_>>().as_slice() {
         ["assets","alerts",file] => {
-            let (mime,bytes):(&str,&[u8])=match *file {
-                "twitch-v2.png"=>("image/png",include_bytes!("../../src/assets/alerts/twitch-approved.png")),
-                "youtube-v2.png"=>("image/png",include_bytes!("../../src/assets/alerts/youtube-approved.png")),
-                "tiktok-v2.png"=>("image/png",include_bytes!("../../src/assets/alerts/tiktok-approved.png")),
-                "Inter-LICENSE.txt"=>("text/plain; charset=utf-8",include_bytes!("../../src/assets/alerts/Inter-LICENSE.txt")),
-                "inter-latin.woff2"=>("font/woff2",include_bytes!("../../src/assets/alerts/inter-latin.woff2")),
-                _=>return respond_json(request,404,json!({"error":"Recurso no disponible."})),
-            };
+            let Some((mime,bytes))=crate::alerts_assets::get(file) else {return respond_json(request,404,json!({"error":"Recurso no disponible."}));};
             let response=Response::from_data(bytes.to_vec()).with_header(header("Content-Type",mime)).with_header(header("Cache-Control","public, max-age=86400"));let _=request.respond(response);
         }
         ["assets","alert-mascot.png"] => {
@@ -173,7 +166,7 @@ fn handle_request(app: &AppHandle, key: &str, request: Request) {
             if query("key").as_deref()!=Some(key){return respond_json(request,403,json!({"error":"Clave local no válida."}));}
             let result=tauri::async_runtime::block_on(async {
                 if *action=="poll" {crate::alerts::poll(app,platform,&query("viewer").unwrap_or_default()).await}
-                else {crate::alerts::action_inner(app,platform,action).await}
+                else {crate::alerts::action_inner(app,platform,action,query("event").as_deref()).await}
             });
             match result {Ok(data)=>respond_json(request,200,data),Err(error)=>respond_json(request,409,json!({"error":error}))}
         }

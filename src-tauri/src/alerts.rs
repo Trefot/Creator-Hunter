@@ -1,4 +1,5 @@
-use crate::alerts_core::{Config, Engine, Settings};
+use crate::alerts_core::{Config, Engine, Settings, definition, first_kind};
+use base64::Engine as _;
 use serde_json::{Value, json};
 use std::time::{SystemTime, UNIX_EPOCH};
 use tauri::{AppHandle, Manager};
@@ -59,6 +60,38 @@ pub async fn alerts_save(
     Ok(e.status())
 }
 #[tauri::command]
+pub async fn alerts_save_event(
+    app: AppHandle,
+    platform: String,
+    event_kind: String,
+    mut config: Config,
+) -> Result<Value, String> {
+    definition(&platform, &event_kind)?;
+    config.validate()?;
+    config.muted = false;
+    config.paused = false;
+    let state = app.state::<AlertsState>();
+    let mut e = state.0.lock().await;
+    let mut settings = read(&app).await?;
+    settings
+        .event_templates
+        .insert(format!("{platform}/{event_kind}"), config);
+    write(&app, &settings).await?;
+    e.settings = settings;
+    Ok(e.status())
+}
+#[tauri::command]
+pub fn alerts_asset(name: String) -> Result<String, String> {
+    let (mime, bytes) = crate::alerts_assets::get(&name).ok_or("Ilustración no disponible.")?;
+    if mime != "image/png" {
+        return Err("Este recurso no es una ilustración.".into());
+    }
+    Ok(format!(
+        "data:image/png;base64,{}",
+        base64::engine::general_purpose::STANDARD.encode(bytes)
+    ))
+}
+#[tauri::command]
 pub async fn alerts_audio(app: AppHandle, coordinate: bool) -> Result<Value, String> {
     let state = app.state::<AlertsState>();
     let mut e = state.0.lock().await;
@@ -73,10 +106,16 @@ pub async fn alerts_action(
     app: AppHandle,
     platform: String,
     action: String,
+    event_kind: Option<String>,
 ) -> Result<Value, String> {
-    action_inner(&app, &platform, &action).await
+    action_inner(&app, &platform, &action, event_kind.as_deref()).await
 }
-pub async fn action_inner(app: &AppHandle, platform: &str, action: &str) -> Result<Value, String> {
+pub async fn action_inner(
+    app: &AppHandle,
+    platform: &str,
+    action: &str,
+    event_kind: Option<&str>,
+) -> Result<Value, String> {
     let state = app.state::<AlertsState>();
     let mut e = state.0.lock().await;
     e.settings = read(app).await?;
@@ -93,6 +132,8 @@ pub async fn action_inner(app: &AppHandle, platform: &str, action: &str) -> Resu
             cfg.paused = !cfg.paused
         }
         write(app, &e.settings).await?;
+    } else if action == "test" {
+        e.test_event(platform, event_kind.unwrap_or(first_kind(platform)?))?;
     } else {
         e.action(platform, action)?
     }

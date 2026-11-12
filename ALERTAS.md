@@ -1,62 +1,68 @@
-# Alertas de Trefot para OBS · 0.2.18
+# Alertas por evento · 0.2.19
 
-Plantilla con artes completos preparados desde la muestra visual aprobada, en lugar de los bordes simplificados y la pose del icono de 0.2.17. Cada plataforma tiene su propia ilustración del personaje saludando, marco, placa y decoraciones: Twitch violeta/dorado, YouTube rojo/dorado y TikTok cian/rosa. Entrada/salida y luz del farol animadas. Los textos se colocan encima del arte y siguen siendo editables. Se incluye Inter para que la tipografía no dependa de la fuente predeterminada de Windows.
+Una fuente de navegador y una cola por plataforma. Los eventos comparten esa fuente, pero conservan su propia ilustración, duración, volumen, melodía, texto y activación. Los marcos de referencia de Twitch, YouTube y TikTok mantienen su paleta; las poses incluyen saludo, celebración, regalo, aporte, portal y corazones.
 
-**Todavía no recibe automáticamente eventos de Twitch, YouTube o TikTok.** La conexión de YouTube para métricas no activa las alertas. La interfaz muestra que los eventos de las redes están sin conectar. No incluye bot ni webhook de Discord. Esta versión ofrece una plantilla por plataforma, pruebas identificadas y anuncios manuales; las variantes por cada tipo de evento serán un paso adicional.
+**Esta entrega prepara y prueba las plantillas. La recepción automática desde Twitch, YouTube o TikTok sigue pendiente.** La conexión de YouTube para métricas no activa alertas. Algunos eventos dependen de permisos, privacidad o disponibilidad de la plataforma; que exista una plantilla no garantiza que la API permita recibirlos. Discord no está incluido todavía.
 
-## Configurar OBS
+## Plantillas incluidas
 
-1. Abre Live Studio → Alertas por plataforma.
-2. Personaliza la tarjeta de Twitch y pulsa Guardar twitch.
-3. Copia su URL y crea una Fuente de navegador en OBS de **640×300**. Pégala y sitúala donde quieras.
-4. Repite con YouTube y, si lo utilizas, TikTok. Cada fuente tiene URL, cola y sonido propios.
-5. Activa «Controlar audio mediante OBS» en cada fuente y revisa mezclador y pistas. Si se bloquea el audio automático, abre Interactuar y pulsa Activar sonido. El sonido físico de tu OBS requiere comprobación en tu equipo.
-6. Pulsa Probar en la plataforma correspondiente: la alerta lleva la marca PRUEBA. Entre alertas el fondo es transparente.
+| Twitch (6) | YouTube (5) | TikTok (5) |
+| --- | --- | --- |
+| Seguidor | Suscriptor | Seguidor |
+| Suscripción | Miembro | Suscripción |
+| Renovación | Membresías regaladas | Regalo |
+| Suscripciones regaladas | Super Chat | Me gusta |
+| Bits | Super Sticker | Compartir |
+| Raid | | |
 
-Si ya utilizabas las fuentes de 0.2.16 o 0.2.17, conserva sus URLs y tamaño. El nuevo diseño se sirve después de actualizar Nexus; refresca la fuente de OBS una vez para dejar atrás el documento de 0.2.17. La versión nueva detecta cambios de versión de Nexus y recarga el documento en las siguientes actualizaciones.
+## Preparar cada evento
 
-Las URLs llevan la clave local; no compartirlas. El servidor solo escucha en el propio equipo. Desarrollo usa 7879 y producción 7878. Nexus debe permanecer abierto. Estas fuentes no requieren OBS WebSocket; la conexión de grabación continúa en su panel existente.
+1. Abre Live Studio → Alertas por plataforma y elige Tipo de alerta en la tarjeta de la red.
+2. Usa Cargar diseño de la muestra para recuperar el diseño predeterminado **de ese evento**. Los seguidores conservan el arte completo ya aprobado; los demás utilizan el mismo marco con nuevas poses.
+3. Personaliza ilustración, etiqueta, tipografía, tamaños, colores del texto, duración (3–15 s), volumen y melodía. Son cinco melodías sintéticas breves; no se han añadido todavía archivos propios de vídeo, audio o tipografía.
+4. Elige el nombre, cantidad y mensaje de prueba. La plantilla admite `{usuario}`, `{cantidad}` y `{mensaje}`. Los valores se insertan literalmente, sin HTML y sin volver a interpretar variables contenidas en un nombre o mensaje.
+5. Guarda el evento antes de pulsar Probar. La vista previa muestra el borrador, sin sonido ni lecturas de la cola. Probar utiliza la configuración guardada y lleva la marca PRUEBA en OBS.
 
-## Editor y vista previa
+Los borradores sobreviven al cambiar de evento y no los sobrescribe el refresco de estado. Guardar afecta solo al evento seleccionado. Desactivar una alerta impide encolar nuevas pruebas de ese tipo; no desactiva las demás. Las alertas ya aceptadas conservan su configuración: para quitarlas usa Vaciar pendientes.
 
-Pulsa **Cargar diseño de la muestra** para cargar en el borrador la tipografía Inter, nombre de 40 px, etiqueta dorada, texto blanco, LUNA_27 y el mensaje de referencia. Después pulsa Guardar para aplicarlo a OBS. No cambia el volumen ni la pausa de la cola.
+Cada tipo puede usar cualquiera de las seis ilustraciones y cinco melodías. El botón de muestra devuelve los ajustes propios del evento; no sustituye los de otros eventos. El título aparece como texto auxiliar cuando es distinto del nombre de la plataforma.
 
-La vista previa incrustada utiliza el mismo documento y estilos que OBS, aislados y sin sonido ni lecturas de la cola. Puedes repetirla sin enviar eventos a OBS. Los cambios del borrador se ven de inmediato; solo Guardar cambia la fuente real.
+## OBS: los mismos tres enlaces
 
-Por plataforma puedes editar:
+1. Copia la URL de cada plataforma a su Fuente de navegador de **640×300**.
+2. Todos sus eventos aparecerán en esa fuente y posición. No hace falta crear otra fuente por evento ni cambiar el enlace existente.
+3. Activa Controlar audio mediante OBS y revisa mezclador y pistas. Si el navegador bloquea audio, abre Interactuar y pulsa Activar sonido.
+4. Las fuentes de 0.2.18 detectan la nueva versión y se recargan. Si procedes de una fuente anterior que conserva el documento viejo, refresca una vez su caché.
 
-- Título de la fuente, mostrado como texto auxiliar si es distinto del nombre de la plataforma. Los marcos ilustrados conservan su paleta aprobada; no se recolorean al editar el texto.
-- Color de la etiqueta, del nombre y del mensaje; tipografía Inter/clásica/monoespaciada.
-- Tamaño del nombre (24–48 px) y del mensaje (12–22 px).
-- Etiqueta de la alerta; vacía usa el texto de ejemplo NUEVO SEGUIDOR de la muestra. Puedes personalizarlo, por ejemplo como NUEVO SUSCRIPTOR en YouTube.
-- Nombre de prueba y mensaje de hasta 160 caracteres. `{usuario}` inserta el nombre de prueba. No se admite HTML ni CSS personalizados.
-- Duración (3–15 s), volumen y activación del sonido. Cada plataforma tiene un aviso breve distinto.
+Las URLs llevan la clave local y no se deben compartir. El servidor escucha solo en el propio equipo. Desarrollo usa 7879 y producción 7878. Nexus debe permanecer abierto. Las fuentes no necesitan la conexión WebSocket de grabación.
 
-Los nombres largos reducen su tamaño hasta 20 px para caber y después muestran puntos suspensivos si es necesario. El mensaje se muestra en una línea y utiliza puntos suspensivos si no cabe. Se respeta la preferencia del sistema de reducir movimiento. Las poses de saludo forman parte de los artes; las poses articuladas, vídeos/audios importados y fuentes tipográficas propias no están implementados.
+Los nombres se ajustan de tamaño si no caben. Las etiquetas largas reducen su tipografía; los textos personalizados demasiado largos muestran puntos suspensivos. El mensaje ocupa una línea. Se respeta la preferencia del sistema de reducir movimiento. Los PNG son ilustraciones con distintas poses; la animación añade entrada/salida, luces y movimientos suaves, sin articulación del personaje.
 
-## Controles y Stream Deck
+## Colas, pausa y silencio
 
-- Pausar deja terminar la alerta actual y conserva las siguientes.
-- Silenciar corta el sonido al recibir el siguiente estado (lecturas cada 500 ms).
-- Repetir reproduce de nuevo la última alerta emitida, identificada como repetición. Falla si todavía no se emitió ninguna.
-- Vaciar pendientes elimina solo las que esperan.
-- Anuncio manual envía título y mensaje propios, con la etiqueta ANUNCIO MANUAL.
+- Cada plataforma admite 50 alertas pendientes en orden de llegada.
+- Cada alerta conserva el tipo, texto, diseño, sonido y duración con que se envió. Cambiar una plantilla no altera las que ya esperan ni la que se está mostrando.
+- Pausar deja terminar la alerta actual y detiene las siguientes de toda esa plataforma.
+- Silenciar corta el sonido de la plataforma al recibir el siguiente estado, aproximadamente cada 500 ms. No oculta la alerta ni silencia las otras redes.
+- Repetir última recupera también el tipo y la configuración originales, aunque el editor tenga seleccionado otro evento.
+- Vaciar pendientes elimina solo las que esperan. Los anuncios manuales siguen disponibles y se identifican como ANUNCIO MANUAL.
+- Evitar sonidos simultáneos coordina las melodías de las tres plataformas sin unir sus colas.
+- Una segunda fuente de la misma plataforma no consume la cola simultáneamente. La titularidad caduca a los tres segundos sin lecturas; transferirla no reinicia tiempo ni sonido.
 
-En Controles para Stream Deck copia las URLs a acciones Sitio web en segundo plano. Prueba, Pausa, Silencio y Repetir son independientes; Pausa y Silencio alternan el estado. No hay plugin nativo ni botones con estado bidireccional.
+Las colas y la última alerta son temporales y se vacían al reiniciar Nexus, para no reemitir avisos antiguos.
 
-Cada cola admite 50 pendientes. Las colas y la última alerta viven solo durante la ejecución de Nexus; se vacían al reiniciar para no reemitir avisos antiguos. Evitar sonidos simultáneos coordina los avisos de las tres fuentes sin unir sus colas. Una segunda fuente de la misma plataforma no reproduce la cola a la vez; la titularidad caduca tras tres segundos sin lecturas. Al transferirla no se reinicia el tiempo de la alerta ni su sonido.
+## Stream Deck
 
-## Preferencias y compatibilidad
+El enlace principal de OBS no cambia. En Controles para Stream Deck puedes copiar una URL de prueba del evento seleccionado, por ejemplo `/api/alerts/twitch/test?key=…&event=raid`. Úsala en Sitio web en segundo plano.
 
-Se conservan las preferencias de colas, sonido y texto de las versiones anteriores. Los bordes configurables se sustituyen por la paleta fija del arte de referencia. Los campos de estilo y TikTok obtienen valores predeterminados cuando no existen. Las preferencias están en workspace.alert_settings, incluidas en las copias de las 27 tablas; no hace falta una nueva migración y se mantiene el esquema 20. Se probó la exportación/restauración de la tipografía y los colores nuevos.
+Pausa, Silencio y Repetir controlan toda la plataforma y mantienen sus URLs anteriores. Una URL de prueba antigua sin `event` usa el evento inicial de esa red. Pausa y Silencio son interruptores; no hay plugin nativo ni botones con estado bidireccional. Una prueba de un evento desactivado o de una red incorrecta se rechaza sin encolar nada.
 
-## Validación y próximos pasos
+## Persistencia, recursos y comprobaciones
 
-- Siete pruebas del motor: aislamiento de colas, coordinación de audio, controles, fuentes duplicadas, límites, estilos válidos, compatibilidad con ajustes antiguos y texto editable de prueba.
-- Prueba de interfaz con RPC simulados: tipografía/tamaños/texto, vista previa silenciosa sin consumo de cola, tres plataformas, URLs, texto seguro, recuperación y permiso de audio.
-- `tests/alerts-demo.py` graba el HTML real con eventos ficticios; no acredita recepción de servicios externos.
-- Pendientes: recepción oficial de eventos sociales, plantillas por cada evento, archivos propios y comprobación de sonido/fuentes en el OBS del usuario. Discord se implementará por separado.
+Las preferencias de 0.2.18 se conservan como configuración inicial de seguidores/suscriptores. Los nuevos ajustes se guardan en `event_templates` dentro de workspace.alert_settings. Están incluidos en las copias de las 27 tablas; no hay nueva migración y se mantiene el esquema 20.
 
-## Recursos visuales y fuente
+Las ilustraciones se guardan una sola vez en el registro nativo compartido por OBS y la vista previa. El frontend las carga por IPC y las reutiliza, sin otra copia de los PNG en su bundle ni reenvíos continuos al editar. Inter incluye su licencia SIL OFL. La referencia original continúa en design/alertas-referencia-aprobada.png.
 
-Los tres PNG con transparencia están en src/assets/alerts y se distribuyen con Nexus. La vista previa y el servidor local usan esos mismos archivos. La fuente Inter se acompaña de su licencia SIL OFL (Inter-LICENSE.txt); el servidor local también ofrece la licencia junto al recurso de fuente. No se accede a Streamlabs ni se usan archivos de su paquete.
+Las pruebas verifican las 16 configuraciones predeterminadas, aislamiento por evento, colas con configuraciones inmutables, repetición, desactivación, datos literales, restauración de preferencias y recursos gráficos. Chromium comprueba borradores, tipografía, variables, controles y recarga por versión. `tests/alerts-demo.py` muestra el renderer real recorriendo las 16 plantillas con eventos ficticios y duraciones abreviadas. Las pruebas de navegador necesitan Vite en :1420, Python/Playwright y Rust; `NEXUS_CARGO` permite indicar la ruta de Cargo. La grabación necesita FFmpeg disponible para Playwright.
+
+La recepción real y el sonido físico de las fuentes en el OBS del usuario requieren una prueba posterior en su equipo.
