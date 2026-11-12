@@ -125,6 +125,15 @@ fn client() -> Result<reqwest::Client, String> {
 async fn activity(app: &AppHandle, message: &str) {
     let _ = save(app, "discord-activity", &json!({"message":message})).await;
 }
+async fn claim(pool: &sqlx::SqlitePool, id: &str) -> Result<bool, String> {
+    let result = sqlx::query("INSERT OR IGNORE INTO alert_cursor(id,content) VALUES(?,?)")
+        .bind(id)
+        .bind(r#"{"state":"pending"}"#)
+        .execute(pool)
+        .await
+        .map_err(|e| e.to_string())?;
+    Ok(result.rows_affected() == 1)
+}
 async fn post(app: &AppHandle, kind: &str, body: Value, event_key: &str) -> Result<bool, String> {
     let url = webhook_url(
         &entry(kind)?
@@ -136,14 +145,14 @@ async fn post(app: &AppHandle, kind: &str, body: Value, event_key: &str) -> Resu
         "discord-delivery-{:x}",
         Sha256::digest(event_key.as_bytes())
     );
-    let previous = load(app, &id).await?;
-    if !previous.is_null() {
+    let pool = crate::backup::pool(app).await?;
+    if !claim(&pool, &id).await? {
+        let previous = load(app, &id).await?;
         if previous["state"] == "sent" {
             return Ok(false);
         }
         return Err("Hay una entrega sin confirmar de este contenido. Comprueba el canal de Discord antes de volver a publicarlo.".into());
     }
-    save(app, &id, &json!({"state":"pending"})).await?;
     let result = client()?
         .post(format!("{url}?wait=true"))
         .json(&body)
@@ -513,4 +522,43 @@ pub fn start(app: AppHandle) {
             std::thread::sleep(Duration::from_secs(120));
         }
     });
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn claims_are_atomic_and_preserve_confirmed_delivery() {
+        tauri::async_runtime::block_on(async {
+            let pool = sqlx::sqlite::SqlitePoolOptions::new()
+                .max_connections(1)
+                .connect("sqlite::memory:")
+                .await
+                .unwrap();
+            sqlx::query("CREATE TABLE alert_cursor(id TEXT PRIMARY KEY,content TEXT NOT NULL)")
+                .execute(&pool)
+                .await
+                .unwrap();
+            assert!(claim(&pool, "same-event").await.unwrap());
+            assert!(!claim(&pool, "same-event").await.unwrap());
+            sqlx::query("UPDATE alert_cursor SET content=? WHERE id=?")
+                .bind(r#"{"state":"sent"}"#)
+                .bind("same-event")
+                .execute(&pool)
+                .await
+                .unwrap();
+            assert!(!claim(&pool, "same-event").await.unwrap());
+            let raw: String = sqlx::query_scalar("SELECT content FROM alert_cursor WHERE id=?")
+                .bind("same-event")
+                .fetch_one(&pool)
+                .await
+                .unwrap();
+            assert_eq!(
+                serde_json::from_str::<Value>(&raw).unwrap()["state"],
+                "sent"
+            );
+            assert!(claim(&pool, "another-event").await.unwrap());
+            pool.close().await;
+        });
+    }
 }
