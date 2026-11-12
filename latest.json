@@ -1,15 +1,17 @@
 {
-  "version": "0.2.17",
+  "version": "0.2.18",
   "notes": [
-    "Primera plantilla animada con el personaje de Nexus, farol iluminado, destellos y entrada/salida sobre fondo transparente.",
-    "Variantes visuales Twitch violeta/dorado, YouTube rojo/dorado y TikTok cian/rosa. TikTok dispone de fuente y cola locales independientes; no hay integración automática con sus eventos.",
-    "Editor de tipografía, tamaños, colores, etiqueta, nombre de prueba y mensaje con {usuario}. Los nombres largos ajustan su tamaño.",
-    "Vista previa animada y aislada en Nexus, sin sonido ni consumo de la cola de OBS.",
-    "Preferencias anteriores conservadas y nuevos campos con valores por defecto; sin migración adicional. La recepción automática de eventos y la configuración de varias plantillas por evento siguen pendientes."
+    "Sustituye los marcos simplificados y el logo estático por artes completos preparados desde la muestra aprobada: personaje saludando, marcos detallados, placas y efectos propios de Twitch, YouTube y TikTok.",
+    "Texto dinámico sobre el arte, con Inter integrada y ajustes de posición para respetar la composición. Mensaje en cursiva y etiqueta dorada independiente.",
+    "Botón Cargar diseño de la muestra para recuperar textos, tamaños y colores de referencia antes de guardar.",
+    "La ilustración conserva su paleta; etiqueta, nombre y mensaje mantienen color y tipografía editables. Se conservan las colas y controles existentes.",
+    "Vista previa y OBS comparten artes, fuente y renderer; las modificaciones del overlay también se actualizan durante el desarrollo.",
+    "Las fuentes nuevas recargan el documento cuando cambia la versión de Nexus; al actualizar desde 0.2.17 hay que refrescar la fuente una vez.",
+    "Sin nueva migración ni recepción automática de eventos sociales."
   ],
   "date": "2026-11-12",
   "installer": "TrophyHunter-setup.exe",
-  "source_commit": "68080beb8af7c6dd0a2a588327a665244be0494a",
-  "sha256": "b9809589749e28385f58e76b1347f1dd3788d30770f4700c1dd76599e281de4f",
-  "size": 3893894
+  "source_commit": "a98597149fce53b68f64c6d9de5608c6c2c2c35b",
+  "sha256": "d5e0774dd950cf4b0ca8ff987d6197270a0e5a25254f1bc8f2b571b76d71032d",
+  "size": 12405941
 }
