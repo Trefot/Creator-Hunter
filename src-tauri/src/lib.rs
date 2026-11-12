@@ -2,6 +2,8 @@ use tauri_plugin_sql::{Migration, MigrationKind};
 
 mod backup;
 mod live;
+mod alerts;
+mod alerts_core;
 mod game_broadcast;
 mod game_tracking;
 mod obs;
@@ -137,6 +139,12 @@ fn migrations() -> Vec<Migration> {
             sql: include_str!("../migrations/019_game_broadcast.sql"),
             kind: MigrationKind::Up,
         },
+        Migration {
+            version: 20,
+            description: "preferencias de alertas independientes",
+            sql: include_str!("../migrations/020_alert_settings.sql"),
+            kind: MigrationKind::Up,
+        },
     ]
 }
 
@@ -152,6 +160,7 @@ pub fn run() {
         .manage(youtube::YouTubeState::default())
         .manage(psn::PsnState::default())
         .manage(live::LiveState::default())
+        .manage(alerts::AlertsState::default())
         .manage(obs::ObsState::default())
         .manage(premigrate::Preparation::default())
         .setup(|app| {
@@ -201,6 +210,11 @@ pub fn run() {
             game_tracking::game_broadcast_action,
             game_tracking::obs_capture,
             game_tracking::obs_sources,
+            alerts::alerts_status,
+            alerts::alerts_save,
+            alerts::alerts_audio,
+            alerts::alerts_action,
+            alerts::alerts_announce,
             live::live_status,
             live::live_notify,
             updater::update_check,

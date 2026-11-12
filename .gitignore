@@ -33,3 +33,5 @@ dist-ssr
 /tests/obs-protocol/target/
 
 /.browser-artifacts/
+
+/tests/alerts/target/

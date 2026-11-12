@@ -2,7 +2,7 @@ use sqlx::sqlite::{SqliteConnectOptions, SqlitePoolOptions};
 use std::path::{Path, PathBuf};
 use studio_data_safety::{TABLES, backup_if_pending, restore, snapshot, validate};
 
-const MIGRATIONS: [&str; 19] = [
+const MIGRATIONS: [&str; 20] = [
     include_str!("../../../src-tauri/migrations/001_initial.sql"),
     include_str!("../../../src-tauri/migrations/002_twitch_payout.sql"),
     include_str!("../../../src-tauri/migrations/003_images.sql"),
@@ -22,6 +22,7 @@ const MIGRATIONS: [&str; 19] = [
     include_str!("../../../src-tauri/migrations/017_obs_clips.sql"),
     include_str!("../../../src-tauri/migrations/018_game_ideas.sql"),
     include_str!("../../../src-tauri/migrations/019_game_broadcast.sql"),
+    include_str!("../../../src-tauri/migrations/020_alert_settings.sql"),
 ];
 
 struct Temp(PathBuf);
@@ -446,4 +447,19 @@ async fn schema_eighteen_import_and_target_backup_preserve_selection() {
  sqlx::query("INSERT INTO game_overlay(workspace_id,game_id,target_id) VALUES('00000000-0000-4000-8000-000000000001','game','t')").execute(&pool).await.unwrap();
  let before=game_broadcast::state(&pool).await.unwrap();let (doc,_) = snapshot(&pool,&TABLES,"new").await.unwrap();restore(&pool,&doc.to_string()).await.unwrap();assert_eq!(before,game_broadcast::state(&pool).await.unwrap());
  pool.close().await;old.close().await;
+}
+
+#[tokio::test]
+async fn alert_preferences_roundtrip_and_schema_19_import() {
+    let temp=Temp::new(); let old=database(&temp.0.join("old"),19).await;populate(&old).await;
+    let (old_doc,_)=snapshot(&old,&TABLES,"old").await.unwrap();
+    let current=database(&temp.0.join("current"),20).await;
+    restore(&current,&old_doc.to_string()).await.unwrap();
+    let raw:Option<String>=sqlx::query_scalar("SELECT alert_settings FROM workspace LIMIT 1").fetch_one(&current).await.unwrap();assert!(raw.is_none());
+    let prefs=r##"{"twitch":{"title":"Twitch","color":"#9146ff"},"youtube":{"title":"YouTube","color":"#ff3355"},"coordinate_audio":true}"##;
+    sqlx::query("UPDATE workspace SET alert_settings=?").bind(prefs).execute(&current).await.unwrap();
+    let (doc,_)=snapshot(&current,&TABLES,"new").await.unwrap();
+    sqlx::query("UPDATE workspace SET alert_settings=NULL").execute(&current).await.unwrap();
+    restore(&current,&doc.to_string()).await.unwrap();
+    let raw:String=sqlx::query_scalar("SELECT alert_settings FROM workspace LIMIT 1").fetch_one(&current).await.unwrap();assert_eq!(raw,prefs);
 }

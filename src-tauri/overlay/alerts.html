@@ -1,0 +1,20 @@
+<!doctype html><html lang="es"><meta charset="utf-8"><title>Nexus · Alertas</title>
+<style>*{box-sizing:border-box}body{margin:0;background:transparent;color:white;font:18px system-ui,sans-serif;padding:16px}#alert{width:min(600px,100%);border:2px solid var(--accent,#9146ff);border-radius:20px;background:linear-gradient(120deg,#201a2bf5,#111019f0);padding:24px;box-shadow:0 10px 24px #0005;opacity:0;transform:translateY(12px);transition:opacity .25s,transform .25s}#alert.visible{opacity:1;transform:none}.brand{display:flex;justify-content:space-between;gap:10px;color:var(--accent);font-size:15px;font-weight:800}h1{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-size:30px;overflow-wrap:anywhere;margin:14px 0 8px}p{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;white-space:pre-wrap;overflow-wrap:anywhere;margin:0;color:#e2dbea}#audio{position:fixed;bottom:6px;left:16px;font-size:12px;background:#211b2f;color:white;border:1px solid #9879bd;border-radius:6px;padding:4px}#badge{color:#ffd37a}#progress{height:4px;background:var(--accent);margin-top:18px;transform-origin:left}</style>
+<div id="alert" aria-live="polite"><div class="brand"><span id="platform"></span><span id="badge"></span></div><h1 id="title"></h1><p id="message"></p><div id="progress"></div></div><button id="audio" hidden>Activar sonido</button>
+<script>
+const platform=location.pathname.split('/').pop(),key=new URLSearchParams(location.search).get('key')||'',viewer=crypto.randomUUID(),$=id=>document.getElementById(id);
+let last=null,context=null,tone=null,soundTimer=null,ends=0;
+function stopSound(){clearTimeout(soundTimer);if(tone){try{tone.stop()}catch{}tone=null;}}
+async function sound(volume){try{context??=new AudioContext();await context.resume();if(context.state!=='running')throw Error();$('audio').hidden=true;const osc=context.createOscillator(),gain=context.createGain(),now=context.currentTime;osc.type='sine';osc.frequency.setValueAtTime(platform==='twitch'?660:880,now);osc.frequency.setValueAtTime(platform==='twitch'?880:1174,now+.22);gain.gain.setValueAtTime(0,now);gain.gain.linearRampToValueAtTime(volume/100*.2,now+.04);gain.gain.exponentialRampToValueAtTime(.001,now+.55);osc.connect(gain);gain.connect(context.destination);osc.start();osc.stop(now+.6);tone=osc;}catch{$('audio').hidden=false;}}
+$('audio').onclick=async()=>{context??=new AudioContext();await context.resume();$('audio').hidden=context.state==='running';};
+async function tick(){try{const r=await fetch(`/api/alerts/${platform}/poll?key=${encodeURIComponent(key)}&viewer=${viewer}`,{cache:'no-store'});if(!r.ok)throw Error();const s=await r.json(),p=s.event,c=s.config;
+ if(c.muted||!c.sound||!c.volume)stopSound();
+ if(!p||s.duplicate){$('alert').classList.remove('visible');stopSound();ends=0;last=null;}else{
+  ends=p.ends_at;$('alert').style.setProperty('--accent',c.color);$('platform').textContent=c.title+' · '+(platform==='twitch'?'Twitch':'YouTube');
+  $('title').textContent=p.event.title;$('message').textContent=p.event.message;$('badge').textContent=(p.event.test?'PRUEBA':'ANUNCIO')+(p.event.replay?' · REPETICIÓN':'');$('alert').classList.add('visible');
+  $('progress').style.transform=`scaleX(${Math.max(0,Math.min(1,(p.ends_at-Date.now())/(p.ends_at-p.started_at)))})`;
+  if(last!==p.event.id){stopSound();last=p.event.id;if(p.sound_at!==null&&!c.muted&&c.sound&&p.sound_at+1000>=Date.now())soundTimer=setTimeout(()=>sound(c.volume),Math.max(0,p.sound_at-Date.now()));}
+ }
+ }catch{stopSound();$('alert').classList.remove('visible');ends=0;}finally{setTimeout(tick,500);}}
+setInterval(()=>{if(ends&&Date.now()>=ends){$('alert').classList.remove('visible');stopSound();ends=0;last=null;}},100);tick();
+</script></html>

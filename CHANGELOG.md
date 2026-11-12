@@ -2,6 +2,14 @@
 
 ## [Sin publicar]
 
+## [0.2.16] · 2026-11-12 · Fuentes de alertas separadas
+
+- Dos overlays locales independientes, Twitch y YouTube, con color, título, volumen, duración y cola separados.
+- Pruebas identificadas y anuncios manuales; la recepción automática de eventos sociales todavía no está implementada y se indica en la interfaz.
+- Controles por plataforma en Live Studio y URLs para Stream Deck: prueba, pausa, silencio y repetición.
+- Coordinación opcional de sonidos y exclusión de fuentes duplicadas de una misma plataforma.
+- Preferencias incluidas en copias de seguridad mediante migración 020; las colas temporales se vacían al reiniciar para evitar reemitir alertas antiguas.
+
 ## [0.2.15] · 2026-11-11 · Platinos y objetivos en directo
 
 - Portada oficial de Fortnite incluida como alternativa a la ilustración genérica; conserva las portadas personales.

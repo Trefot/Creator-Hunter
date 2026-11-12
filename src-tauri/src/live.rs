@@ -152,6 +152,17 @@ fn handle_request(app: &AppHandle, key: &str, request: Request) {
     let query = |name: &str| url.query_pairs().find(|(k, _)| k == name).map(|(_, v)| v.to_string());
 
     match segments.iter().map(String::as_str).collect::<Vec<_>>().as_slice() {
+        ["alerts", platform] if *platform=="twitch" || *platform=="youtube" => {
+            let response=Response::from_string(include_str!("../overlay/alerts.html")).with_header(header("Content-Type","text/html; charset=utf-8")).with_header(header("Cache-Control","no-store"));let _=request.respond(response);
+        }
+        ["api","alerts",platform,action] => {
+            if query("key").as_deref()!=Some(key){return respond_json(request,403,json!({"error":"Clave local no válida."}));}
+            let result=tauri::async_runtime::block_on(async {
+                if *action=="poll" {crate::alerts::poll(app,platform,&query("viewer").unwrap_or_default()).await}
+                else {crate::alerts::action_inner(app,platform,action).await}
+            });
+            match result {Ok(data)=>respond_json(request,200,data),Err(error)=>respond_json(request,409,json!({"error":error}))}
+        }
         ["game-overlay"] => {
             let response=Response::from_string(include_str!("../overlay/game.html")).with_header(header("Content-Type","text/html; charset=utf-8")).with_header(header("Cache-Control","no-store"));let _=request.respond(response);
         }
