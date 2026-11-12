@@ -51,6 +51,7 @@ pub async fn alerts_save(
     match platform.as_str() {
         "twitch" => settings.twitch = config,
         "youtube" => settings.youtube = config,
+        "tiktok" => settings.tiktok = config,
         _ => return Err("Plataforma no válida.".into()),
     }
     write(&app, &settings).await?;
@@ -83,6 +84,7 @@ pub async fn action_inner(app: &AppHandle, platform: &str, action: &str) -> Resu
         let cfg = match platform {
             "twitch" => &mut e.settings.twitch,
             "youtube" => &mut e.settings.youtube,
+            "tiktok" => &mut e.settings.tiktok,
             _ => return Err("Plataforma no válida.".into()),
         };
         if action == "mute" {

@@ -9,8 +9,8 @@ def sql_call(a):
  c=db.execute(a['query'],{str(i+1):v for i,v in enumerate(a.get('values',[]))});
  if a['select']:return [dict(r) for r in c.fetchall()]
  db.commit();return [c.rowcount,c.lastrowid or 0]
-def cfg(title,color):return dict(title=title,color=color,duration=6,volume=50,muted=False,paused=False,sound=True)
-state=dict(settings=dict(twitch=cfg('Twitch','#9146ff'),youtube=cfg('YouTube','#ff3355'),coordinate_audio=True),twitch_pending=0,youtube_pending=0,connected=False)
+def cfg(title,color):return dict(title=title,color=color,secondary_color='#ffd166',text_color='#ffffff',message_color='#eee6ff',font_family='sans',name_size=38,message_size=16,event_label='',sample_name='LUNA_27',message_template='¡Bienvenido a la aventura!',duration=6,volume=50,muted=False,paused=False,sound=True)
+state=dict(settings=dict(twitch=cfg('Twitch','#9146ff'),youtube=cfg('YouTube','#ff3355'),tiktok=cfg('TikTok','#25f4ee'),coordinate_audio=True),twitch_pending=0,youtube_pending=0,tiktok_pending=0,connected=False)
 def rpc(cmd,a):
  if cmd=='alerts_status':return state
  if cmd=='alerts_save':state['settings'][a['platform']]=a['config'];return state
@@ -36,19 +36,42 @@ if(cmd==='update_check')return null;if(cmd.startsWith('plugin:event|'))return ++
 throw Error('Unexpected native command: '+cmd);
 }};})()'''
 with sync_playwright() as p:
- b=p.chromium.launch(executable_path='/usr/bin/chromium',headless=True,args=['--no-sandbox']);context=b.new_context(viewport={'width':1440,'height':1100},permissions=['clipboard-read','clipboard-write']);page=context.new_page();errors=[]
+ b=p.chromium.launch(executable_path='/usr/bin/chromium',headless=True,args=['--no-sandbox']);context=b.new_context(viewport={'width':1440,'height':1100},permissions=['clipboard-read','clipboard-write']);page=context.new_page();errors=[];preview_requests=[]
+ page.on('request',lambda r:preview_requests.append(r.url) if '/api/alerts/' in r.url else None)
+ context.route('**/assets/alert-mascot.png',lambda r:r.fulfill(body=(root/'src/assets/nexus-mark.png').read_bytes(),content_type='image/png'))
  page.on('pageerror',lambda e:errors.append(str(e)));page.expose_function('studioSql',sql_call);page.expose_function('alertRpc',rpc);page.add_init_script(mock);page.goto('http://127.0.0.1:1420');page.get_by_role('button',name='Live Studio',exact=True).click()
  page.get_by_role('heading',name='Alertas por plataforma').wait_for();page.get_by_role('button',name='Probar twitch',exact=True).click();page.wait_for_timeout(200)
  assert state['twitch_pending']==1 and state['youtube_pending']==0
  page.get_by_role('button',name='Silenciar youtube',exact=True).click();page.wait_for_timeout(200);assert state['settings']['youtube']['muted'] and not state['settings']['twitch']['muted']
  page.get_by_label('Título de twitch',exact=True).fill('Mi Twitch');page.get_by_role('button',name='Guardar twitch',exact=True).click();page.wait_for_timeout(200);assert state['settings']['twitch']['title']=='Mi Twitch'
  page.get_by_role('button',name='Copiar URL de youtube',exact=True).click();assert page.evaluate('navigator.clipboard.readText()')=='http://127.0.0.1:7879/alerts/youtube?key=local-alert-test-key'
+ page.get_by_label('Nombre de prueba de twitch',exact=True).fill('TREFOT')
+ page.get_by_label('Mensaje de la plantilla de twitch',exact=True).fill('¡Hola, {usuario}!')
+ page.get_by_label('Tipografía de twitch',exact=True).select_option('mono')
+ page.get_by_label('Tamaño del nombre de twitch',exact=True).fill('44')
+ preview=page.frame_locator('iframe[title="Vista previa de twitch"]')
+ preview.locator('#title').get_by_text('TREFOT',exact=True).wait_for()
+ assert preview.locator('#message').inner_text()=='¡Hola, TREFOT!'
+ assert preview.locator('#title').evaluate('(el)=>getComputedStyle(el).fontSize')=='44px'
+ assert 'monospace' in preview.locator('#title').evaluate('(el)=>getComputedStyle(el).fontFamily')
+ assert 'arrive' in preview.locator('.mascot-wrap').evaluate('(el)=>getComputedStyle(el).animationName')
+ page.get_by_label('Nombre de prueba de twitch',exact=True).fill('$&')
+ page.wait_for_timeout(300)
+ preview.locator('#message').get_by_text('¡Hola, $&!',exact=True).wait_for()
+ page.get_by_label('Nombre de prueba de twitch',exact=True).fill('TREFOT')
+ assert preview.locator('body').evaluate('()=>context===null')
+ assert not preview_requests,preview_requests
+ page.get_by_role('button',name='Guardar twitch',exact=True).click();page.wait_for_timeout(200)
+ assert state['settings']['twitch']['name_size']==44 and state['settings']['twitch']['sample_name']=='TREFOT'
+ page.get_by_role('button',name='Probar tiktok',exact=True).click();page.wait_for_timeout(200);assert state['tiktok_pending']==1 and state['twitch_pending']==1
+ page.get_by_role('button',name='Copiar URL de tiktok',exact=True).click();assert '/alerts/tiktok?' in page.evaluate('navigator.clipboard.readText()')
+ page.get_by_role('heading',name='Alertas por plataforma').scroll_into_view_if_needed()
  page.screenshot(path=str(artifacts/'alertas-live.png'),full_page=True)
  page.set_viewport_size({'width':960,'height':900});assert page.evaluate('document.documentElement.scrollWidth<=innerWidth')
  # El HTML real trata el título como texto, aísla plataforma y oculta al finalizar.
  overlay=context.new_page();overlay.set_viewport_size({'width':640,'height':300});overlay.on('pageerror',lambda e:errors.append(str(e)))
  now=int(time.time()*1000);packet=dict(config=cfg('YouTube','#ff3355'),event=dict(event=dict(id=1,title='<img src=x onerror=alert(1)>',message='Anuncio de ejemplo',test=True,replay=False),started_at=now,ends_at=now+3000,sound_at=now),pending=0,duplicate=False)
- overlay.route('**/alerts/youtube?*',lambda r:r.fulfill(body=(root/'src-tauri/overlay/alerts.html').read_text(),content_type='text/html'))
+ overlay.route('**/alerts/youtube?*',lambda r:r.fulfill(body=(root/'src-tauri/overlay/alerts.html').read_text().replace('/*NEXUS_ALERT_STYLE*/',(root/'src-tauri/overlay/alerts.css').read_text()),content_type='text/html'))
  calls=[0]
  def poll_response(r):
   calls[0]+=1
@@ -56,18 +79,18 @@ with sync_playwright() as p:
   else:r.fulfill(json=packet)
  overlay.route('**/api/alerts/youtube/poll?*',poll_response)
  overlay.add_init_script("window.audioStarts=0;window.AudioContext=class {state='running';currentTime=0;destination={};resume(){return Promise.resolve()}createOscillator(){return {frequency:{setValueAtTime(){}},connect(){},start(){window.audioStarts++},stop(){}}}createGain(){return {gain:{setValueAtTime(){},linearRampToValueAtTime(){},exponentialRampToValueAtTime(){}},connect(){}}}}")
- overlay.goto('http://127.0.0.1:1420/alerts/youtube?key=test');overlay.locator('#alert.visible').wait_for();assert overlay.locator('#title').inner_text()=='<img src=x onerror=alert(1)>';assert overlay.locator('#alert img').count()==0
+ overlay.goto('http://127.0.0.1:1420/alerts/youtube?key=test');overlay.locator('#alert.visible').wait_for();assert overlay.locator('#title').inner_text()=='<img src=x onerror=alert(1)>';assert overlay.locator('#title img').count()==0
  assert overlay.locator('#alert').bounding_box()['height']+32<=300
  overlay.screenshot(path=str(artifacts/'alerta-youtube.png'))
  overlay.wait_for_timeout(1600);assert overlay.evaluate('window.audioStarts')==1
  packet['event']=None;overlay.locator('#alert.visible').wait_for(state='hidden',timeout=5000)
  # Un navegador que bloquea audio debe ofrecer un control, sin esperar para siempre.
  blocked=context.new_page();blocked.set_viewport_size({'width':640,'height':300});blocked.on('pageerror',lambda e:errors.append(str(e)))
- blocked.route('**/alerts/youtube?*',lambda r:r.fulfill(body=(root/'src-tauri/overlay/alerts.html').read_text(),content_type='text/html'))
+ blocked.route('**/alerts/youtube?*',lambda r:r.fulfill(body=(root/'src-tauri/overlay/alerts.html').read_text().replace('/*NEXUS_ALERT_STYLE*/',(root/'src-tauri/overlay/alerts.css').read_text()),content_type='text/html'))
  now=int(time.time()*1000);packet['event']=dict(event=dict(id=2,title='Prueba de audio',message='',test=True,replay=False),started_at=now,ends_at=now+3000,sound_at=now)
  blocked.route('**/api/alerts/youtube/poll?*',lambda r:r.fulfill(json=packet))
  blocked.add_init_script("window.AudioContext=class {state='suspended';resume(){return new Promise(()=>{})}}")
  blocked.goto('http://127.0.0.1:1420/alerts/youtube?key=test');blocked.get_by_role('button',name='Activar sonido',exact=True).wait_for(timeout=5000)
  assert not errors,errors
- print(json.dumps(dict(independent_controls=True,separate_urls=True,save_preferences=True,responsive=True,overlay_safe_text=True,overlay_hides=True,no_audio_repeat_on_reconnect=True,audio_permission_control=True,js_errors=errors)))
+ print(json.dumps(dict(animated_mascot=True,editable_type_and_text=True,isolated_silent_preview=True,tiktok=True,independent_controls=True,separate_urls=True,save_preferences=True,responsive=True,overlay_safe_text=True,overlay_hides=True,no_audio_repeat_on_reconnect=True,audio_permission_control=True,js_errors=errors)))
  b.close()

@@ -1,20 +1,42 @@
-<!doctype html><html lang="es"><meta charset="utf-8"><title>Nexus · Alertas</title>
-<style>*{box-sizing:border-box}body{margin:0;background:transparent;color:white;font:18px system-ui,sans-serif;padding:16px}#alert{width:min(600px,100%);border:2px solid var(--accent,#9146ff);border-radius:20px;background:linear-gradient(120deg,#201a2bf5,#111019f0);padding:24px;box-shadow:0 10px 24px #0005;opacity:0;transform:translateY(12px);transition:opacity .25s,transform .25s}#alert.visible{opacity:1;transform:none}.brand{display:flex;justify-content:space-between;gap:10px;color:var(--accent);font-size:15px;font-weight:800}h1{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-size:30px;overflow-wrap:anywhere;margin:14px 0 8px}p{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;white-space:pre-wrap;overflow-wrap:anywhere;margin:0;color:#e2dbea}#audio{position:fixed;bottom:6px;left:16px;font-size:12px;background:#211b2f;color:white;border:1px solid #9879bd;border-radius:6px;padding:4px}#badge{color:#ffd37a}#progress{height:4px;background:var(--accent);margin-top:18px;transform-origin:left}</style>
-<div id="alert" aria-live="polite"><div class="brand"><span id="platform"></span><span id="badge"></span></div><h1 id="title"></h1><p id="message"></p><div id="progress"></div></div><button id="audio" hidden>Activar sonido</button>
-<script>
-const platform=location.pathname.split('/').pop(),key=new URLSearchParams(location.search).get('key')||'',viewer=crypto.randomUUID(),$=id=>document.getElementById(id);
+<!doctype html><html lang="es"><meta charset="utf-8"><title>Trefot · Alertas</title>
+<style>/*NEXUS_ALERT_STYLE*/</style>
+<div id="alert" aria-live="polite" data-platform="twitch">
+ <div class="frame"></div><div class="mascot-wrap"><img id="mascot" src="/assets/alert-mascot.png" alt="Personaje de Trefot con su farol"><div class="lantern-light"></div></div>
+ <div class="platform-badge"><svg id="platform-icon" viewBox="0 0 24 24" aria-hidden="true"><path id="platform-path"></path></svg><span id="platform"></span></div>
+ <div class="content"><div id="label"></div><h1 id="title"></h1><p id="message"></p></div>
+ <span class="spark one" aria-hidden="true">✦</span><span class="spark two" aria-hidden="true">✧</span><span class="spark three" aria-hidden="true">✦</span><div id="badge"></div><div id="progress"></div>
+</div><button id="audio" hidden>Activar sonido</button>
+<script>const preview=window.NEXUS_ALERT_PREVIEW===true;
+let platform=location.pathname.split('/').pop();
+const key=new URLSearchParams(location.search).get('key')||'',viewer=crypto.randomUUID(),$=id=>document.getElementById(id);
+const names={twitch:'Twitch',youtube:'YouTube',tiktok:'TikTok'},fonts={sans:'system-ui, sans-serif',serif:'Georgia, serif',mono:'ui-monospace, monospace'};
+const icons={"twitch":"M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714Z","youtube":"M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z","tiktok":"M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"};
 let last=null,context=null,tone=null,soundTimer=null,ends=0;
+function color(value,fallback){return /^#[a-f\d]{6}$/i.test(value||'')?value:fallback}
+function render(s){const p=s.event,c=s.config,a=$('alert');
+ if(!preview&&(c.muted||!c.sound||!c.volume))stopSound();
+ if(!p||s.duplicate){a.classList.remove('visible','leaving');if(!preview)stopSound();ends=0;last=null;return;}
+ const network=names[platform]||'Twitch';a.dataset.platform=platform;
+ a.style.setProperty('--accent',color(c.color,'#9146ff'));a.style.setProperty('--second',color(c.secondary_color,platform==='tiktok'?'#ff2d86':'#ffd166'));
+ a.style.setProperty('--ink',color(c.text_color,'#ffffff'));a.style.setProperty('--message',color(c.message_color,'#eee6ff'));a.style.setProperty('--type',fonts[c.font_family]||fonts.sans);
+ a.style.setProperty('--name-size',Math.max(24,Math.min(48,Number(c.name_size)||38))+'px');a.style.setProperty('--message-size',Math.max(12,Math.min(22,Number(c.message_size)||16))+'px');
+ $('platform').textContent=c.title&&c.title.toLowerCase()!==network.toLowerCase()?c.title+' · '+network:network;
+ $('platform-path').setAttribute('d',icons[platform]||icons.twitch);
+ $('label').textContent=p.event.test?(c.event_label||(platform==='youtube'?'NUEVO SUSCRIPTOR':'NUEVO SEGUIDOR')):'ANUNCIO';
+ $('title').textContent=p.event.title;$('message').textContent=p.event.message;$('title').style.fontSize='';let fitted=Math.max(24,Math.min(48,Number(c.name_size)||38));while($('title').scrollWidth>$('title').clientWidth&&fitted>20){$('title').style.fontSize=(--fitted)+'px';}$('badge').textContent=(p.event.test?'PRUEBA':'ANUNCIO MANUAL')+(p.event.replay?' · REPETICIÓN':'');
+ $('progress').hidden=preview;
+ ends=preview?0:p.ends_at;
+ if(!preview)$('progress').style.transform=`scaleX(${Math.max(0,Math.min(1,(p.ends_at-Date.now())/(p.ends_at-p.started_at)))})`;
+ const eventKey=`${p.event.id}:${p.started_at}`;
+ if(last!==eventKey){if(!preview)stopSound();last=eventKey;a.classList.remove('visible','leaving');void a.offsetWidth;a.classList.add('visible');if(!preview&&p.sound_at!==null&&!c.muted&&c.sound&&p.sound_at+1000>=Date.now())soundTimer=setTimeout(()=>sound(c.volume),Math.max(0,p.sound_at-Date.now()));}
+}
 function stopSound(){clearTimeout(soundTimer);if(tone){try{tone.stop()}catch{}tone=null;}}
-async function sound(volume){try{context??=new AudioContext();await Promise.race([context.resume(),new Promise(resolve=>setTimeout(resolve,100))]);if(context.state!=='running')throw Error();$('audio').hidden=true;const osc=context.createOscillator(),gain=context.createGain(),now=context.currentTime;osc.type='sine';osc.frequency.setValueAtTime(platform==='twitch'?660:880,now);osc.frequency.setValueAtTime(platform==='twitch'?880:1174,now+.22);gain.gain.setValueAtTime(0,now);gain.gain.linearRampToValueAtTime(volume/100*.2,now+.04);gain.gain.exponentialRampToValueAtTime(.001,now+.55);osc.connect(gain);gain.connect(context.destination);osc.start();osc.stop(now+.6);tone=osc;}catch{$('audio').hidden=false;}}
+async function sound(volume){try{context??=new AudioContext();await Promise.race([context.resume(),new Promise(resolve=>setTimeout(resolve,100))]);if(context.state!=='running')throw Error();$('audio').hidden=true;const osc=context.createOscillator(),gain=context.createGain(),now=context.currentTime;osc.type='sine';const base=platform==='twitch'?660:platform==='youtube'?880:740;osc.frequency.setValueAtTime(base,now);osc.frequency.setValueAtTime(base*4/3,now+.22);gain.gain.setValueAtTime(0,now);gain.gain.linearRampToValueAtTime(volume/100*.2,now+.04);gain.gain.exponentialRampToValueAtTime(.001,now+.55);osc.connect(gain);gain.connect(context.destination);osc.start();osc.stop(now+.6);tone=osc;}catch{$('audio').hidden=false;}}
 $('audio').onclick=async()=>{context??=new AudioContext();await context.resume();$('audio').hidden=context.state==='running';};
-async function tick(){try{const r=await fetch(`/api/alerts/${platform}/poll?key=${encodeURIComponent(key)}&viewer=${viewer}`,{cache:'no-store'});if(!r.ok)throw Error();const s=await r.json(),p=s.event,c=s.config;
- if(c.muted||!c.sound||!c.volume)stopSound();
- if(!p||s.duplicate){$('alert').classList.remove('visible');stopSound();ends=0;last=null;}else{
-  ends=p.ends_at;$('alert').style.setProperty('--accent',c.color);$('platform').textContent=c.title+' · '+(platform==='twitch'?'Twitch':'YouTube');
-  $('title').textContent=p.event.title;$('message').textContent=p.event.message;$('badge').textContent=(p.event.test?'PRUEBA':'ANUNCIO')+(p.event.replay?' · REPETICIÓN':'');$('alert').classList.add('visible');
-  $('progress').style.transform=`scaleX(${Math.max(0,Math.min(1,(p.ends_at-Date.now())/(p.ends_at-p.started_at)))})`;
-  const eventKey=`${p.event.id}:${p.started_at}`;if(last!==eventKey){stopSound();last=eventKey;if(p.sound_at!==null&&!c.muted&&c.sound&&p.sound_at+1000>=Date.now())soundTimer=setTimeout(()=>sound(c.volume),Math.max(0,p.sound_at-Date.now()));}
- }
- }catch{stopSound();$('alert').classList.remove('visible');ends=0;}finally{setTimeout(tick,500);}}
-setInterval(()=>{if(ends&&Date.now()>=ends){$('alert').classList.remove('visible');stopSound();ends=0;last=null;}},100);tick();
+async function tick(){try{const r=await fetch(`/api/alerts/${platform}/poll?key=${encodeURIComponent(key)}&viewer=${viewer}`,{cache:'no-store'});if(!r.ok)throw Error();render(await r.json());}catch{stopSound();$('alert').classList.remove('visible','leaving');ends=0;}finally{setTimeout(tick,500);}}
+if(preview){
+ window.addEventListener('message',e=>{if(e.source!==parent||e.data?.type!=='nexus-alert-preview')return;const data=e.data;platform=names[data.platform]?data.platform:'twitch';const c=data.config;const name=c.sample_name||'LUNA_27';$('mascot').src=data.mascot;render({config:c,event:{event:{id:data.play||0,title:name,message:(c.message_template??'¡Bienvenido a la aventura!').replaceAll('{usuario}',()=>name),test:true,replay:false},started_at:0,ends_at:0,sound_at:null}});});
+}else{
+ setInterval(()=>{if(!ends)return;const remaining=ends-Date.now();if(remaining<=400)$('alert').classList.add('leaving');if(remaining<=0){$('alert').classList.remove('visible','leaving');stopSound();ends=0;last=null;}},100);tick();
+}
 </script></html>

@@ -6,6 +6,15 @@ use std::collections::VecDeque;
 pub struct Config {
     pub title: String,
     pub color: String,
+    pub secondary_color: String,
+    pub text_color: String,
+    pub message_color: String,
+    pub font_family: String,
+    pub name_size: u8,
+    pub message_size: u8,
+    pub event_label: String,
+    pub sample_name: String,
+    pub message_template: String,
     pub duration: u64,
     pub volume: u8,
     pub muted: bool,
@@ -17,6 +26,15 @@ impl Default for Config {
         Self {
             title: "Alertas".into(),
             color: "#9146ff".into(),
+            secondary_color: "#ffd166".into(),
+            text_color: "#ffffff".into(),
+            message_color: "#eee6ff".into(),
+            font_family: "sans".into(),
+            name_size: 38,
+            message_size: 16,
+            event_label: String::new(),
+            sample_name: "LUNA_27".into(),
+            message_template: "¡Bienvenido a la aventura!".into(),
             duration: 6,
             volume: 50,
             muted: false,
@@ -30,11 +48,40 @@ impl Config {
         if self.title.trim().is_empty() || self.title.chars().count() > 60 {
             return Err("El título debe tener entre 1 y 60 caracteres.".into());
         }
-        if self.color.len() != 7
-            || !self.color.starts_with('#')
-            || !self.color[1..].bytes().all(|b| b.is_ascii_hexdigit())
+        for color in [
+            &self.color,
+            &self.secondary_color,
+            &self.text_color,
+            &self.message_color,
+        ] {
+            if color.len() != 7
+                || !color.starts_with('#')
+                || !color[1..].bytes().all(|b| b.is_ascii_hexdigit())
+            {
+                return Err("Color no válido.".into());
+            }
+        }
+        if !["sans", "serif", "mono"].contains(&self.font_family.as_str())
+            || !(24..=48).contains(&self.name_size)
+            || !(12..=22).contains(&self.message_size)
         {
-            return Err("Color no válido.".into());
+            return Err("Tipografía o tamaño fuera de rango.".into());
+        }
+        if self.event_label.chars().count() > 50
+            || self.sample_name.trim().is_empty()
+            || self.sample_name.chars().count() > 40
+            || self.message_template.chars().count() > 160
+            || self
+                .message_template
+                .replace("{usuario}", &self.sample_name)
+                .chars()
+                .count()
+                > 240
+        {
+            return Err(
+                "Revisa la etiqueta, el nombre de prueba y el mensaje (hasta 160 caracteres)."
+                    .into(),
+            );
         }
         if !(3..=15).contains(&self.duration) || self.volume > 100 {
             return Err("Duración o volumen fuera de rango.".into());
@@ -46,7 +93,17 @@ impl Config {
 pub struct Settings {
     pub twitch: Config,
     pub youtube: Config,
+    #[serde(default = "tiktok_defaults")]
+    pub tiktok: Config,
     pub coordinate_audio: bool,
+}
+fn tiktok_defaults() -> Config {
+    Config {
+        title: "TikTok".into(),
+        color: "#25f4ee".into(),
+        secondary_color: "#ff2d86".into(),
+        ..Config::default()
+    }
 }
 impl Default for Settings {
     fn default() -> Self {
@@ -58,6 +115,7 @@ impl Default for Settings {
         Self {
             twitch,
             youtube,
+            tiktok: tiktok_defaults(),
             coordinate_audio: true,
         }
     }
@@ -65,7 +123,8 @@ impl Default for Settings {
 impl Settings {
     pub fn validate(&self) -> Result<(), String> {
         self.twitch.validate()?;
-        self.youtube.validate()
+        self.youtube.validate()?;
+        self.tiktok.validate()
     }
 }
 #[derive(Clone, Debug, Serialize)]
@@ -94,7 +153,7 @@ struct Channel {
 #[derive(Default)]
 pub struct Engine {
     pub settings: Settings,
-    channels: [Channel; 2],
+    channels: [Channel; 3],
     sequence: u64,
     audio_until: u64,
 }
@@ -102,6 +161,7 @@ fn index(platform: &str) -> Result<usize, String> {
     match platform {
         "twitch" => Ok(0),
         "youtube" => Ok(1),
+        "tiktok" => Ok(2),
         _ => Err("Plataforma no válida.".into()),
     }
 }
@@ -109,8 +169,10 @@ impl Engine {
     fn config(&self, i: usize) -> Config {
         if i == 0 {
             self.settings.twitch.clone()
-        } else {
+        } else if i == 1 {
             self.settings.youtube.clone()
+        } else {
+            self.settings.tiktok.clone()
         }
     }
     pub fn enqueue(
@@ -140,12 +202,15 @@ impl Engine {
     pub fn action(&mut self, platform: &str, action: &str) -> Result<(), String> {
         let i = index(platform)?;
         match action {
-            "test" => self.enqueue(
-                platform,
-                "Alerta de prueba".into(),
-                format!("Así se verán las alertas de {platform}."),
-                true,
-            )?,
+            "test" => {
+                let cfg = self.config(i);
+                self.enqueue(
+                    platform,
+                    cfg.sample_name.clone(),
+                    cfg.message_template.replace("{usuario}", &cfg.sample_name),
+                    true,
+                )?;
+            }
             "replay" => {
                 let mut event = self.channels[i]
                     .last
@@ -221,7 +286,7 @@ impl Engine {
         )
     }
     pub fn status(&self) -> serde_json::Value {
-        serde_json::json!({"settings":self.settings,"twitch_pending":self.channels[0].queue.len(),"youtube_pending":self.channels[1].queue.len(),"connected":false})
+        serde_json::json!({"settings":self.settings,"twitch_pending":self.channels[0].queue.len(),"youtube_pending":self.channels[1].queue.len(),"tiktok_pending":self.channels[2].queue.len(),"connected":false})
     }
 }
 #[cfg(test)]
@@ -284,6 +349,43 @@ mod tests {
         assert!(c.validate().is_err());
         c.color = "#123456".into();
         c.duration = 100;
+        assert!(c.validate().is_err());
+    }
+    #[test]
+    fn old_settings_gain_style_defaults_and_tiktok() {
+        let old = r##"{"twitch":{"title":"Mis alertas","color":"#123456","muted":true},"youtube":{"title":"YouTube","color":"#ff3355"},"coordinate_audio":false}"##;
+        let settings: Settings = serde_json::from_str(old).unwrap();
+        settings.validate().unwrap();
+        assert_eq!(settings.twitch.color, "#123456");
+        assert!(settings.twitch.muted);
+        assert_eq!(settings.twitch.name_size, 38);
+        assert_eq!(settings.tiktok.color, "#25f4ee");
+        assert!(!settings.coordinate_audio);
+        let restored: Settings =
+            serde_json::from_str(&serde_json::to_string(&settings).unwrap()).unwrap();
+        assert_eq!(restored.tiktok.secondary_color, "#ff2d86");
+    }
+    #[test]
+    fn tiktok_is_independent_and_test_uses_editable_text() {
+        let mut e = Engine::default();
+        e.settings.tiktok.sample_name = "Trefot".into();
+        e.settings.tiktok.message_template = "¡Hola, {usuario}!".into();
+        e.action("tiktok", "test").unwrap();
+        let p = e.poll("tiktok", "viewer-tiktok", 10000).unwrap();
+        assert_eq!(p["event"]["event"]["title"], "Trefot");
+        assert_eq!(p["event"]["event"]["message"], "¡Hola, Trefot!");
+        assert!(e.poll("twitch", "viewer-twitch", 10000).unwrap()["event"].is_null());
+    }
+    #[test]
+    fn rejects_unsafe_styles() {
+        let mut c = Config::default();
+        c.font_family = "url(https://example.com)".into();
+        assert!(c.validate().is_err());
+        c.font_family = "sans".into();
+        c.name_size = 100;
+        assert!(c.validate().is_err());
+        c.name_size = 38;
+        c.secondary_color = "invalid".into();
         assert!(c.validate().is_err());
     }
 }

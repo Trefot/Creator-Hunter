@@ -152,8 +152,11 @@ fn handle_request(app: &AppHandle, key: &str, request: Request) {
     let query = |name: &str| url.query_pairs().find(|(k, _)| k == name).map(|(_, v)| v.to_string());
 
     match segments.iter().map(String::as_str).collect::<Vec<_>>().as_slice() {
-        ["alerts", platform] if *platform=="twitch" || *platform=="youtube" => {
-            let response=Response::from_string(include_str!("../overlay/alerts.html")).with_header(header("Content-Type","text/html; charset=utf-8")).with_header(header("Cache-Control","no-store"));let _=request.respond(response);
+        ["assets","alert-mascot.png"] => {
+            let response=Response::from_data(include_bytes!("../../src/assets/nexus-mark.png").to_vec()).with_header(header("Content-Type","image/png")).with_header(header("Cache-Control","public, max-age=86400"));let _=request.respond(response);
+        }
+        ["alerts", platform] if *platform=="twitch" || *platform=="youtube" || *platform=="tiktok" => {
+            let response=Response::from_string(include_str!("../overlay/alerts.html").replace("/*NEXUS_ALERT_STYLE*/",include_str!("../overlay/alerts.css"))).with_header(header("Content-Type","text/html; charset=utf-8")).with_header(header("Cache-Control","no-store"));let _=request.respond(response);
         }
         ["api","alerts",platform,action] => {
             if query("key").as_deref()!=Some(key){return respond_json(request,403,json!({"error":"Clave local no válida."}));}

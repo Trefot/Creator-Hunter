@@ -2,6 +2,14 @@
 
 ## [Sin publicar]
 
+## [0.2.17] · 2026-11-12 · Primera alerta animada de Trefot
+
+- Primera plantilla animada con el personaje de Nexus, farol iluminado, destellos y entrada/salida sobre fondo transparente.
+- Variantes visuales Twitch violeta/dorado, YouTube rojo/dorado y TikTok cian/rosa. TikTok dispone de fuente y cola locales independientes; no hay integración automática con sus eventos.
+- Editor de tipografía, tamaños, colores, etiqueta, nombre de prueba y mensaje con {usuario}. Los nombres largos ajustan su tamaño.
+- Vista previa animada y aislada en Nexus, sin sonido ni consumo de la cola de OBS.
+- Preferencias anteriores conservadas y nuevos campos con valores por defecto; sin migración adicional. La recepción automática de eventos y la configuración de varias plantillas por evento siguen pendientes.
+
 ## [0.2.16] · 2026-11-12 · Fuentes de alertas separadas
 
 - Dos overlays locales independientes, Twitch y YouTube, con color, título, volumen, duración y cola separados.
