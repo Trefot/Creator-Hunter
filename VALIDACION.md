@@ -1,6 +1,16 @@
 # Validación de estabilidad · 2026-11-12
 
-Versión publicada 0.2.19, preparada desde `1d77f07` (0.2.9). El instalador ya se ha compilado en GitHub Actions para Windows; la instalación y revisión en el equipo del usuario siguen pendientes.
+Versión publicada 0.2.20, preparada desde `1d77f07` (0.2.9). El instalador ya se ha compilado en GitHub Actions para Windows; la instalación y revisión en el equipo del usuario siguen pendientes.
+
+## 0.2.20 · Eventos reales, recortes de audio y animaciones
+
+- 16 pruebas del motor, 2 del registro de recursos y 2 de conversión social pasan. Incluyen eventos reales sin marca de prueba, texto literal, instantáneas por evento, rangos de audio y coordinación con el comienzo visual aplazado.
+- 18 pruebas de datos pasan: migración desde esquema 20 conservando preferencias, medios y cursores en el respaldo/restauración de 29 tablas. Esquema 21 con copia previa.
+- 20 pruebas frontend, 6 de publicación y compilación TypeScript/Vite pasan. La dependencia de WebSocket habilita TLS nativo para EventSub.
+- Chromium verifica importación y decodificación de un WAV real, guardado del recorte por evento, escucha, retorno a melodía de Nexus, silencio y control de desbloqueo. Audio con carga retrasada ajusta su posición; si llega tras su turno no se reproduce. Las etiquetas distinguen eventos reales de pruebas y anuncios manuales. Se mantienen las verificaciones de fuentes, texto seguro, borradores y recursos compartidos, sin errores JS.
+- Muestra del renderer de producción con las 16 plantillas y eventos simulados: artifacts/trefot-alertas-0220.png y .webm. Sin audio en el vídeo; sin animación articulada de extremidades.
+- Windows [43154263082](https://github.com/Trefot/Creator-Hunter/actions/runs/43154263082): pruebas nativas completas, instalador NSIS, actualización desde 0.2.19 y publicación correctos. Descarga formal y canal comparados byte por byte: 18,271,584 bytes, SHA-256 `469dbdeccec2dee314ba329aa9376704243bec424251e0d32f24e45c74c2fc24`, origen `5909112214be33f72546eb65ec57831e2ac6080b`.
+- **Límite de validación:** no hay credenciales de las cuentas del usuario en este entorno. La autorización real de Twitch/YouTube y la recepción/audio físico en su OBS se comprueban en su PC. Las pruebas de navegador usan RPC/eventos simulados; no acreditan una suscripción real. TikTok y Discord no incorporan recepción automática en esta versión.
 
 ## 0.2.19 · Plantillas por evento y fuentes compartidas
 

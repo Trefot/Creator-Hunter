@@ -1,5 +1,15 @@
 # Actualizaciones de Nexus Studio
 
+## 0.2.20 publicada
+
+[Descargar instalador 0.2.20](https://github.com/Trefot/Creator-Hunter/releases/download/v0.2.20/Nexus-Studio_0.2.20_x64-setup.exe) o «Buscar actualizaciones» → «Actualizar ahora».
+
+Recepción oficial de eventos de Twitch y YouTube, sonidos MP3/WAV/OGG propios con recorte por evento y animaciones con partículas, conservando los marcos aprobados. Las fuentes de OBS mantienen sus enlaces.
+
+Tras instalar, abre **Live Studio → Conexiones para eventos reales**. Activa YouTube con el canal ya conectado en Perfiles; autoriza Twitch con una aplicación pública y el código de dispositivo. Las cuentas no se autorizan desde el instalador. YouTube solo identifica suscriptores públicos, consultados cada dos minutos; volver a suscribirse no garantiza una alerta. TikTok mantiene pruebas y anuncios manuales.
+
+La ejecución [43154263082](https://github.com/Trefot/Creator-Hunter/actions/runs/43154263082) pasó pruebas, compilación NSIS, actualización desde 0.2.19 y publicación. Descarga y canal verificados: instaladores idénticos, 18,271,584 bytes, SHA-256 `469dbdeccec2dee314ba329aa9376704243bec424251e0d32f24e45c74c2fc24`, origen `5909112214be33f72546eb65ec57831e2ac6080b`. Migración aditiva 21 y 29 tablas incluidas en las copias, con audio y cursores. La autorización de cuentas y la prueba real con OBS quedan para el equipo del usuario. Guía en [ALERTAS.md](ALERTAS.md).
+
 ## 0.2.19 publicada
 
 [Descargar instalador 0.2.19](https://github.com/Trefot/Creator-Hunter/releases/download/v0.2.19/Nexus-Studio_0.2.19_x64-setup.exe) o «Buscar actualizaciones» → «Actualizar ahora».

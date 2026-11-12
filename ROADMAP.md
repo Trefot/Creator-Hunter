@@ -404,3 +404,16 @@ Guardar Replay Buffer se implementa en 0.2.13; recortar/editar vídeo sigue pend
 - [x] Publicar y verificar Windows desde 0.2.18 (43149295294).
 - [ ] Verificar el audio y los eventos de prueba en el OBS del usuario.
 - [ ] Integrar la recepción automática de las redes y Discord por separado.
+
+## Entrega 0.2.20 · Recepción oficial y audio por evento
+
+- [x] Twitch EventSub WebSocket con código de dispositivo, renovación de tokens, reconexión, deduplicación y estado parcial de permisos.
+- [x] YouTube: nuevos suscriptores públicos con línea base y eventos de monetización/membresías del chat del directo, con estado separado de errores.
+- [x] Panel de autorización, activación y último evento detectado; límites de privacidad y re-suscripción visibles.
+- [x] MP3/WAV/OGG locales por evento, recorte, volumen, escucha y biblioteca incluida en las copias.
+- [x] Coordinación según duración del recorte, ajuste de sonido tardío y entrada visual aplazada a su turno.
+- [x] Brillos, partículas y secuencias de entrada/salida sobre los PNG aprobados, con reducción de movimiento.
+- [x] Migración 21 conservando preferencias del esquema 20; respaldo de 29 tablas probado.
+- [x] Compilar, verificar actualización desde 0.2.19 y publicar 0.2.20; canal y descarga comparados.
+- [ ] Autorizar las cuentas y probar eventos reales y sonido con OBS en el PC del usuario.
+- [ ] Recepción automática de TikTok y bot/anuncios de Discord, como tareas independientes.
