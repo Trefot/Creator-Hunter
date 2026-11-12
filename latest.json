@@ -1,15 +1,15 @@
 {
-  "version": "0.2.16",
+  "version": "0.2.17",
   "notes": [
-    "Dos overlays locales independientes, Twitch y YouTube, con color, título, volumen, duración y cola separados.",
-    "Pruebas identificadas y anuncios manuales; la recepción automática de eventos sociales todavía no está implementada y se indica en la interfaz.",
-    "Controles por plataforma en Live Studio y URLs para Stream Deck: prueba, pausa, silencio y repetición.",
-    "Coordinación opcional de sonidos y exclusión de fuentes duplicadas de una misma plataforma.",
-    "Preferencias incluidas en copias de seguridad mediante migración 020; las colas temporales se vacían al reiniciar para evitar reemitir alertas antiguas."
+    "Primera plantilla animada con el personaje de Nexus, farol iluminado, destellos y entrada/salida sobre fondo transparente.",
+    "Variantes visuales Twitch violeta/dorado, YouTube rojo/dorado y TikTok cian/rosa. TikTok dispone de fuente y cola locales independientes; no hay integración automática con sus eventos.",
+    "Editor de tipografía, tamaños, colores, etiqueta, nombre de prueba y mensaje con {usuario}. Los nombres largos ajustan su tamaño.",
+    "Vista previa animada y aislada en Nexus, sin sonido ni consumo de la cola de OBS.",
+    "Preferencias anteriores conservadas y nuevos campos con valores por defecto; sin migración adicional. La recepción automática de eventos y la configuración de varias plantillas por evento siguen pendientes."
   ],
   "date": "2026-11-12",
   "installer": "TrophyHunter-setup.exe",
-  "source_commit": "45b3112fdc002766138295e779f0e8a5261a3538",
-  "sha256": "9ac8693e5fd0089e5f3b4bd9e0c273647edd59d90a4eae2ee991d5e8cba374da",
-  "size": 3881253
+  "source_commit": "68080beb8af7c6dd0a2a588327a665244be0494a",
+  "sha256": "b9809589749e28385f58e76b1347f1dd3788d30770f4700c1dd76599e281de4f",
+  "size": 3893894
 }
