@@ -1,16 +1,15 @@
 {
-  "version": "0.2.15",
+  "version": "0.2.16",
   "notes": [
-    "Portada oficial de Fortnite incluida como alternativa a la ilustración genérica; conserva las portadas personales.",
-    "Colección de platinados con fecha y distinción entre trofeos obtenidos y registros manuales, sin contar dos veces el mismo juego.",
-    "Overlay transparente para OBS/Twitch con total de platinos, juego y objetivo elegido; URLs para Conseguido, Deshacer y Siguiente en Stream Deck.",
-    "Listas de Wukong conectadas al progreso de sus guías y objetivos personalizados, incluido el token de la tienda pirata de Fortnite.",
-    "Detección visual experimental por referencia de un aviso en OBS, con región calibrable, modo de prueba, dos coincidencias y corrección manual. No reconoce todos los objetos sin calibración ni usa IA generativa.",
-    "Migración 019 protegida y seguimiento incluido en las copias de seguridad."
+    "Dos overlays locales independientes, Twitch y YouTube, con color, título, volumen, duración y cola separados.",
+    "Pruebas identificadas y anuncios manuales; la recepción automática de eventos sociales todavía no está implementada y se indica en la interfaz.",
+    "Controles por plataforma en Live Studio y URLs para Stream Deck: prueba, pausa, silencio y repetición.",
+    "Coordinación opcional de sonidos y exclusión de fuentes duplicadas de una misma plataforma.",
+    "Preferencias incluidas en copias de seguridad mediante migración 020; las colas temporales se vacían al reiniciar para evitar reemitir alertas antiguas."
   ],
-  "date": "2026-11-11",
+  "date": "2026-11-12",
   "installer": "TrophyHunter-setup.exe",
-  "source_commit": "d876c2dfc2d46fa0ca00f196282c711051ecb688",
-  "sha256": "68d2bbee5b318456027b5763172c41f2a10c515b6b1530aec489d93a19bddb43",
-  "size": 3848811
+  "source_commit": "45b3112fdc002766138295e779f0e8a5261a3538",
+  "sha256": "9ac8693e5fd0089e5f3b4bd9e0c273647edd59d90a4eae2ee991d5e8cba374da",
+  "size": 3881253
 }
