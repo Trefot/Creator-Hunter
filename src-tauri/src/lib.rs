@@ -7,6 +7,8 @@ mod alerts_core;
 mod alerts_assets;
 mod social_alerts;
 mod social_events;
+mod discord;
+mod discord_core;
 mod game_broadcast;
 mod game_tracking;
 mod obs;
@@ -166,6 +168,7 @@ pub fn run() {
         .manage(live::LiveState::default())
         .manage(alerts::AlertsState::default())
         .manage(social_alerts::SocialState::default())
+        .manage(discord::DiscordState::default())
         .manage(obs::ObsState::default())
         .manage(premigrate::Preparation::default())
         .setup(|app| {
@@ -180,6 +183,7 @@ pub fn run() {
             }
             live::start(app.handle().clone());
             social_alerts::start(app.handle().clone());
+            discord::start(app.handle().clone());
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
@@ -216,6 +220,11 @@ pub fn run() {
             game_tracking::game_broadcast_action,
             game_tracking::obs_capture,
             game_tracking::obs_sources,
+            discord::discord_status,
+            discord::discord_configure,
+            discord::discord_remove,
+            discord::discord_test,
+            discord::discord_publish,
             social_alerts::social_status,
             social_alerts::social_enable,
             social_alerts::twitch_begin,
