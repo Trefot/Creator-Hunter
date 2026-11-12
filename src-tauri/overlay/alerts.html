@@ -13,7 +13,7 @@ async function tick(){try{const r=await fetch(`/api/alerts/${platform}/poll?key=
   ends=p.ends_at;$('alert').style.setProperty('--accent',c.color);$('platform').textContent=c.title+' · '+(platform==='twitch'?'Twitch':'YouTube');
   $('title').textContent=p.event.title;$('message').textContent=p.event.message;$('badge').textContent=(p.event.test?'PRUEBA':'ANUNCIO')+(p.event.replay?' · REPETICIÓN':'');$('alert').classList.add('visible');
   $('progress').style.transform=`scaleX(${Math.max(0,Math.min(1,(p.ends_at-Date.now())/(p.ends_at-p.started_at)))})`;
-  if(last!==p.event.id){stopSound();last=p.event.id;if(p.sound_at!==null&&!c.muted&&c.sound&&p.sound_at+1000>=Date.now())soundTimer=setTimeout(()=>sound(c.volume),Math.max(0,p.sound_at-Date.now()));}
+  const eventKey=`${p.event.id}:${p.started_at}`;if(last!==eventKey){stopSound();last=eventKey;if(p.sound_at!==null&&!c.muted&&c.sound&&p.sound_at+1000>=Date.now())soundTimer=setTimeout(()=>sound(c.volume),Math.max(0,p.sound_at-Date.now()));}
  }
  }catch{stopSound();$('alert').classList.remove('visible');ends=0;}finally{setTimeout(tick,500);}}
 setInterval(()=>{if(ends&&Date.now()>=ends){$('alert').classList.remove('visible');stopSound();ends=0;last=null;}},100);tick();

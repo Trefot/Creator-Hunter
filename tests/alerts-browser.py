@@ -47,13 +47,20 @@ with sync_playwright() as p:
  page.set_viewport_size({'width':960,'height':900});assert page.evaluate('document.documentElement.scrollWidth<=innerWidth')
  # El HTML real trata el título como texto, aísla plataforma y oculta al finalizar.
  overlay=context.new_page();overlay.set_viewport_size({'width':640,'height':300});overlay.on('pageerror',lambda e:errors.append(str(e)))
- now=int(time.time()*1000);packet=dict(config=cfg('YouTube','#ff3355'),event=dict(event=dict(id=1,title='<img src=x onerror=alert(1)>',message='Anuncio de ejemplo',test=True,replay=False),started_at=now,ends_at=now+3000,sound_at=None),pending=0,duplicate=False)
+ now=int(time.time()*1000);packet=dict(config=cfg('YouTube','#ff3355'),event=dict(event=dict(id=1,title='<img src=x onerror=alert(1)>',message='Anuncio de ejemplo',test=True,replay=False),started_at=now,ends_at=now+3000,sound_at=now),pending=0,duplicate=False)
  overlay.route('**/alerts/youtube?*',lambda r:r.fulfill(body=(root/'src-tauri/overlay/alerts.html').read_text(),content_type='text/html'))
- overlay.route('**/api/alerts/youtube/poll?*',lambda r:r.fulfill(json=packet))
+ calls=[0]
+ def poll_response(r):
+  calls[0]+=1
+  if calls[0]==2:r.fulfill(status=503,body='Offline')
+  else:r.fulfill(json=packet)
+ overlay.route('**/api/alerts/youtube/poll?*',poll_response)
+ overlay.add_init_script("window.audioStarts=0;window.AudioContext=class {state='running';currentTime=0;destination={};resume(){return Promise.resolve()}createOscillator(){return {frequency:{setValueAtTime(){}},connect(){},start(){window.audioStarts++},stop(){}}}createGain(){return {gain:{setValueAtTime(){},linearRampToValueAtTime(){},exponentialRampToValueAtTime(){}},connect(){}}}}")
  overlay.goto('http://127.0.0.1:1420/alerts/youtube?key=test');overlay.locator('#alert.visible').wait_for();assert overlay.locator('#title').inner_text()=='<img src=x onerror=alert(1)>';assert overlay.locator('#alert img').count()==0
  assert overlay.locator('#alert').bounding_box()['height']+32<=300
  overlay.screenshot(path=str(artifacts/'alerta-youtube.png'))
+ overlay.wait_for_timeout(1600);assert overlay.evaluate('window.audioStarts')==1
  packet['event']=None;overlay.locator('#alert.visible').wait_for(state='hidden',timeout=5000)
  assert not errors,errors
- print(json.dumps(dict(independent_controls=True,separate_urls=True,save_preferences=True,responsive=True,overlay_safe_text=True,overlay_hides=True,js_errors=errors)))
+ print(json.dumps(dict(independent_controls=True,separate_urls=True,save_preferences=True,responsive=True,overlay_safe_text=True,overlay_hides=True,no_audio_repeat_on_reconnect=True,js_errors=errors)))
  b.close()
