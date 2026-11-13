@@ -100,3 +100,58 @@ fn message_never_allows_mass_or_user_mentions() {
         200
     );
 }
+
+#[test]
+fn branded_attachment_preserves_link_mentions_and_binary_png() {
+    let png = include_bytes!("../../../src/assets/nexus-mark.png");
+    let original = payload(
+        "youtube",
+        true,
+        "Título del directo",
+        "https://www.youtube.com/watch?v=abc",
+        Some("https://cdn.test/thumb.png"),
+    );
+    let boundary = "NexusBoundaryForTests123456";
+    let bytes = branded_multipart(original, png, boundary).unwrap();
+    let header_end = bytes.windows(4).position(|w| w == b"\r\n\r\n").unwrap() + 4;
+    let end = bytes[header_end..]
+        .windows(2)
+        .position(|w| w == b"\r\n")
+        .unwrap()
+        + header_end;
+    let body: serde_json::Value = serde_json::from_slice(&bytes[header_end..end]).unwrap();
+    assert_eq!(
+        body["embeds"][0]["image"]["url"],
+        "attachment://nexus-directo.png"
+    );
+    assert_eq!(
+        body["embeds"][0]["url"],
+        "https://www.youtube.com/watch?v=abc"
+    );
+    assert_eq!(
+        body["embeds"][0]["thumbnail"]["url"],
+        "https://cdn.test/thumb.png"
+    );
+    assert_eq!(body["allowed_mentions"]["parse"], serde_json::json!([]));
+    assert!(bytes.windows(png.len()).any(|w| w == png));
+    assert!(bytes.ends_with(format!("\r\n--{boundary}--\r\n").as_bytes()));
+    assert!(branded_multipart(serde_json::json!({}), png, boundary).is_err());
+    assert!(
+        branded_multipart(
+            payload("youtube", true, "a", "https://youtu.be/a", None),
+            png,
+            "bad\r\nheader"
+        )
+        .is_err()
+    );
+}
+#[test]
+fn brand_image_rejects_other_files_and_oversized_dimensions() {
+    assert!(validate_brand_png(b"not a png").is_err());
+    let mut png = include_bytes!("../../../src/assets/nexus-mark.png").to_vec();
+    png[16..20].copy_from_slice(&5000u32.to_be_bytes());
+    assert!(validate_brand_png(&png).is_err());
+    png[16..20].copy_from_slice(&0u32.to_be_bytes());
+    assert!(validate_brand_png(&png).is_err());
+    assert!(validate_brand_png(&vec![0; 6 * 1024 * 1024 + 1]).is_err());
+}
