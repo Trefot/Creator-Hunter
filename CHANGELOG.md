@@ -2,6 +2,12 @@
 
 ## [Sin publicar]
 
+## [0.2.22] · 2026-11-12 · Identidad Nexus en los avisos de Discord
+
+- Carga una imagen PNG propia para los avisos de directo de Twitch y YouTube desde Live Studio → Discord. La tarjeta conserva título, enlace y miniatura de la plataforma y muestra la ilustración adjunta a tamaño grande.
+- El adjunto se envía directamente a Discord, sin alojamiento público. Admite PNG de hasta 6 MB y 4096 píxeles por lado, se guarda en Nexus y entra en sus copias de seguridad.
+- Las pruebas del canal de directos incluyen la imagen elegida y se identifican como pruebas. Cargar o retirar el arte no publica mensajes y no modifica los webhooks guardados.
+
 ## [0.2.21] · 2026-11-12 · Avisos para tu comunidad de Discord
 
 - Nuevo apartado Discord en Live Studio, con webhooks separados para directos y vídeos. Enlaces guardados en las credenciales de Windows, fuera de las copias de seguridad, y pruebas explícitas por destino.
