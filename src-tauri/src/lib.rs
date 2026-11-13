@@ -221,6 +221,7 @@ pub fn run() {
             game_tracking::obs_capture,
             game_tracking::obs_sources,
             discord::discord_status,
+            discord::discord_brand_image,
             discord::discord_configure,
             discord::discord_remove,
             discord::discord_test,
