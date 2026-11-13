@@ -1,7 +1,7 @@
 import { FormEvent, useEffect, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 interface Settings { enabled:boolean; twitch_live:boolean; youtube_live:boolean; twitch_videos:boolean; youtube_videos:boolean }
-interface Status { settings:Settings; live_configured:boolean; videos_configured:boolean; activity:{message?:string}|null }
+interface Status { settings:Settings; live_image:boolean; live_configured:boolean; videos_configured:boolean; activity:{message?:string}|null }
 const empty:Settings={enabled:false,twitch_live:false,youtube_live:false,twitch_videos:false,youtube_videos:false};
 export function DiscordPanel(){
  const [status,setStatus]=useState<Status|null>(null),[settings,setSettings]=useState(empty),[live,setLive]=useState(""),[videos,setVideos]=useState("");
@@ -10,6 +10,13 @@ export function DiscordPanel(){
  const refresh=async()=>{const s=await invoke<Status>("discord_status");setStatus(s);return s;};
  useEffect(()=>{let cancelled=false;invoke<Status>("discord_status").then(s=>{if(!cancelled){setStatus(s);setSettings(s.settings);}}).catch(e=>{if(!cancelled)setError(String(e));});return()=>{cancelled=true;};},[]);
  async function run(action:()=>Promise<void>){if(busy)return;setBusy(true);setError("");setMessage("");try{await action();await refresh();}catch(e){setError(String(e));}finally{setBusy(false);}}
+ async function importImage(file:File){await run(async()=>{
+  if(file.size>6*1024*1024)throw Error("Elige un PNG de hasta 6 MB.");
+  const content=await new Promise<string>((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(String(reader.result));reader.onerror=()=>reject(Error("No se pudo leer la imagen."));reader.readAsDataURL(file);});
+  const image=new Image();image.src=content;await image.decode();
+  if(image.width>4096||image.height>4096)throw Error("La imagen no puede superar 4096 píxeles por lado.");
+  await invoke("discord_brand_image",{content:content.split(",")[1]});setMessage("Imagen guardada. Se adjuntará a las pruebas y avisos de directo.");
+ });}
  const save=(e:FormEvent)=>{e.preventDefault();void run(async()=>{await invoke("discord_configure",{settings,liveWebhook:live||null,videosWebhook:videos||null});setLive("");setVideos("");setMessage("Configuración guardada. Los avisos automáticos se revisan cada 2 minutos mientras Nexus está abierto.");});};
  const test=(kind:string)=>void run(async()=>{await invoke("discord_test",{kind});setMessage("Mensaje de prueba enviado a Discord.");});
  const remove=(kind:string)=>void run(async()=>{await invoke("discord_remove",{kind});setMessage("Webhook retirado de este equipo.");});
@@ -32,6 +39,12 @@ export function DiscordPanel(){
    </form>
    <div className="discord-actions"><button disabled={busy||!status?.live_configured} onClick={()=>test("live")}>Enviar prueba a directos</button><button disabled={busy||!status?.videos_configured} onClick={()=>test("videos")}>Enviar prueba a vídeos</button></div>
    <div className="discord-actions"><button className="ghost" disabled={busy||!status?.live_configured} onClick={()=>remove("live")}>Desconectar directos</button><button className="ghost" disabled={busy||!status?.videos_configured} onClick={()=>remove("videos")}>Desconectar vídeos</button></div>
+  </details>
+  <details><summary>Imagen de los avisos de directo</summary>
+   <p className="muted small">Carga 04-Aviso-directo.png del paquete Nexus. Se adjuntará a los directos de Twitch y YouTube, conservando el título, el enlace y la miniatura de la plataforma. También aparece al enviar una prueba a directos.</p>
+   <label>PNG de directo · {status?.live_image?"guardado":"sin imagen personalizada"}<input type="file" accept="image/png" disabled={busy||!status} onChange={e=>{const file=e.target.files?.[0];e.target.value="";if(file)void importImage(file);}}/></label>
+   <button className="ghost" disabled={busy||!status?.live_image} onClick={()=>void run(async()=>{await invoke("discord_brand_image",{content:null});setMessage("Imagen personalizada retirada.");})}>Quitar imagen de directo</button>
+   <p className="muted small">PNG de hasta 6 MB y 4096 píxeles por lado. Se guarda en Nexus y se incluye en sus copias de seguridad. Cargar la imagen no publica ningún mensaje.</p>
   </details>
   <details><summary>Compartir una publicación</summary><p className="muted small">TikTok e Instagram: envío por enlace. La detección automática todavía no está conectada. También sirve para compartir un vídeo o clip de YouTube/Twitch que no se haya anunciado.</p>
    <form onSubmit={publish}><label>Plataforma<select value={platform} disabled={busy} onChange={e=>setPlatform(e.target.value)}><option value="youtube">YouTube</option><option value="twitch">Twitch</option><option value="tiktok">TikTok</option><option value="instagram">Instagram</option></select></label><label>Título<input required maxLength={200} value={title} onChange={e=>setTitle(e.target.value)} disabled={busy}/></label><label>Enlace de la publicación<input required type="url" value={url} onChange={e=>setUrl(e.target.value)} disabled={busy} placeholder="https://…"/></label><button disabled={busy||!status?.videos_configured} type="submit">Publicar aviso en vídeos</button></form>
