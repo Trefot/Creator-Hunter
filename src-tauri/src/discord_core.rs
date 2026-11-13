@@ -139,3 +139,51 @@ pub fn payload(
     }
     json!({"username":"Nexus · Trefot", "allowed_mentions":{"parse":[]}, "embeds":[embed]})
 }
+
+/// Header validation before persisting user-selected PNGs (the UI also decodes them).
+pub fn validate_brand_png(bytes: &[u8]) -> Result<(), String> {
+    if bytes.len() > 6 * 1024 * 1024
+        || bytes.len() < 33
+        || bytes[..8] != [137, 80, 78, 71, 13, 10, 26, 10]
+        || bytes[8..12] != [0, 0, 0, 13]
+        || &bytes[12..16] != b"IHDR"
+    {
+        return Err("Elige una imagen PNG válida de hasta 6 MB.".into());
+    }
+    let w = u32::from_be_bytes(bytes[16..20].try_into().unwrap());
+    let h = u32::from_be_bytes(bytes[20..24].try_into().unwrap());
+    if w == 0 || h == 0 || w > 4096 || h > 4096 {
+        return Err("La imagen debe medir entre 1 y 4096 píxeles por lado.".into());
+    }
+    Ok(())
+}
+/// Discord accepts payload_json + files[0]; no public image hosting is required.
+pub fn branded_multipart(
+    mut message: Value,
+    png: &[u8],
+    boundary: &str,
+) -> Result<Vec<u8>, String> {
+    validate_brand_png(png)?;
+    if boundary.len() < 16
+        || !boundary
+            .bytes()
+            .all(|b| b.is_ascii_alphanumeric() || b == b'-')
+    {
+        return Err("No se pudo preparar el adjunto.".into());
+    }
+    if png
+        .windows(boundary.len())
+        .any(|w| w == boundary.as_bytes())
+    {
+        return Err("Vuelve a intentar el envío de la imagen.".into());
+    }
+    if !message["embeds"].is_array() || message["embeds"].as_array().unwrap().is_empty() {
+        return Err("El aviso no tiene una tarjeta válida.".into());
+    }
+    message["embeds"][0]["image"] = json!({"url":"attachment://nexus-directo.png"});
+    message["attachments"] = json!([{"id":0,"filename":"nexus-directo.png"}]);
+    let mut data=format!("--{boundary}\r\nContent-Disposition: form-data; name=\"payload_json\"\r\nContent-Type: application/json\r\n\r\n{}\r\n--{boundary}\r\nContent-Disposition: form-data; name=\"files[0]\"; filename=\"nexus-directo.png\"\r\nContent-Type: image/png\r\n\r\n",message).into_bytes();
+    data.extend_from_slice(png);
+    data.extend_from_slice(format!("\r\n--{boundary}--\r\n").as_bytes());
+    Ok(data)
+}
