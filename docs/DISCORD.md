@@ -39,3 +39,7 @@ No se siguen redirecciones del webhook y solo se admiten URLs HTTPS exactas de `
 - No se han utilizado webhooks reales durante el desarrollo.
 
 Referencias de APIs: https://discord.com/developers/docs/resources/webhook#execute-webhook · https://dev.twitch.tv/docs/api/reference/#get-streams · https://dev.twitch.tv/docs/api/reference/#get-videos · https://dev.twitch.tv/docs/api/reference/#get-clips · https://developers.google.com/youtube/v3/live/docs/liveBroadcasts/list · https://developers.google.com/youtube/v3/docs/playlistItems/list
+
+## Imagen ilustrada de directo (0.2.22)
+
+En Live Studio → Discord → Imagen de los avisos de directo carga `04-Aviso-directo.png` del paquete gráfico. Acepta PNG de hasta 6 MB y 4096 píxeles por lado. La imagen se adjunta a las pruebas de directos y a los avisos reales de Twitch/YouTube; conserva título, enlace y miniatura de la plataforma. El envío multipart utiliza `payload_json`, `files[0]` y la referencia `attachment://nexus-directo.png`, sin alojamiento público. Se guarda dentro de SQLite y entra en las copias; los webhooks siguen fuera de ellas. Cargar o retirar una imagen no envía mensajes. La bienvenida sigue a cargo de la configuración de Discord o su bot; Nexus no instala un bot de bienvenida.
