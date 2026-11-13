@@ -1,5 +1,6 @@
 //! Avisos salientes. Webhooks solo en el almacén de credenciales del sistema.
 use crate::discord_core::{PLATFORMS, content_url, payload, webhook_url};
+use base64::{Engine, engine::general_purpose::STANDARD};
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
@@ -71,8 +72,31 @@ async fn settings(app: &AppHandle) -> Result<Settings, String> {
 pub async fn discord_status(app: AppHandle) -> Result<Value, String> {
     Ok(
         json!({"settings":settings(&app).await?, "live_configured":entry("live")?.get_password().is_ok(),
-        "videos_configured":entry("videos")?.get_password().is_ok(),"activity":load(&app,"discord-activity").await?}),
+        "videos_configured":entry("videos")?.get_password().is_ok(),"activity":load(&app,"discord-activity").await?,"live_image":!load(&app,"discord-brand-live").await?.is_null()}),
     )
+}
+#[tauri::command]
+pub async fn discord_brand_image(app: AppHandle, content: Option<String>) -> Result<(), String> {
+    let state = app.state::<DiscordState>();
+    let _guard = acquire(&state)?;
+    if let Some(content) = content {
+        if content.len() > 8 * 1024 * 1024 {
+            return Err("El PNG supera los 6 MB.".into());
+        }
+        let png = STANDARD
+            .decode(&content)
+            .map_err(|_| "No se pudo leer el PNG.")?;
+        crate::discord_core::validate_brand_png(&png)?;
+        save(&app, "discord-brand-live", &json!({"png":content})).await
+    } else {
+        let pool = crate::backup::pool(&app).await?;
+        sqlx::query("DELETE FROM alert_cursor WHERE id=?")
+            .bind("discord-brand-live")
+            .execute(&pool)
+            .await
+            .map_err(|e| e.to_string())?;
+        Ok(())
+    }
 }
 #[tauri::command]
 pub async fn discord_configure(
@@ -140,6 +164,23 @@ async fn post(app: &AppHandle, kind: &str, body: Value, event_key: &str) -> Resu
             .get_password()
             .map_err(|_| "Configura el webhook de este destino.")?,
     )?;
+    let attachment = if kind == "live" {
+        let image = load(app, "discord-brand-live").await?;
+        if let Some(raw) = image["png"].as_str() {
+            let png = STANDARD
+                .decode(raw)
+                .map_err(|_| "Vuelve a cargar la imagen de Discord.")?;
+            let boundary = format!("Nexus{:032x}", rand::random::<u128>());
+            Some((
+                crate::discord_core::branded_multipart(body.clone(), &png, &boundary)?,
+                boundary,
+            ))
+        } else {
+            None
+        }
+    } else {
+        None
+    };
     // Persistent claim before contacting Discord: a timeout/restart cannot blindly resend.
     let id = format!(
         "discord-delivery-{:x}",
@@ -153,11 +194,18 @@ async fn post(app: &AppHandle, kind: &str, body: Value, event_key: &str) -> Resu
         }
         return Err("Hay una entrega sin confirmar de este contenido. Comprueba el canal de Discord antes de volver a publicarlo.".into());
     }
-    let result = client()?
-        .post(format!("{url}?wait=true"))
-        .json(&body)
-        .send()
-        .await;
+    let request = client()?.post(format!("{url}?wait=true"));
+    let request = if let Some((bytes, boundary)) = attachment {
+        request
+            .header(
+                "Content-Type",
+                format!("multipart/form-data; boundary={boundary}"),
+            )
+            .body(bytes)
+    } else {
+        request.json(&body)
+    };
+    let result = request.send().await;
     let result = match result {
         Ok(r) if r.status().is_success() => {
             save(app, &id, &json!({"state":"sent"})).await?;
@@ -222,7 +270,7 @@ pub async fn discord_test(app: AppHandle, kind: String) -> Result<(), String> {
     let _guard = acquire(&state)?;
     available(&app).await?;
     let key = format!("test-{}", rand::random::<u64>());
-    post(&app,&kind,json!({"username":"Nexus · Trefot","allowed_mentions":{"parse":[]},"content":"🧪 Prueba de Nexus Studio. Este mensaje no anuncia un directo ni una publicación real."}),&key).await?;
+    post(&app,&kind,json!({"username":"Nexus · Trefot","allowed_mentions":{"parse":[]},"embeds":[{"title":"Prueba de Nexus Studio","description":"Este mensaje comprueba el diseño. No anuncia un directo ni una publicación real.","color":9520895}]}),&key).await?;
     activity(&app, "Mensaje de prueba enviado.").await;
     Ok(())
 }
