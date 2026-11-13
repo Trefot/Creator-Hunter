@@ -1,17 +1,15 @@
 {
-  "version": "0.2.20",
+  "version": "0.2.21",
   "notes": [
-    "Recepción oficial de Twitch mediante EventSub WebSocket: seguidores, suscripciones, renovaciones, regalos, bits y raids según permisos y afiliación. Autorización de aplicación pública con código de dispositivo y tokens guardados en el Administrador de credenciales de Windows.",
-    "YouTube consulta nuevos suscriptores públicos cada 2 minutos y el chat del directo para miembros, membresías regaladas, Super Chat y Super Stickers. La primera lectura establece una base sin emitir eventos antiguos; no se identifican suscripciones privadas ni se garantiza un aviso por volver a suscribirse.",
-    "Panel de conexiones con errores visibles, estado parcial y último evento recibido. TikTok mantiene pruebas y anuncios manuales; no se anuncia como conectado automáticamente.",
-    "Audios MP3, WAV y OGG propios por evento, hasta 2 MB, con inicio, fin, volumen, escucha del recorte y salida suave. Biblioteca local separada de las plantillas e incluida en las copias.",
-    "Coordinación del audio según la duración real del recorte. Las alertas esperan su turno de sonido antes de entrar; silencio, pausa y repetición conservan sus controles.",
-    "Entrada escalonada del marco y texto, brillos y partículas por celebración, regalo, portal y corazones, respetando los artes aprobados y la preferencia de reducir movimiento.",
-    "Migración aditiva 21 para medios y cursores, con copia previa y compatibilidad con respaldos antiguos. Las cuentas se autorizan en el equipo del usuario; las pruebas automatizadas no sustituyen un evento real con OBS."
+    "Nuevo apartado Discord en Live Studio, con webhooks separados para directos y vídeos. Enlaces guardados en las credenciales de Windows, fuera de las copias de seguridad, y pruebas explícitas por destino.",
+    "Avisos de directos de Twitch y YouTube y de vídeos públicos de YouTube, destacados y subidas de Twitch y clips recientes, con consultas cada 2 minutos mientras Nexus está abierto. La primera consulta de publicaciones crea una referencia sin anunciar el historial.",
+    "Comparte publicaciones de TikTok, Instagram, YouTube y Twitch pegando su enlace. TikTok e Instagram todavía no tienen detección automática.",
+    "Registro persistente y reserva atómica de cada aviso, normalización de enlaces compartidos y respeto de los límites de Discord. Las entregas sin confirmar no se repiten automáticamente; hay que comprobar el canal.",
+    "Mensajes con título, enlace, plataforma y miniatura cuando está disponible, sin menciones masivas. No requiere un bot con Administrador ni cambia los canales o roles del servidor."
   ],
-  "date": "2026-11-12",
+  "date": "2026-11-13",
   "installer": "TrophyHunter-setup.exe",
-  "source_commit": "5909112214be33f72546eb65ec57831e2ac6080b",
-  "sha256": "469dbdeccec2dee314ba329aa9376704243bec424251e0d32f24e45c74c2fc24",
-  "size": 18271584
+  "source_commit": "e7c3790ece6840a285710538609eed173f2de824",
+  "sha256": "d84cc8306d07302116e657a35651857d60ef9cbc7f6ab1742bc57719a87f8bfa",
+  "size": 18324245
 }
