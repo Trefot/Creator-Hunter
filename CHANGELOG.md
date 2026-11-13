@@ -2,6 +2,14 @@
 
 ## [Sin publicar]
 
+## [0.2.21] · 2026-11-12 · Avisos para tu comunidad de Discord
+
+- Nuevo apartado Discord en Live Studio, con webhooks separados para directos y vídeos. Enlaces guardados en las credenciales de Windows, fuera de las copias de seguridad, y pruebas explícitas por destino.
+- Avisos de directos de Twitch y YouTube y de vídeos públicos de YouTube, destacados y subidas de Twitch y clips recientes, con consultas cada 2 minutos mientras Nexus está abierto. La primera consulta de publicaciones crea una referencia sin anunciar el historial.
+- Comparte publicaciones de TikTok, Instagram, YouTube y Twitch pegando su enlace. TikTok e Instagram todavía no tienen detección automática.
+- Registro persistente y reserva atómica de cada aviso, normalización de enlaces compartidos y respeto de los límites de Discord. Las entregas sin confirmar no se repiten automáticamente; hay que comprobar el canal.
+- Mensajes con título, enlace, plataforma y miniatura cuando está disponible, sin menciones masivas. No requiere un bot con Administrador ni cambia los canales o roles del servidor.
+
 ## [0.2.20] · 2026-11-12 · Eventos reales y sonidos propios
 
 - Recepción oficial de Twitch mediante EventSub WebSocket: seguidores, suscripciones, renovaciones, regalos, bits y raids según permisos y afiliación. Autorización de aplicación pública con código de dispositivo y tokens guardados en el Administrador de credenciales de Windows.
