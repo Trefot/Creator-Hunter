@@ -51,7 +51,7 @@ throw Error('Unexpected native command: '+cmd);
 
 calls=[]
 settings=dict(enabled=False,twitch_live=False,youtube_live=False,twitch_videos=False,youtube_videos=False)
-discord=dict(settings=settings,live_configured=False,videos_configured=False,activity=None)
+discord=dict(settings=settings,live_configured=False,videos_configured=False,live_image=False,activity=None)
 seen=set()
 def discord_rpc(cmd,a):
  calls.append((cmd,copy.deepcopy(a)))
@@ -61,6 +61,7 @@ def discord_rpc(cmd,a):
   for field,flag in [('liveWebhook','live_configured'),('videosWebhook','videos_configured')]:
    if a.get(field):discord[flag]=True
   return None
+ if cmd=='discord_brand_image':discord['live_image']=bool(a.get('content'));return None
  if cmd=='discord_test':return None
  if cmd=='discord_remove':discord[a['kind']+'_configured']=False;return None
  if cmd=='discord_publish':
@@ -86,6 +87,14 @@ with sync_playwright() as p:
  assert discord['settings']['twitch_live'] and discord['settings']['youtube_videos']
  assert panel.get_by_label('Webhook de directos',exact=False).input_value()==''
  assert not any(c[0]=='discord_test' for c in calls)
+ panel.get_by_text('Imagen de los avisos de directo',exact=True).click()
+ before=len([c for c in calls if c[0]=='discord_test'])
+ panel.locator('input[type=file]').set_input_files(str(root/'src/assets/nexus-mark.png'))
+ panel.get_by_text('Imagen guardada. Se adjuntará a las pruebas y avisos de directo.',exact=True).wait_for()
+ assert discord['live_image'] and len([c for c in calls if c[0]=='discord_test'])==before
+ panel.get_by_role('button',name='Quitar imagen de directo',exact=True).click()
+ panel.get_by_text('Imagen personalizada retirada.',exact=True).wait_for()
+ assert not discord['live_image']
  panel.get_by_role('button',name='Enviar prueba a directos',exact=True).click()
  panel.get_by_text('Mensaje de prueba enviado a Discord.',exact=True).wait_for()
  panel.get_by_text('Compartir una publicación',exact=True).click()
