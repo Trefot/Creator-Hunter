@@ -1,15 +1,13 @@
 {
-  "version": "0.2.21",
+  "version": "0.2.22",
   "notes": [
-    "Nuevo apartado Discord en Live Studio, con webhooks separados para directos y vídeos. Enlaces guardados en las credenciales de Windows, fuera de las copias de seguridad, y pruebas explícitas por destino.",
-    "Avisos de directos de Twitch y YouTube y de vídeos públicos de YouTube, destacados y subidas de Twitch y clips recientes, con consultas cada 2 minutos mientras Nexus está abierto. La primera consulta de publicaciones crea una referencia sin anunciar el historial.",
-    "Comparte publicaciones de TikTok, Instagram, YouTube y Twitch pegando su enlace. TikTok e Instagram todavía no tienen detección automática.",
-    "Registro persistente y reserva atómica de cada aviso, normalización de enlaces compartidos y respeto de los límites de Discord. Las entregas sin confirmar no se repiten automáticamente; hay que comprobar el canal.",
-    "Mensajes con título, enlace, plataforma y miniatura cuando está disponible, sin menciones masivas. No requiere un bot con Administrador ni cambia los canales o roles del servidor."
+    "Carga una imagen PNG propia para los avisos de directo de Twitch y YouTube desde Live Studio → Discord. La tarjeta conserva título, enlace y miniatura de la plataforma y muestra la ilustración adjunta a tamaño grande.",
+    "El adjunto se envía directamente a Discord, sin alojamiento público. Admite PNG de hasta 6 MB y 4096 píxeles por lado, se guarda en Nexus y entra en sus copias de seguridad.",
+    "Las pruebas del canal de directos incluyen la imagen elegida y se identifican como pruebas. Cargar o retirar el arte no publica mensajes y no modifica los webhooks guardados."
   ],
   "date": "2026-11-13",
   "installer": "TrophyHunter-setup.exe",
-  "source_commit": "e7c3790ece6840a285710538609eed173f2de824",
-  "sha256": "d84cc8306d07302116e657a35651857d60ef9cbc7f6ab1742bc57719a87f8bfa",
-  "size": 18324245
+  "source_commit": "e3292ea8bf27b4680cf8a6285b3abd54ff635c3b",
+  "sha256": "c4e62d9c119252ec98224404992d0b1c75c9a2d7fe61c4d4c814a5a17d59d769",
+  "size": 18330755
 }
