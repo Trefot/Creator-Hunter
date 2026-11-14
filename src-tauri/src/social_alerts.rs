@@ -283,6 +283,7 @@ impl YouTubeReader {
                 continue;
             }
             if !self.page.is_empty() {
+                if let Some(m)=crate::stream_core::youtube_message(item){crate::music::receive(app,"youtube",&m.user_id,&m.name,&m.text).await;}
                 crate::streaming::receive(app, "youtube", item["snippet"]["type"].as_str().unwrap_or(""), item).await;
                 if let Some(e) = crate::social_events::youtube(item) {
                     deliver(app, "youtube", e).await?;
@@ -344,7 +345,7 @@ impl YouTubeReader {
         Ok(())
     }
 }
-const SCOPES: &str = "moderator:read:followers channel:read:subscriptions bits:read user:read:chat channel:manage:broadcast";
+const SCOPES: &str = "moderator:read:followers channel:read:subscriptions bits:read user:read:chat channel:manage:broadcast channel:manage:redemptions";
 fn entry() -> Result<keyring::Entry, String> {
     keyring::Entry::new(
         "TrophyHunter",
@@ -594,6 +595,8 @@ fn twitch_session(app: &AppHandle) -> Result<(), String> {
                     ),
                     ("channel.cheer", "1", json!({"broadcaster_user_id":user})),
                     ("channel.raid", "1", json!({"to_broadcaster_user_id":user})),
+                    ("channel.channel_points_custom_reward_redemption.add", "1", json!({"broadcaster_user_id":user})),
+                    ("channel.channel_points_custom_reward_redemption.update", "1", json!({"broadcaster_user_id":user})),
                     ("channel.chat.message", "1", json!({"broadcaster_user_id":user,"user_id":user})),
                     ("channel.chat.message_delete", "1", json!({"broadcaster_user_id":user,"user_id":user})),
                     ("channel.chat.clear_user_messages", "1", json!({"broadcaster_user_id":user,"user_id":user})),
@@ -639,6 +642,11 @@ fn twitch_session(app: &AppHandle) -> Result<(), String> {
                 if recent.contains(&id) {
                     continue;
                 }
+                let kind=v["payload"]["subscription"]["type"].as_str().unwrap_or("");
+                let event=&v["payload"]["event"];
+                if kind=="channel.channel_points_custom_reward_redemption.update" {crate::engagement::cancel(app,event);}
+                if kind=="channel.channel_points_custom_reward_redemption.add" {tauri::async_runtime::block_on(crate::engagement::receive(app,event));}
+                if kind=="channel.chat.message" {if let Some(m)=crate::stream_core::twitch_message(event){tauri::async_runtime::block_on(crate::music::receive(app,"twitch",&m.user_id,&m.name,&m.text));}}
                 tauri::async_runtime::block_on(crate::streaming::receive(app, "twitch", v["payload"]["subscription"]["type"].as_str().unwrap_or(""), &v["payload"]["event"]));
                 let social_event = crate::social_events::twitch(
                     v["payload"]["subscription"]["type"].as_str().unwrap_or(""),
@@ -732,3 +740,6 @@ pub fn start(app: AppHandle) {
         }
     });
 }
+
+#[tauri::command]
+pub async fn twitch_reauthorize(app:AppHandle)->Result<Value,String>{let raw=entry()?.get_password().map_err(|_|"Primero conecta Twitch con tu Client ID.")?;let v:Value=serde_json::from_str(&raw).map_err(|_|"Vuelve a introducir tu Client ID.")?;let client=v["client_id"].as_str().ok_or("Falta Client ID.")?;twitch_begin(app,client.into()).await}
