@@ -161,11 +161,14 @@ impl Client {
             .set_read_timeout(Some(Duration::from_secs(2)));
         result
     }
+    pub fn require_idle(&mut self)->Result<(),String>{
+        for kind in ["GetRecordStatus","GetStreamStatus","GetReplayBufferStatus"]{if self.request(kind)?["outputActive"]==true{return Err("Detén directo, grabación y Replay Buffer antes de aplicar o restaurar ajustes.".into());}}Ok(())
+    }
     pub fn request(&mut self, kind: &str) -> Result<Value, String> {
         self.request_data(kind, None)
     }
     pub fn request_data(&mut self, kind: &str, data: Option<Value>) -> Result<Value, String> {
-        // Esta entrega nunca debe iniciar/parar emisiones ni cambiar escenas.
+        // Lista cerrada: lectura y configuración explícita; nunca iniciar/parar emisiones.
         if !matches!(
             kind,
             "GetRecordStatus"
@@ -173,6 +176,8 @@ impl Client {
                 | "GetReplayBufferStatus"
                 | "GetInputList"
                 | "GetSourceScreenshot"
+                | "GetStats" | "GetVideoSettings" | "GetProfileList" | "GetSceneList"
+                | "SetCurrentProfile" | "SetVideoSettings" | "SetCurrentProgramScene"
         ) {
             return Err("Operación OBS no permitida.".into());
         }
@@ -230,6 +235,12 @@ mod tests {
         );
         assert!(client.request("StartStream").is_err());
         server.join().unwrap();
+    }
+    #[test]
+    fn configuration_guard_stops_at_active_output_without_writes(){
+        let listener=TcpListener::bind("127.0.0.1:0").unwrap();let port=listener.local_addr().unwrap().port();
+        let server=std::thread::spawn(move||{let(stream,_)=listener.accept().unwrap();let mut ws=tungstenite::accept(stream).unwrap();ws.send(Message::text(r#"{"op":0,"d":{"rpcVersion":1}}"#)).unwrap();let _=ws.read().unwrap();ws.send(Message::text(r#"{"op":2,"d":{}}"#)).unwrap();let r:Value=serde_json::from_str(ws.read().unwrap().to_text().unwrap()).unwrap();assert_eq!(r["d"]["requestType"],"GetRecordStatus");ws.send(Message::text(json!({"op":7,"d":{"requestId":r["d"]["requestId"],"requestStatus":{"result":true},"responseData":{"outputActive":true}}}).to_string())).unwrap();assert!(ws.read().is_err());});
+        let mut c=Client::connect(port,"").unwrap();assert!(c.require_idle().is_err());drop(c);server.join().unwrap();
     }
     #[test]
     fn rejects_wrong_authentication_and_unavailable_port() {
