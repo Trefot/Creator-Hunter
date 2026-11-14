@@ -152,6 +152,13 @@ fn handle_request(app: &AppHandle, key: &str, request: Request) {
     let query = |name: &str| url.query_pairs().find(|(k, _)| k == name).map(|(_, v)| v.to_string());
 
     match segments.iter().map(String::as_str).collect::<Vec<_>>().as_slice() {
+        ["chat", p] if *p=="twitch" || *p=="youtube" => {
+            let response=Response::from_string(include_str!("../overlay/chat.html")).with_header(header("Content-Type","text/html; charset=utf-8")).with_header(header("Cache-Control","no-store"));let _=request.respond(response);
+        }
+        ["api","chat",p] if *p=="twitch" || *p=="youtube" => {
+            if query("key").as_deref()!=Some(key){return respond_json(request,403,json!({"error":"Clave local no válida."}));}
+            respond_json(request,200,crate::streaming::snapshot(app,Some(p)));
+        }
         ["api","alert-audio",id] => {
             if query("key").as_deref()!=Some(key){return respond_json(request,403,json!({"error":"Clave local no válida."}));}
             let result=tauri::async_runtime::block_on(crate::alerts::audio_blob(app,id));
