@@ -87,7 +87,31 @@ fn powershell(script: &str) -> Command {
 fn powershell(_script: &str) -> Command {
     Command::new("nexus-windows-voice-unavailable")
 }
-const SAY: &str = r#"$ErrorActionPreference='Stop';[Console]::InputEncoding=[Text.Encoding]::UTF8;Add-Type -AssemblyName System.Speech;$d=[Console]::In.ReadToEnd()|ConvertFrom-Json;$s=New-Object System.Speech.Synthesis.SpeechSynthesizer;if($d.voice){$s.SelectVoice([string]$d.voice)};$s.Rate=[int]$d.rate;$s.Volume=[int]$d.volume;$prompt=$s.SpeakAsync([string]$d.text);$ticks=0;while(-not $prompt.IsCompleted){try{$null=[Diagnostics.Process]::GetProcessById([int]$d.parent)}catch{$s.SpeakAsyncCancelAll();$s.Dispose();exit 1};Start-Sleep -Milliseconds 100;$ticks++;if($ticks -gt 600){$s.SpeakAsyncCancelAll();$s.Dispose();exit 1}};$s.Dispose()"#;
+const SAY: &str = r#"$ErrorActionPreference='Stop'
+[Console]::InputEncoding=[Text.Encoding]::UTF8
+Add-Type -AssemblyName System.Speech
+$d=[Console]::In.ReadToEnd()|ConvertFrom-Json
+$s=New-Object System.Speech.Synthesis.SpeechSynthesizer
+if($d.voice){$s.SelectVoice([string]$d.voice)}
+$s.Rate=[int]$d.rate
+$s.Volume=[int]$d.volume
+Register-ObjectEvent -InputObject $s -EventName SpeakCompleted -SourceIdentifier NexusSpeechDone | Out-Null
+$null=$s.SpeakAsync([string]$d.text)
+$done=$null
+$ticks=0
+while($null -eq $done){
+ try{$null=[Diagnostics.Process]::GetProcessById([int]$d.parent)}catch{$s.SpeakAsyncCancelAll();$s.Dispose();exit 1}
+ $done=Get-Event -SourceIdentifier NexusSpeechDone -ErrorAction SilentlyContinue | Select-Object -First 1
+ if($null -eq $done){Start-Sleep -Milliseconds 100}
+ $ticks++
+ if($ticks -gt 600){$s.SpeakAsyncCancelAll();$s.Dispose();exit 1}
+}
+$bad=$done.SourceEventArgs.Cancelled -or ($null -ne $done.SourceEventArgs.Error)
+Unregister-Event -SourceIdentifier NexusSpeechDone
+Remove-Event -SourceIdentifier NexusSpeechDone
+$s.Dispose()
+if($bad){exit 1}
+"#;
 fn speak(text: &str, c: &SpeechConfig) -> Result<Child, String> {
     let mut child = powershell(SAY)
         .stdin(Stdio::piped())
@@ -132,7 +156,7 @@ pub async fn studio_tts_configure(
         return Err("Opciones de voz no válidas.".into());
     }
     let mut c = config(&app).await?;
-    let was_enabled=c.enabled;
+    let was_enabled = c.enabled;
     c.enabled = enabled;
     c.voice = voice;
     c.rate = rate;
@@ -239,7 +263,30 @@ pub async fn studio_reward_create(app: AppHandle, cost: u32) -> Result<(), Strin
         return Err("Ya hay una recompensa vinculada. Gestiona su coste en Twitch; conserva el ID para sus canjes.".into());
     }
     let (client, _, user) = crate::social_alerts::twitch_token().await?;
-    let v=twitch_request(reqwest::Method::POST,"channel_points/custom_rewards",&[("broadcaster_id",&user)],Some(json!({"title":"Nexus · Leer mi mensaje","cost":cost,"is_user_input_required":true,"prompt":"Máximo 180 caracteres, sin enlaces. La voz debe estar activa en Nexus.","is_global_cooldown_enabled":true,"global_cooldown_seconds":30,"should_redemptions_skip_request_queue":false}))).await?;
+    let existing = twitch_request(
+        reqwest::Method::GET,
+        "channel_points/custom_rewards",
+        &[
+            ("broadcaster_id", user.as_str()),
+            ("only_manageable_rewards", "true"),
+        ],
+        None,
+    )
+    .await?;
+    let recovered = existing["data"]
+        .as_array()
+        .and_then(|items| {
+            items
+                .iter()
+                .find(|v| v["title"] == "Nexus · Leer mi mensaje")
+        })
+        .cloned();
+    let v = if let Some(reward) = recovered {
+        json!({"data":[reward]})
+    } else {
+        twitch_request(reqwest::Method::POST,"channel_points/custom_rewards",&[("broadcaster_id",&user)],Some(json!({"title":"Nexus · Leer mi mensaje","cost":cost,"is_user_input_required":true,"prompt":"Máximo 180 caracteres, sin enlaces. La voz debe estar activa en Nexus.","is_global_cooldown_enabled":true,"global_cooldown_seconds":30,"should_redemptions_skip_request_queue":false}))).await?
+    };
+
     c.reward = v["data"][0]["id"]
         .as_str()
         .ok_or("Twitch no confirmó el ID; comprueba tus recompensas antes de repetir.")?
