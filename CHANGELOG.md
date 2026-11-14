@@ -2,6 +2,14 @@
 
 ## [Sin publicar]
 
+## [0.2.23] · 2026-11-14 · Detección y fichas de juegos
+
+- Añadir un juego abre su ficha con objetivos, notas, portada y contenido. Repetir el alta del mismo título y plataforma reutiliza la ficha; las ediciones de PC y PS5 permanecen separadas.
+- Detección de PC ampliada a 7DS y Black Myth: Wukong, además de Fortnite. Asocia otros juegos una vez a su ejecutable desde la ficha o el alta; la lista de aplicaciones abiertas permite elegir el proceso sin buscar rutas ni leer memoria de los juegos.
+- Opción para añadir a la biblioteca los juegos detectados de PC o PSN, apagada por defecto. Una elección manual puede retirarse para volver a la detección automática.
+- Los juegos de PSN visibles que aún no están en la biblioteca se muestran para crear su ficha o importar trofeos. Importar una ficha local con el mismo título y plataforma conserva sus notas y relaciones.
+- La detección no descarga por sí sola logros o portadas: PS5 utiliza la conexión e importación de PSN, y los juegos de PC mantienen objetivos y portadas propios.
+
 ## [0.2.22] · 2026-11-12 · Identidad Nexus en los avisos de Discord
 
 - Carga una imagen PNG propia para los avisos de directo de Twitch y YouTube desde Live Studio → Discord. La tarjeta conserva título, enlace y miniatura de la plataforma y muestra la ilustración adjunta a tamaño grande.
