@@ -1,16 +1,16 @@
 {
-  "version": "0.2.26",
+  "version": "0.2.27",
   "notes": [
-    "TTS local de Windows mediante recompensa propia de puntos de Twitch: selección de voz, velocidad, volumen, filtros, cola limitada y controles de detener/pausar para Stream Deck. Requiere renovar permisos de Twitch y probar el audio en el PC.",
-    "Bandeja de momentos y clips en Live Studio y Proyectos, con conversión directa e idempotente a proyecto, archivo confirmado y marcas de la sesión. No renderiza ni recorta vídeos automáticamente.",
-    "Notas persistentes para retomar cada partida y candidatos a próximos platinos según los trofeos registrados. La detección de juegos ya no cambia de página mientras usas Live Studio.",
-    "Diagnóstico de OBS por red, renderizado y codificación; actividades de charla, gameplay y reacciones con perfiles existentes, escena y presets de vídeo. Aplicación fuera de emisión con copia previa y restauración de perfil/vídeo/escena; no modifica encoder ni bitrate.",
-    "Conexión personal de Spotify Premium mediante PKCE, controles y tarjeta informativa sin audio. Reproductor local para música autorizada, volumen, overlay y peticiones !sr moderadas de Twitch/YouTube. Tokens guardados en Windows, fuera de las copias.",
-    "Las conexiones, voces, dispositivos y audio de emisión se configuran en el PC del usuario. Guía de los cinco módulos en docs/ESTUDIO.md."
+    "Nueva identidad visual V2 en tinta, violeta y latón, con el taller ilustrado y el Nexus original. Inicio conserva tus datos reales y permite reducir el detalle con Modo enfoque.",
+    "Navegación principal simplificada: Inicio, Crear contenido, En directo y Juegos. Mi estudio agrupa cuentas, metas e ingresos; búsqueda de secciones con Ctrl+K y ayuda de orientación.",
+    "Crear contenido reúne proyectos, ideas y capturas. El tablero calcula la etapa y el siguiente paso de todas las versiones pendientes; los borradores se conservan al cambiar de pestaña.",
+    "Cabina de directo con escenas reales de OBS, cambio explícito de escena y captura fija a petición; sin previsualización continua. Chat, sonido, alertas, overlays, contadores, categoría, OBS, conexiones y momentos tienen sus propios apartados.",
+    "Biblioteca con banner de la partida activa y su nota real; añadir juegos, detección e importación reunidos en un panel desplegable. Conserva fichas, platinos y overlays existentes.",
+    "Se mantienen datos, identidad de instalación y enlaces de Stream Deck. La señal, el audio y las conexiones reales requieren OBS y tus cuentas configuradas en el PC."
   ],
   "date": "2026-11-14",
   "installer": "TrophyHunter-setup.exe",
-  "source_commit": "86bc4fdc74f108fefdda534021789bdcaef75032",
-  "sha256": "29c55a6b106e91bf2c43ddc37e38cfb0679055a45794f0f537fefcdefdbc8f8c",
-  "size": 18504470
+  "source_commit": "385e802ae2eb2a048653775dc02ec233de0088ce",
+  "sha256": "46607f8838f49fe2e22c3ba0e89ea0993217cda0ebdaa0a01ad3e87fafe4f810",
+  "size": 20440591
 }
