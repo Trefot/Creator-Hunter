@@ -2,6 +2,15 @@
 
 ## [Sin publicar]
 
+## [0.2.26] · 2026-11-14 · Directo, contenido y gaming
+
+- TTS local de Windows mediante recompensa propia de puntos de Twitch: selección de voz, velocidad, volumen, filtros, cola limitada y controles de detener/pausar para Stream Deck. Requiere renovar permisos de Twitch y probar el audio en el PC.
+- Bandeja de momentos y clips en Live Studio y Proyectos, con conversión directa e idempotente a proyecto, archivo confirmado y marcas de la sesión. No renderiza ni recorta vídeos automáticamente.
+- Notas persistentes para retomar cada partida y candidatos a próximos platinos según los trofeos registrados. La detección de juegos ya no cambia de página mientras usas Live Studio.
+- Diagnóstico de OBS por red, renderizado y codificación; actividades de charla, gameplay y reacciones con perfiles existentes, escena y presets de vídeo. Aplicación fuera de emisión con copia previa y restauración de perfil/vídeo/escena; no modifica encoder ni bitrate.
+- Conexión personal de Spotify Premium mediante PKCE, controles y tarjeta informativa sin audio. Reproductor local para música autorizada, volumen, overlay y peticiones !sr moderadas de Twitch/YouTube. Tokens guardados en Windows, fuera de las copias.
+- Las conexiones, voces, dispositivos y audio de emisión se configuran en el PC del usuario. Guía de los cinco módulos en docs/ESTUDIO.md.
+
 ## [0.2.25] · 2026-11-14 · Chat y categoría de Twitch
 
 - Live Studio reúne mensajes de Twitch y YouTube con filtros por plataforma y un historial efímero de hasta 200 mensajes.
