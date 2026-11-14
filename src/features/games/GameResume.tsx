@@ -1,0 +1,7 @@
+import {useEffect,useState} from 'react';import {invoke} from '@tauri-apps/api/core';
+export function GameResume({gameId}:{gameId:string}){
+ const [note,setNote]=useState(''),[stamp,setStamp]=useState<number|null>(null),[busy,setBusy]=useState(false),[error,setError]=useState(''),[message,setMessage]=useState('');
+ useEffect(()=>{let dead=false;setNote('');setStamp(null);invoke<{note?:string;updated_ms?:number}|null>('studio_resume',{gameId,note:null}).then(v=>{if(!dead){setNote(v?.note??'');setStamp(v?.updated_ms??null)}}).catch(e=>{if(!dead)setError(String(e))});return()=>{dead=true}},[gameId]);
+ async function save(){setBusy(true);setError('');try{const v=await invoke<{updated_ms:number}>('studio_resume',{gameId,note});setStamp(v.updated_ms);setMessage('Punto de partida guardado.')}catch(e){setError(String(e))}finally{setBusy(false)}}
+ return <details className="card resume-card" open><summary>🎮 Retomar partida</summary><p className="muted small">Guarda la zona, lo que estabas buscando y tu siguiente paso. Se conserva aunque cambies de día.</p><textarea aria-label="Dónde me quedé y siguiente objetivo" rows={3} maxLength={4000} value={note} onChange={e=>setNote(e.target.value)} placeholder="Zona: … / Me falta: … / Próximo paso: …"/><button disabled={busy} onClick={save}>Guardar para la próxima partida</button>{stamp&&<p className="muted small">Última nota: {new Date(stamp).toLocaleString('es')}</p>}{message&&<p role="status">{message}</p>}{error&&<p role="alert" className="error">{error}</p>}</details>
+}
