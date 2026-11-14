@@ -2,6 +2,12 @@
 
 ## [Sin publicar]
 
+## [0.2.24] · 2026-11-14 · Actualizaciones sin bloqueos de Git
+
+- El actualizador consulta y descarga por HTTPS desde las publicaciones oficiales. Ya no necesita Git ni utiliza la caché que podía quedar bloqueada por shallow.lock.
+- Verifica el tamaño, SHA256 y cabecera de Windows antes de ejecutar una descarga. Los archivos temporales son independientes y se evita aplicar dos actualizaciones simultáneas desde una misma instancia.
+- Se conserva la opción de instaladores locales y se reconocen también los nombres Nexus-Studio. Las versiones con la caché Git bloqueada deben instalar esta actualización una vez mediante la descarga directa.
+
 ## [0.2.23] · 2026-11-14 · Detección y fichas de juegos
 
 - Añadir un juego abre su ficha con objetivos, notas, portada y contenido. Repetir el alta del mismo título y plataforma reutiliza la ficha; las ediciones de PC y PS5 permanecen separadas.
