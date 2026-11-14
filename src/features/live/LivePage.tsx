@@ -21,6 +21,9 @@ import { Game, listGames } from "../../db/games";
 import { es } from "../../i18n/es";
 import { DiscordPanel } from "./DiscordPanel";
 import { AlertsPanel } from "./AlertsPanel";
+import { TtsPanel,ObsAssistant } from "./StudioModules";
+import { MusicPanel } from "./MusicPanel";
+import { CaptureInbox } from "./CaptureInbox";
 import { StreamingPanel } from "./StreamingPanel";
 import { ObsPanel } from "./ObsPanel";
 
@@ -379,7 +382,7 @@ function CounterForm({
 }
 
 /** Live Studio · fase 1: contadores para el stream, con overlay de OBS y botones del Stream Deck. */
-export function LivePage() {
+export function LivePage({onOpenProject}:{onOpenProject:(id:string)=>void}) {
   const [counters, setCounters] = useState<Counter[] | null>(null);
   const [games, setGames] = useState<Game[]>([]);
   const [info, setInfo] = useState<LiveInfo | null>(null);
@@ -436,6 +439,10 @@ export function LivePage() {
       </header>
 
       <StreamingPanel />
+      <TtsPanel base={base} keyValue={info?.key??""}/>
+      <MusicPanel base={base} keyValue={info?.key??""}/>
+      <ObsAssistant/>
+      <CaptureInbox onOpenProject={onOpenProject}/>
       <AlertsPanel />
       <DiscordPanel />
 
