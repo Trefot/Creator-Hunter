@@ -435,9 +435,9 @@ export function LivePage() {
         )}
       </header>
 
+      <StreamingPanel />
       <AlertsPanel />
       <DiscordPanel />
-      <StreamingPanel />
 
       {/* Conexión con OBS y el Stream Deck */}
       <ObsPanel clipUrl={info?.running ? `http://127.0.0.1:${info.port}/api/clips/save?key=${encodeURIComponent(info.key)}` : null} markUrl={info?.running ? `http://127.0.0.1:${info.port}/api/moments/mark?key=${encodeURIComponent(info.key)}` : null} />
