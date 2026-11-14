@@ -198,7 +198,7 @@ pub async fn alerts_import_audio(
     }
     let id = format!("{:x}", Sha256::digest(&bytes));
     let pool = crate::backup::pool(&app).await?;
-    let count: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM alert_audio")
+    let count: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM alert_audio WHERE id NOT LIKE 'music-%'")
         .fetch_one(&pool)
         .await
         .map_err(|e| e.to_string())?;
