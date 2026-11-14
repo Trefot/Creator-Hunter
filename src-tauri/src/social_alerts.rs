@@ -2,7 +2,7 @@
 use crate::social_events::Incoming;
 use serde_json::{Value, json};
 use std::{
-    sync::Mutex,
+    sync::{Mutex, atomic::{AtomicU64, Ordering}},
     time::{Duration, Instant},
 };
 use tauri::{AppHandle, Manager};
@@ -11,6 +11,7 @@ use tauri_plugin_opener::OpenerExt;
 pub struct SocialState {
     status: Mutex<Value>,
     device: Mutex<Option<Value>>,
+    generation: AtomicU64,
 }
 fn status(app: &AppHandle, p: &str, message: &str, connected: bool) {
     let state = app.state::<SocialState>();
@@ -24,7 +25,7 @@ fn status(app: &AppHandle, p: &str, message: &str, connected: bool) {
     s[p]["connected"] = json!(connected);
     s[p]["message"] = json!(message);
 }
-async fn load(app: &AppHandle, id: &str) -> Result<Value, String> {
+pub(crate) async fn load(app: &AppHandle, id: &str) -> Result<Value, String> {
     let pool = crate::backup::pool(app).await?;
     let raw: Option<String> = sqlx::query_scalar("SELECT content FROM alert_cursor WHERE id=?")
         .bind(id)
@@ -34,7 +35,7 @@ async fn load(app: &AppHandle, id: &str) -> Result<Value, String> {
     raw.map(|s| serde_json::from_str(&s).map_err(|e| e.to_string()))
         .unwrap_or(Ok(Value::Null))
 }
-async fn save(app: &AppHandle, id: &str, v: &Value) -> Result<(), String> {
+pub(crate) async fn save(app: &AppHandle, id: &str, v: &Value) -> Result<(), String> {
     let pool = crate::backup::pool(app).await?;
     sqlx::query("INSERT INTO alert_cursor(id,content) VALUES(?,?) ON CONFLICT(id) DO UPDATE SET content=excluded.content").bind(id).bind(v.to_string()).execute(&pool).await.map_err(|e|e.to_string())?;
     Ok(())
@@ -50,12 +51,14 @@ pub async fn social_enable(app: AppHandle, platform: String, enabled: bool) -> R
     if !["youtube", "twitch"].contains(&platform.as_str()) {
         return Err("Plataforma no disponible.".into());
     }
+    if platform == "twitch" { app.state::<SocialState>().generation.fetch_add(1, Ordering::SeqCst); }
     let mut s = load(&app, "social-settings").await?;
     if !s.is_object() {
         s = json!({});
     }
     s[&platform] = json!(enabled);
     save(&app, "social-settings", &s).await?;
+    if !enabled { crate::streaming::clear(&app, &platform); }
     status(
         &app,
         &platform,
@@ -214,7 +217,7 @@ impl YouTubeReader {
         // Incluso cero suscriptores es una línea base válida.
         save(app, &id, &json!(seen)).await
     }
-    async fn active_live(&mut self, token: &str) -> Result<(), String> {
+    async fn active_live(&mut self, app: &AppHandle, token: &str) -> Result<(), String> {
         let v = api(
             "https://www.googleapis.com/youtube/v3/liveBroadcasts",
             token,
@@ -232,6 +235,7 @@ impl YouTubeReader {
             .and_then(|a| a.iter().find_map(|v| v["snippet"]["liveChatId"].as_str()))
             .unwrap_or("");
         if chat != self.chat {
+            crate::streaming::clear(app, "youtube");
             self.chat = chat.into();
             self.page.clear();
             self.chat_due = Instant::now();
@@ -279,6 +283,7 @@ impl YouTubeReader {
                 continue;
             }
             if !self.page.is_empty() {
+                crate::streaming::receive(app, "youtube", item["snippet"]["type"].as_str().unwrap_or(""), item).await;
                 if let Some(e) = crate::social_events::youtube(item) {
                     deliver(app, "youtube", e).await?;
                 }
@@ -306,7 +311,7 @@ impl YouTubeReader {
         }
         if now >= self.live {
             self.live = now + Duration::from_secs(60);
-            self.live_error = self.active_live(&token).await.err();
+            self.live_error = self.active_live(app, &token).await.err();
         }
         if !self.chat.is_empty() && now >= self.chat_due {
             self.chat_due = now + Duration::from_secs(30);
@@ -339,7 +344,7 @@ impl YouTubeReader {
         Ok(())
     }
 }
-const SCOPES: &str = "moderator:read:followers channel:read:subscriptions bits:read";
+const SCOPES: &str = "moderator:read:followers channel:read:subscriptions bits:read user:read:chat channel:manage:broadcast";
 fn entry() -> Result<keyring::Entry, String> {
     keyring::Entry::new(
         "TrophyHunter",
@@ -426,6 +431,7 @@ pub async fn twitch_finish(app: AppHandle) -> Result<bool, String> {
         .set_password(&v.to_string())
         .map_err(|_| "No se pudo guardar la autorización en Windows.")?;
     *app.state::<SocialState>().device.lock().unwrap() = None;
+    crate::streaming::clear(&app, "twitch");
     social_enable(app, "twitch".into(), true).await?;
     Ok(true)
 }
@@ -505,6 +511,7 @@ pub(crate) async fn twitch_token() -> Result<(String, String, String), String> {
     ))
 }
 fn twitch_session(app: &AppHandle) -> Result<(), String> {
+    let generation=app.state::<SocialState>().generation.load(Ordering::SeqCst);
     let (client, token, user) = tauri::async_runtime::block_on(twitch_token())?;
     let (mut socket, _) =
         tungstenite::connect("wss://eventsub.wss.twitch.tv/ws?keepalive_timeout_seconds=10")
@@ -532,7 +539,7 @@ fn twitch_session(app: &AppHandle) -> Result<(), String> {
     loop {
         let enabled =
             tauri::async_runtime::block_on(load(app, "social-settings"))?["twitch"] == true;
-        if !enabled {
+        if !enabled || app.state::<SocialState>().generation.load(Ordering::SeqCst)!=generation {
             return Ok(());
         }
         if started.elapsed() > Duration::from_secs(3500) {
@@ -541,6 +548,7 @@ fn twitch_session(app: &AppHandle) -> Result<(), String> {
         let msg = socket
             .read()
             .map_err(|_| "Conexión Twitch interrumpida. Reconectando…")?;
+        if app.state::<SocialState>().generation.load(Ordering::SeqCst)!=generation {return Ok(());}
         if msg.is_ping() {
             socket
                 .send(tungstenite::Message::Pong(msg.into_data()))
@@ -586,6 +594,10 @@ fn twitch_session(app: &AppHandle) -> Result<(), String> {
                     ),
                     ("channel.cheer", "1", json!({"broadcaster_user_id":user})),
                     ("channel.raid", "1", json!({"to_broadcaster_user_id":user})),
+                    ("channel.chat.message", "1", json!({"broadcaster_user_id":user,"user_id":user})),
+                    ("channel.chat.message_delete", "1", json!({"broadcaster_user_id":user,"user_id":user})),
+                    ("channel.chat.clear_user_messages", "1", json!({"broadcaster_user_id":user,"user_id":user})),
+                    ("channel.chat.clear", "1", json!({"broadcaster_user_id":user,"user_id":user})),
                 ] {
                     let registered = tauri::async_runtime::block_on(async {
                         let r=reqwest::Client::builder().timeout(Duration::from_secs(8)).build().map_err(|_|"No se pudo iniciar la conexión.")?.post("https://api.twitch.tv/helix/eventsub/subscriptions").bearer_auth(&token).header("Client-Id",&client).json(&json!({"type":kind,"version":version,"condition":condition,"transport":{"method":"websocket","session_id":session}})).send().await.map_err(|_|"No se pudo registrar EventSub.")?;
@@ -610,7 +622,7 @@ fn twitch_session(app: &AppHandle) -> Result<(), String> {
                     );
                 }
                 let message = if failures.is_empty() {
-                    "Conectado · follows, subs, regalos, bits y raids".into()
+                    "Conectado · chat, follows, subs, regalos, bits y raids".into()
                 } else {
                     format!(
                         "Conexión parcial · eventos sin permiso o afiliación: {}",
@@ -627,21 +639,22 @@ fn twitch_session(app: &AppHandle) -> Result<(), String> {
                 if recent.contains(&id) {
                     continue;
                 }
-                if let Some(e) = crate::social_events::twitch(
+                tauri::async_runtime::block_on(crate::streaming::receive(app, "twitch", v["payload"]["subscription"]["type"].as_str().unwrap_or(""), &v["payload"]["event"]));
+                let social_event = crate::social_events::twitch(
                     v["payload"]["subscription"]["type"].as_str().unwrap_or(""),
                     &v["payload"]["event"],
-                ) {
+                );
+                let persist = social_event.is_some();
+                if let Some(e) = social_event {
                     tauri::async_runtime::block_on(deliver(app, "twitch", e))?;
                 }
                 recent.push(id);
                 if recent.len() > 2000 {
                     recent.remove(0);
                 }
-                tauri::async_runtime::block_on(save(
-                    app,
-                    &format!("twitch-seen-{user}"),
-                    &json!(recent),
-                ))?;
+                if persist {
+                    tauri::async_runtime::block_on(save(app, &format!("twitch-seen-{user}"), &json!(recent)))?;
+                }
             }
             "session_reconnect" => {
                 let url = v["payload"]["session"]["reconnect_url"]
