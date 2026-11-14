@@ -39,7 +39,9 @@ export function setGameModeEnabled(enabled: boolean): void {
 
 /** La actividad local no se confunde con otra edición del mismo juego en consola. */
 export function matchPcPlaying(library: Game[], names: { name: string }[]): Game | null {
-  return matchPlaying(library.filter(g => g.platform === "pc"), names.map(p => ({ ...p, title_id: "", icon_url: null })));
+  const pc=library.filter(g=>g.platform==="pc");
+  const bound=names.map(p=>pc.find(g=>g.id===(p as {game_id?:string}).game_id)).find(Boolean);
+  return bound??matchPlaying(pc, names.map(p => ({ ...p, title_id: "", icon_url: null })));
 }
 
 /** "Black Myth: Wukong™" → "blackmythwukong": sin mayúsculas, acentos, símbolos ni espacios. */
@@ -69,3 +71,6 @@ export function matchPlaying(library: Game[], playing: PlayingGame[]): Game | nu
   }
   return null;
 }
+
+export function isAutoAddEnabled():boolean {try{return localStorage.getItem("game-auto-add")==="true";}catch{return false;}}
+export function setAutoAddEnabled(value:boolean){localStorage.setItem("game-auto-add",String(value));window.dispatchEvent(new Event(GAME_MODE_CHANGED));}
