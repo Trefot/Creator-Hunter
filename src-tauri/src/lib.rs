@@ -9,6 +9,10 @@ mod social_alerts;
 mod social_events;
 mod stream_core;
 mod streaming;
+mod studio_core;
+mod studio_tools;
+mod engagement;
+mod music;
 mod discord;
 mod discord_core;
 mod game_broadcast;
@@ -171,6 +175,9 @@ pub fn run() {
         .manage(alerts::AlertsState::default())
         .manage(social_alerts::SocialState::default())
         .manage(streaming::StreamingState::default())
+        .manage(studio_tools::StudioState::default())
+        .manage(engagement::EngagementState::default())
+        .manage(music::MusicState::default())
         .manage(discord::DiscordState::default())
         .manage(obs::ObsState::default())
         .manage(premigrate::Preparation::default())
@@ -188,6 +195,8 @@ pub fn run() {
             social_alerts::start(app.handle().clone());
             discord::start(app.handle().clone());
             streaming::start(app.handle().clone());
+            engagement::start(app.handle().clone());
+            music::start(app.handle().clone());
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
@@ -231,6 +240,28 @@ pub fn run() {
             discord::discord_remove,
             discord::discord_test,
             discord::discord_publish,
+            studio_tools::studio_capture_project,
+            studio_tools::studio_resume,
+            studio_tools::studio_obs_measure,
+            studio_tools::studio_obs_apply,
+            studio_tools::studio_obs_restore,
+            engagement::studio_voices,
+            engagement::studio_tts_configure,
+            engagement::studio_tts_control,
+            engagement::studio_tts_status,
+            engagement::studio_tts_test,
+            engagement::studio_reward_create,
+            music::spotify_begin,
+            music::spotify_refresh,
+            music::spotify_control,
+            music::spotify_disconnect,
+            music::music_status,
+            music::music_import,
+            music::music_remove,
+            music::music_requests_enable,
+            music::music_request_resolve,
+            music::music_play,
+            music::music_volume,
             streaming::stream_chat,
             streaming::stream_chat_enable,
             streaming::stream_chat_clear,
@@ -242,6 +273,7 @@ pub fn run() {
             social_alerts::social_status,
             social_alerts::social_enable,
             social_alerts::twitch_begin,
+            social_alerts::twitch_reauthorize,
             social_alerts::twitch_finish,
             social_alerts::twitch_disconnect,
             alerts::alerts_import_audio,
