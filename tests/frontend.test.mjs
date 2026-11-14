@@ -269,3 +269,20 @@ test('multiple PC games pause category automation until a manual selection resol
  await settle();assert.equal(f.state.ambiguous,true);
  f.mode.selectManualGame('seven');await settle();assert.equal(f.state.ambiguous,false);assert.equal(f.state.source,'manual');assert.equal(f.state.playing.id,'seven');f.dispose();
 });
+
+test('project board requires every unpublished version to be ready',()=>{
+ const {projectStage,nextProjectStep}=load('src/features/projects/projectBoard.ts',{});
+ const version=(steps,published_at=null)=>({steps,published_at});
+ const step=(step,done=false,enabled=true)=>({step,enabled,completed_at:done?'2026-11-14':null});
+ assert.equal(projectStage([]),'prepare');
+ assert.equal(projectStage([version([])]),'prepare');
+ assert.equal(nextProjectStep([version([])]),'Configurar los pasos');
+ assert.equal(projectStage([version([step('script')])]),'prepare');
+ assert.equal(projectStage([version([step('script',true),step('editing')])]),'production');
+ assert.equal(projectStage([version([step('editing',true)]),version([step('script')])]),'production');
+ assert.equal(projectStage([version([step('editing',true)]),version([])]),'production');
+ assert.equal(projectStage([version([step('editing',true)])]),'ready');
+ assert.equal(projectStage([version([step('script',false,false)])]),'ready');
+ assert.equal(projectStage([version([], '2026-11-14')]),'published');
+ assert.equal(projectStage([version([], '2026-11-14'),version([step('script')])]),'prepare');
+});

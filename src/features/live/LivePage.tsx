@@ -6,7 +6,6 @@ import { fitPng } from "../../components/images";
 // El mismo overlay de OBS, incrustado: la vista previa no depende del servidor local.
 import overlayHtml from "../../../src-tauri/overlay/counters.html?raw";
 import { EmptyState } from "../../components/EmptyState";
-import { PageTitle } from "../../components/PageTitle";
 import {
   bumpCounter,
   Counter,
@@ -27,6 +26,12 @@ import { CaptureInbox } from "./CaptureInbox";
 import { StreamingPanel } from "./StreamingPanel";
 import { ObsPanel } from "./ObsPanel";
 
+import {SectionTabs} from "../../components/SectionTabs";
+import {LiveCockpit} from "./LiveCockpit";
+import {SocialAlerts} from "./SocialAlerts";
+const liveTabs=[{id:'cabina',label:'Cabina'},{id:'chat',label:'Chat'},{id:'sound',label:'Sonido'},{id:'alerts',label:'Alertas'},{id:'overlays',label:'Overlays'},{id:'counters',label:'Contadores'},{id:'category',label:'Categoría'},{id:'obs',label:'OBS'},{id:'connections',label:'Conexiones'},{id:'moments',label:'Momentos'}] as const;
+type LiveTab=typeof liveTabs[number]['id'];
+const asTab=(value:string):LiveTab=>liveTabs.find(t=>t.id===value)?.id??'cabina';
 const t = es.live;
 
 export const COUNTER_ICONS = ["💀", "⚔️", "📦", "🏆", "👑", "❤️", "⭐", "🎯", "🔥", "💎", "👥", "🎮"];
@@ -382,7 +387,9 @@ function CounterForm({
 }
 
 /** Live Studio · fase 1: contadores para el stream, con overlay de OBS y botones del Stream Deck. */
-export function LivePage({onOpenProject}:{onOpenProject:(id:string)=>void}) {
+export function LivePage({onOpenProject,initialTab='cabina',navigationRevision=0}:{onOpenProject:(id:string)=>void;initialTab?:string;navigationRevision?:number}) {
+ const [tab,setTab]=useState<LiveTab>(asTab(initialTab));
+ useEffect(()=>setTab(asTab(initialTab)),[initialTab,navigationRevision]);
   const [counters, setCounters] = useState<Counter[] | null>(null);
   const [games, setGames] = useState<Game[]>([]);
   const [info, setInfo] = useState<LiveInfo | null>(null);
@@ -428,26 +435,30 @@ export function LivePage({onOpenProject}:{onOpenProject:(id:string)=>void}) {
   }
 
   return (
-    <section className="page page-wide">
+    <section className="page page-wide live-workspace">
       <header className="page-header">
-        <PageTitle section="live" subtitle={t.subtitle} />
+        <div><span className="nexus-eyebrow">TODO A MANO, DURANTE TU DIRECTO</span><h1>Tu cabina. Tu ritmo.</h1><p className="muted">Emisión, comunidad y momentos que merecen guardarse.</p></div>
         {!creating && (
-          <button onClick={() => setCreating(true)}>
+          <button onClick={() => {setTab("counters");setCreating(true)}}>
             <Plus size={16} /> {t.new}
           </button>
         )}
       </header>
 
-      <StreamingPanel />
-      <TtsPanel base={base} keyValue={info?.key??""}/>
-      <MusicPanel base={base} keyValue={info?.key??""}/>
-      <ObsAssistant/>
-      <CaptureInbox onOpenProject={onOpenProject}/>
-      <AlertsPanel />
-      <DiscordPanel />
+      <SectionTabs tabs={liveTabs} value={tab} onChange={setTab} label="Herramientas de directo"/>
+      <div className={tab==='cabina'?'live-cabina-grid':''} hidden={!['cabina','chat','category','overlays'].includes(tab)}>
+       <div hidden={tab!=='cabina'}><LiveCockpit active={tab==='cabina'} onNavigate={value=>setTab(asTab(value))}/></div>
+       <StreamingPanel view={tab==='category'?'category':tab==='overlays'?'overlays':'chat'}/>
+      </div>
+      <div hidden={tab!=='sound'} role="tabpanel" aria-label="Sonido"><TtsPanel base={base} keyValue={info?.key??""}/><MusicPanel base={base} keyValue={info?.key??""}/></div>
+      <div hidden={tab!=='moments'} role="tabpanel" aria-label="Momentos"><CaptureInbox expanded onOpenProject={onOpenProject}/></div>
+      <div hidden={tab!=='alerts'} role="tabpanel" aria-label="Alertas"><AlertsPanel showConnections={false}/></div>
+      <div hidden={tab!=='connections'} role="tabpanel" aria-label="Conexiones"><SocialAlerts/><DiscordPanel/></div>
+      <div hidden={tab!=='obs'} role="tabpanel" aria-label="OBS"><ObsAssistant/>
 
       {/* Conexión con OBS y el Stream Deck */}
       <ObsPanel clipUrl={info?.running ? `http://127.0.0.1:${info.port}/api/clips/save?key=${encodeURIComponent(info.key)}` : null} markUrl={info?.running ? `http://127.0.0.1:${info.port}/api/moments/mark?key=${encodeURIComponent(info.key)}` : null} />
+      </div><div hidden={tab!=='counters'} role="tabpanel" aria-label="Contadores">
       <section className={`card live-connect${info?.running ? " on" : ""}`}>
         <div className="live-connect-head">
           <MonitorPlay size={22} />
@@ -607,6 +618,7 @@ export function LivePage({onOpenProject}:{onOpenProject:(id:string)=>void}) {
           </div>
         </>
       )}
+    </div>
     </section>
   );
 }

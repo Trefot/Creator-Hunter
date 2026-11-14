@@ -10,6 +10,7 @@ import { psnStatus } from "../../db/psn";
 import { es } from "../../i18n/es";
 import { PlatinumCollection } from "./PlatinumCollection";
 import { GameBroadcastPanel } from "./GameBroadcastPanel";
+import { ResumeSpotlight } from "./ResumeSpotlight";
 import { GameArtwork } from "./GameArtwork";
 import { GameDetail, GameView } from "./GameDetail";
 import { PsnConnect } from "./PsnConnect";
@@ -87,6 +88,7 @@ export function GamesPage({
   }, []);
 
   const visibleGames=(games??[]).filter(g=>(!platform||g.platform===platform)&&g.title.toLocaleLowerCase().includes(search.trim().toLocaleLowerCase()));
+  const resumeGame=gameMode.playing??games?.find(g=>g.status==="playing")??null;
   const open = games?.find((g) => g.id === openId);
   const importDialog=importing?<PsnImport library={games??[]} onImported={async id=>{await refresh();setImporting(false);setOpenId(id);}} onClose={()=>setImporting(false)}/>:null;
   if (open) {
@@ -116,6 +118,8 @@ export function GamesPage({
 
       <div className="tabs">{([['library','Biblioteca'],['platinum','Platinados'],['broadcast','Overlay y objetos']] as const).map(([key,label])=><button key={key} className={`tab${tab===key?' active':''}`} onClick={()=>setTab(key)}>{label}</button>)}<button className="ghost small-button" onClick={refresh}>Actualizar biblioteca</button></div>
       {tab==='platinum'?<PlatinumCollection games={games??[]} onChanged={refresh} onOpen={setOpenId}/>:tab==='broadcast'?<GameBroadcastPanel games={games??[]}/>:<>
+      {resumeGame&&<ResumeSpotlight game={resumeGame} onOpen={()=>setOpenId(resumeGame.id)}/>}
+      <details className="card library-preferences" open={!games?.length||!!((gameMode.detectedPc||gameMode.detectedPsn)&&!gameMode.playing)||undefined}><summary>Añadir juegos · detección e importación</summary>
       <details className="game-psn-options"><summary>{es.gameStudio.psnOptions}</summary><PsnConnect connected={connected} onChange={refresh} onImport={() => setImporting(true)} /></details>
 
       {
@@ -169,6 +173,7 @@ export function GamesPage({
         </form>
       </details>
 
+      </details>
       {importDialog}
 
       {error && <p className="error">{error}</p>}

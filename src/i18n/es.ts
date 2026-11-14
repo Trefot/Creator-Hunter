@@ -2,7 +2,7 @@
 export const es = {
   appName: "Nexus Studio",
   appTagline: "Tu espacio para crear",
-  version: "Alpha 0.2 · v0.2.26",
+  version: "Alpha 0.2 · v0.2.27",
   /** Marca de la versión de pruebas (D-019). */
   devBadge: "PRUEBAS",
   startup: {
@@ -687,8 +687,8 @@ export const es = {
   },
   dashboard: {
     studioLabel: "TU ESPACIO CREATIVO",
-    studioTitle: "Tu estudio, listo para crear.",
-    studioIntro: "Dale forma a tu próxima idea.",
+    studioTitle: "La próxima historia empieza contigo.",
+    studioIntro: "DE LA PARTIDA A LA HISTORIA",
     overview: "Tu actividad, de un vistazo",
     nextLive: "PRÓXIMO DIRECTO",
     liveWindow: "Próximos 7 días",

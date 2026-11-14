@@ -2,7 +2,8 @@ import { PlatformBadge } from "../../components/PlatformBadge";
 import { ArrowUpRight, BadgeCheck, CalendarDays, ChevronRight, Clock, Eye, Film, FolderKanban, Lightbulb, LucideIcon, PartyPopper, Radio, UsersRound, Wallet } from "lucide-react";
 import { ProgressRing } from "../../components/charts/ProgressRing";
 import { ReactNode, useEffect, useState } from "react";
-import studioLandscape from "../../assets/studio-landscape.svg";
+import studioLandscape from "../../assets/studio/workshop.png";
+import nexus from "../../assets/nexus-mark.png";
 import { BarChart } from "../../components/charts/BarChart";
 import { LineChart } from "../../components/charts/LineChart";
 import { AccountSnapshot, latestSnapshots, listAllSnapshots } from "../../db/accountSnapshots";
@@ -193,10 +194,13 @@ export function DashboardPage({ onNavigate, onOpenProject, dataVersion = 0 }: Pr
           <span className="studio-gold-line" aria-hidden="true" />
           <div className="studio-hero-actions">
             <button onClick={() => onNavigate("projects")}><FolderKanban size={16} />{es.sections.projects}<ArrowUpRight size={16} /></button>
-            <button className="ghost" onClick={() => onNavigate("calendar")}><CalendarDays size={16} />{es.sections.calendar}</button>
+            <button className="ghost" onClick={() => onNavigate("live")}><Radio size={16} />Entrar a la cabina</button>
           </div>
         </div>
-        <article className="studio-next-live">
+        <div className="studio-hero-companion"><img src={nexus} alt="Nexus con su farol"/></div>
+      </div>
+
+      <div className="home-next-session">        <article className="studio-next-live">
           {nextLive?.thumbnail && <img className="studio-live-art" src={nextLive.thumbnail} alt="" />}
           <span className="studio-eyebrow"><Radio size={14} />{t.nextLive}</span>
           <h2>{nextLive?.title ?? t.noLiveTitle}</h2>
@@ -205,9 +209,7 @@ export function DashboardPage({ onNavigate, onOpenProject, dataVersion = 0 }: Pr
             {nextLive ? t.openProject : t.prepareLive}<ArrowUpRight size={16} />
           </button>
           <span className="studio-live-window">{t.liveWindow}</span>
-        </article>
-      </div>
-
+        </article></div>
       <div className="studio-section-heading"><h2>{t.createToday}</h2><span className="muted small">{t.workbenchHint}</span></div>
       <div className="studio-workbench">
         <button className="studio-focus-card" onClick={() => focus ? onOpenProject(focus.project_id) : onNavigate("ideas")}>
@@ -243,7 +245,7 @@ export function DashboardPage({ onNavigate, onOpenProject, dataVersion = 0 }: Pr
         </div>
       )}
 
-      <div className="studio-section-heading"><h2>{t.overview}</h2></div>
+      <div className="dashboard-secondary"><div className="studio-section-heading"><h2>{t.overview}</h2></div>
       <div className="kpi-grid">
         <Kpi icon={UsersRound} label={t.kpiFollowers} value={formatNumber(totalFollowers)} onClick={() => onNavigate("profiles")} />
         <Kpi
@@ -501,6 +503,7 @@ export function DashboardPage({ onNavigate, onOpenProject, dataVersion = 0 }: Pr
             </ul>
           )}
         </Block>
+      </div>
       </div>
     </section>
   );

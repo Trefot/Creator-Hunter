@@ -221,6 +221,8 @@ pub fn run() {
             youtube::youtube_disconnect,
             obs::obs_initialize,
             obs::obs_status,
+            obs::obs_cabina,
+            obs::obs_choose_scene,
             obs::obs_configure,
             obs::obs_disconnect,
             obs::obs_context,

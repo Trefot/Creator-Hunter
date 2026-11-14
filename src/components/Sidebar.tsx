@@ -11,7 +11,10 @@ import {
   Target,
   UsersRound,
   Wallet,
+  Sparkles,
+  ChevronRight,
 } from "lucide-react";
+import { useEffect,useState } from "react";
 import { es } from "../i18n/es";
 import { READY_SECTIONS, Section } from "../sections";
 import { Logo } from "./Logo";
@@ -30,27 +33,24 @@ export const SECTION_ICONS: Record<Section, LucideIcon> = {
   backups: DatabaseBackup,
 };
 
-/** Grupos del menú; las copias de seguridad van aparte, al final. */
-const GROUPS: { label: string; sections: Section[] }[] = [
-  { label: es.nav.studio, sections: ["dashboard", "ideas", "projects", "calendar"] },
-  { label: es.nav.growth, sections: ["profiles", "goals", "income"] },
-  { label: es.nav.live, sections: ["live"] },
-  { label: es.nav.gaming, sections: ["games"] },
-];
-
 interface Props {
   current: Section;
   onSelect: (section: Section) => void;
+  focus:boolean;
+  onFocus:()=>void;
 }
 
-export function Sidebar({ current, onSelect }: Props) {
+export function Sidebar({ current, onSelect,focus,onFocus }: Props) {
+  const [expanded,setExpanded]=useState(['profiles','goals','income'].includes(current));
+  useEffect(()=>{if(['profiles','goals','income'].includes(current))setExpanded(true)},[current]);
+  const labels:Partial<Record<Section,[string,string]>>={dashboard:['Inicio','Tu siguiente paso'],projects:['Crear contenido','Ideas, proyectos y clips'],live:['En directo','Tu cabina de control'],games:['Juegos','Biblioteca y progreso']};
   function item(section: Section) {
     const Icon = SECTION_ICONS[section];
     return (
       <li key={section}>
-        <button className={`nav-item${section === current ? " active" : ""}`} aria-current={section === current ? "page" : undefined} onClick={() => onSelect(section)}>
+        <button className={`nav-item${section === current || (section==="projects"&&current==="ideas") ? " active" : ""}`} aria-current={section === current || (section==="projects"&&current==="ideas") ? "page" : undefined} onClick={() => onSelect(section)}>
           <Icon size={18} strokeWidth={2} />
-          {es.sections[section]}
+          <span className="nav-copy">{labels[section]?.[0]??es.sections[section]}{labels[section]&&<small>{labels[section]![1]}</small>}</span>
           {!READY_SECTIONS.includes(section) && <span className="nav-soon" aria-hidden>·</span>}
         </button>
       </li>
@@ -67,13 +67,13 @@ export function Sidebar({ current, onSelect }: Props) {
         </div>
       </div>
       <div className="sidebar-main">
-        {GROUPS.map((group) => (
-          <div key={group.label}>
-            <div className="nav-group-label">{group.label}</div>
-            <ul>{group.sections.map(item)}</ul>
-          </div>
-        ))}
+        <div className="nav-group-label">TU ESPACIO</div>
+        <ul>{(["dashboard","projects","live","games"] as Section[]).map(item)}</ul>
+        <div className="nav-group-label">ORGANIZAR</div>
+        <ul>{item("calendar")}</ul>
+        <details className="nav-studio" open={expanded} onToggle={e=>setExpanded(e.currentTarget.open)}><summary><LayoutDashboard size={18}/>Mi estudio<ChevronRight size={14}/></summary><ul>{(["profiles","goals","income"] as Section[]).map(item)}</ul></details>
       </div>
+      <button className="focus-toggle ghost" aria-pressed={focus} onClick={onFocus}><Sparkles size={17}/><span>Modo enfoque<small>Reducir detalle en Inicio</small></span><span className={`focus-switch${focus?" on":""}`} aria-hidden="true"/></button>
       <ul>{item("backups")}</ul>
       <div className="sidebar-footer">
         <span>

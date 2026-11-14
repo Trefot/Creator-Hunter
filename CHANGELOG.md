@@ -2,6 +2,15 @@
 
 ## [Sin publicar]
 
+## [0.2.27] · 2026-11-14 · El taller de Nexus
+
+- Nueva identidad visual V2 en tinta, violeta y latón, con el taller ilustrado y el Nexus original. Inicio conserva tus datos reales y permite reducir el detalle con Modo enfoque.
+- Navegación principal simplificada: Inicio, Crear contenido, En directo y Juegos. Mi estudio agrupa cuentas, metas e ingresos; búsqueda de secciones con Ctrl+K y ayuda de orientación.
+- Crear contenido reúne proyectos, ideas y capturas. El tablero calcula la etapa y el siguiente paso de todas las versiones pendientes; los borradores se conservan al cambiar de pestaña.
+- Cabina de directo con escenas reales de OBS, cambio explícito de escena y captura fija a petición; sin previsualización continua. Chat, sonido, alertas, overlays, contadores, categoría, OBS, conexiones y momentos tienen sus propios apartados.
+- Biblioteca con banner de la partida activa y su nota real; añadir juegos, detección e importación reunidos en un panel desplegable. Conserva fichas, platinos y overlays existentes.
+- Se mantienen datos, identidad de instalación y enlaces de Stream Deck. La señal, el audio y las conexiones reales requieren OBS y tus cuentas configuradas en el PC.
+
 ## [0.2.26] · 2026-11-14 · Directo, contenido y gaming
 
 - TTS local de Windows mediante recompensa propia de puntos de Twitch: selección de voz, velocidad, volumen, filtros, cola limitada y controles de detener/pausar para Stream Deck. Requiere renovar permisos de Twitch y probar el audio en el PC.

@@ -32,13 +32,15 @@ function localDate(iso: string): string {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 }
 
-export function IdeasPage() {
+export function IdeasPage({createSignal=0}:{createSignal?:number}={}) {
   const [ideas, setIdeas] = useState<Idea[] | null>(null);
   const [filter, setFilter] = useState<IdeaStatus | "all">("new");
   const [tagFilter, setTagFilter] = useState<string | null>(null);
   const [editing, setEditing] = useState<Editing>(null);
   const [confirmingId, setConfirmingId] = useState<string | null>(null);
   const [error, setError] = useState("");
+
+  useEffect(()=>{if(createSignal>0)setEditing("new")},[createSignal]);
 
   async function refresh() {
     try {

@@ -11,20 +11,25 @@ import { DashboardPage } from "./features/dashboard/DashboardPage";
 import { GamesPage } from "./features/games/GamesPage";
 import { useGameMode } from "./features/games/useGameMode";
 import { selectManualGame } from "./features/games/gameMode";
-import { applySkin, skinFromCover } from "./features/games/gameSkin";
+import { applySkin } from "./features/games/gameSkin";
 import { Gamepad2 } from "lucide-react";
 import { GoalsPage } from "./features/goals/GoalsPage";
-import { IdeasPage } from "./features/ideas/IdeasPage";
+
 import { IncomePage } from "./features/income/IncomePage";
-import { ProjectsPage } from "./features/projects/ProjectsPage";
+
 import { ProfilesPage } from "./features/profiles/ProfilesPage";
 import { startYouTubeAutoSync } from "./features/profiles/youtubeSync";
 import { es } from "./i18n/es";
 import { Section } from "./sections";
 import "./App.css";
 import "./styles/hybrid.css";
+import "./styles/nexus.css";
+import { WorkspaceHeader } from "./components/WorkspaceHeader";
+import { ContentHub } from "./features/projects/ContentHub";
 
 function App() {
+  const [focus,setFocus]=useState(()=>{try{return localStorage.getItem("nexus-focus")==="true"}catch{return false}});
+  const [liveTab,setLiveTab]=useState({value:"cabina",revision:0});
   const [section, setSection] = useState<Section>("dashboard");
   /** Proyecto que Proyectos debe abrir al entrar (por ejemplo, desde el calendario). */
   const [projectToOpen, setProjectToOpen] = useState<string | null>(null);
@@ -47,21 +52,8 @@ function App() {
     invoke("stream_game_context", { gameId: gameMode.playing?.id ?? null, ambiguous: !!gameMode.ambiguous || !!gameMode.error }).catch(console.error);
   }, [gameMode.checkedAt]);
 
-  // Skin del juego: mientras se juega, la app toma los colores y el arte de su portada.
-  const playingCover = gameMode.playing?.cover ?? null;
-  useEffect(() => {
-    let cancelled = false;
-    if (!playingCover) {
-      applySkin(null, null);
-      return;
-    }
-    skinFromCover(playingCover)
-      .then((skin) => !cancelled && applySkin(skin, playingCover))
-      .catch(() => { if (!cancelled) applySkin(null, null); });
-    return () => {
-      cancelled = true;
-    };
-  }, [playingCover]);
+  // La identidad visual se conserva; las portadas viven en las fichas de cada juego.
+  useEffect(()=>{applySkin(null,null)},[]);
 
   // Actualiza datos sin desmontar formularios ni interrumpir la edición.
   useEffect(() => startYouTubeAutoSync(
@@ -81,7 +73,8 @@ function App() {
     return () => clearTimeout(timer);
   }, [notice]);
 
-  function select(next: Section) {
+  function select(next: Section,tab?:string) {
+    if(next==="live")setLiveTab(v=>({value:tab??"cabina",revision:v.revision+1}));
     setProjectToOpen(null);
     setGameToOpen(null);
     setSection(next);
@@ -99,9 +92,10 @@ function App() {
   }
 
   return (
-    <div className="layout">
-      <Sidebar current={section} onSelect={select} />
+    <div className={`layout nexus-visual${focus?" focus-enabled":""}`} data-section={section}>
+      <Sidebar current={section} onSelect={select} focus={focus} onFocus={()=>setFocus(value=>{try{localStorage.setItem("nexus-focus",String(!value))}catch{}return !value})} />
       <main className="content">
+        <WorkspaceHeader section={section} onNavigate={select}/>
         {gameMode.playing && (
           <div className="now-playing">
             <Gamepad2 size={18} />
@@ -124,9 +118,9 @@ function App() {
         ) : section === "goals" ? (
           <GoalsPage dataVersion={dataVersion} />
         ) : section === "ideas" ? (
-          <IdeasPage />
+          <ContentHub initialTab="ideas" onOpenProject={openProject}/>
         ) : section === "projects" ? (
-          <ProjectsPage key={projectToOpen ?? "list"} initialOpenId={projectToOpen} />
+          <ContentHub key={projectToOpen ?? "list"} initialOpenId={projectToOpen} initialTab="projects" onOpenProject={openProject}/>
         ) : section === "calendar" ? (
           <CalendarPage onOpenProject={openProject} />
         ) : section === "income" ? (
@@ -134,7 +128,7 @@ function App() {
         ) : section === "games" ? (
           <GamesPage key={gameToOpen ?? "list"} initialOpenId={gameToOpen} initialView={gameView} gameMode={gameMode} onOpenProject={openProject} onOpenIdeas={()=>select("ideas")} />
         ) : section === "live" ? (
-          <LivePage onOpenProject={openProject} />
+          <LivePage onOpenProject={openProject} initialTab={liveTab.value} navigationRevision={liveTab.revision}/>
         ) : section === "backups" ? (
           <BackupsPage />
         ) : (

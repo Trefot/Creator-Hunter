@@ -534,3 +534,23 @@ pub(crate) fn operate<T>(app: &AppHandle, work: impl FnOnce(&mut Client)->Result
 }
 
 pub(crate) fn read_obs(app:&AppHandle,kind:&str,data:Option<Value>)->Result<Value,String>{operate(app,|c|c.request_data(kind,data))}
+
+/// Vista de la cabina: la captura se solicita solo de forma explícita para limitar carga de GPU.
+#[tauri::command]
+pub async fn obs_cabina(app:AppHandle,capture:bool)->Result<Value,String>{
+ tauri::async_runtime::spawn_blocking(move||operate(&app,|client|{
+  let list=client.request("GetSceneList")?;
+  let scene=list["currentProgramSceneName"].as_str().unwrap_or("");
+  let image=if capture&&!scene.is_empty(){client.request_data("GetSourceScreenshot",Some(json!({"sourceName":scene,"imageFormat":"png","imageWidth":960,"imageHeight":540})))?["imageData"].clone()}else{Value::Null};
+  Ok(json!({"scene":scene,"scenes":list["scenes"],"image":image}))
+ })).await.map_err(|e|e.to_string())?
+}
+#[tauri::command]
+pub async fn obs_choose_scene(app:AppHandle,scene:String)->Result<(),String>{
+ if scene.is_empty()||scene.chars().count()>300{return Err("Escena no válida.".into());}
+ tauri::async_runtime::spawn_blocking(move||operate(&app,|client|{
+  let list=client.request("GetSceneList")?;
+  if !list["scenes"].as_array().is_some_and(|a|a.iter().any(|s|s["sceneName"]==scene)){return Err("La escena ya no existe en OBS.".into());}
+  client.request_data("SetCurrentProgramScene",Some(json!({"sceneName":scene})))?;Ok(())
+ })).await.map_err(|e|e.to_string())?
+}
