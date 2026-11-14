@@ -44,12 +44,27 @@ pub async fn capture_project(
     let key = format!("capture-project-{kind}-{id}");
     let title: String = row.get("title");
     let path: Option<String> = row.get("output_path");
+    let format_time = |value: Option<i64>| {
+        value
+            .filter(|n| *n >= 0)
+            .map(|ms| {
+                format!(
+                    "{:02}:{:02}:{:02} ({ms} ms)",
+                    ms / 3600000,
+                    (ms / 60000) % 60,
+                    (ms / 1000) % 60
+                )
+            })
+            .unwrap_or_else(|| "No disponible".into())
+    };
     let summary = format!(
-        "Origen: {kind} · {id}\nArchivo: {}\nMarca en grabación (ms): {:?}\nMarca en directo (ms): {:?}\n\nGancho:\nQué ocurre:\nEdición pendiente:\nFormato y publicación:\n\nLas marcas del clip corresponden a la sesión completa, no al inicio del recorte.",
+        "Origen: {}\nArchivo: {}\nGrabación: {}\nDirecto: {}\n\nGancho:\nQué ocurre:\nEdición pendiente:\nFormato y publicación:\n\nLas marcas del clip corresponden a la sesión completa, no al inicio del recorte.",
+        if kind == "clip" { "Clip" } else { "Momento" },
         path.as_deref().unwrap_or("No confirmado por OBS"),
-        row.get::<Option<i64>, _>("record_ms"),
-        row.get::<Option<i64>, _>("stream_ms")
+        format_time(row.get("record_ms")),
+        format_time(row.get("stream_ms"))
     );
+
     sqlx::query("INSERT INTO project(id,workspace_id,title,summary,game_id) VALUES(?,?,?,?,?) ON CONFLICT(id) DO NOTHING").bind(&key).bind(w).bind(title).bind(summary).bind(row.get::<Option<String>,_>("game_id")).execute(&mut *tx).await.map_err(|e|e.to_string())?;
     tx.commit().await.map_err(|e| e.to_string())?;
     Ok(key)
