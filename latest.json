@@ -1,13 +1,15 @@
 {
-  "version": "0.2.22",
+  "version": "0.2.23",
   "notes": [
-    "Carga una imagen PNG propia para los avisos de directo de Twitch y YouTube desde Live Studio → Discord. La tarjeta conserva título, enlace y miniatura de la plataforma y muestra la ilustración adjunta a tamaño grande.",
-    "El adjunto se envía directamente a Discord, sin alojamiento público. Admite PNG de hasta 6 MB y 4096 píxeles por lado, se guarda en Nexus y entra en sus copias de seguridad.",
-    "Las pruebas del canal de directos incluyen la imagen elegida y se identifican como pruebas. Cargar o retirar el arte no publica mensajes y no modifica los webhooks guardados."
+    "Añadir un juego abre su ficha con objetivos, notas, portada y contenido. Repetir el alta del mismo título y plataforma reutiliza la ficha; las ediciones de PC y PS5 permanecen separadas.",
+    "Detección de PC ampliada a 7DS y Black Myth: Wukong, además de Fortnite. Asocia otros juegos una vez a su ejecutable desde la ficha o el alta; la lista de aplicaciones abiertas permite elegir el proceso sin buscar rutas ni leer memoria de los juegos.",
+    "Opción para añadir a la biblioteca los juegos detectados de PC o PSN, apagada por defecto. Una elección manual puede retirarse para volver a la detección automática.",
+    "Los juegos de PSN visibles que aún no están en la biblioteca se muestran para crear su ficha o importar trofeos. Importar una ficha local con el mismo título y plataforma conserva sus notas y relaciones.",
+    "La detección no descarga por sí sola logros o portadas: PS5 utiliza la conexión e importación de PSN, y los juegos de PC mantienen objetivos y portadas propios."
   ],
-  "date": "2026-11-13",
+  "date": "2026-11-14",
   "installer": "TrophyHunter-setup.exe",
-  "source_commit": "e3292ea8bf27b4680cf8a6285b3abd54ff635c3b",
-  "sha256": "c4e62d9c119252ec98224404992d0b1c75c9a2d7fe61c4d4c814a5a17d59d769",
-  "size": 18330755
+  "source_commit": "a98a4aa259595f28d27e5be43a9aa791fc1c64c4",
+  "sha256": "a456bff7e1ef0b13db952f585a2af92db45a078a11b37b16f2175700b3b53482",
+  "size": 18342541
 }
