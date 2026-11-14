@@ -8,6 +8,7 @@ import { Adaptation, listAllAdaptations } from "../../db/adaptations";
 import { listProfiles, Platform, Profile } from "../../db/profiles";
 import { listProjects, Project } from "../../db/projects";
 import { es } from "../../i18n/es";
+import { CaptureInbox } from "../live/CaptureInbox";
 import { ProjectDetail } from "./ProjectDetail";
 
 const t = es.projects;
@@ -44,6 +45,7 @@ export function ProjectsPage({ initialOpenId = null }: { initialOpenId?: string 
         <PageTitle section="projects" subtitle={t.subtitle} />
       </header>
 
+      <CaptureInbox onOpenProject={async id=>{await refresh();setOpenId(id);}}/>
       {error && <p className="error">{error}</p>}
 
       {projects === null ? (
