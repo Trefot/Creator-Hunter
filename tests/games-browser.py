@@ -27,8 +27,12 @@ window.__TAURI_INTERNALS__={transformCallback:()=>++callback,metadata:{currentWi
  if(cmd==='prepare_database'||cmd==='obs_initialize'||cmd==='obs_context')return;
  if(cmd==='plugin:sql|load')return args.db;
  if(cmd==='plugin:sql|select'||cmd==='plugin:sql|execute')return await window.studioSql({...args,select:cmd.endsWith('select')});
- if(cmd==='pc_now_playing')return [];
- if(cmd==='psn_status')return false;
+ if(cmd==='pc_now_playing'){window.lastPcBindings=args.bindings;return window.testPlaying||[];}
+ if(cmd==='pc_running_apps')return ['7ds.exe','AnotherGame.exe'];
+ if(cmd==='psn_status')return !!window.testPsnConnected;
+ if(cmd==='psn_now_playing')return {online:true,platform:'PS5',games:[]};
+ if(cmd==='psn_titles')return [{np_communication_id:'local-psn',np_service_name:'trophy2',name:'Mi juego PS5',icon_url:null,platform:'PS5',progress:0,earned:0,defined:1,last_updated:null}];
+ if(cmd==='psn_title_trophies')return [{psn_trophy_id:0,group_id:'default',name:'Trofeo importado',detail:null,trophy_type:'bronze',hidden:false,icon_url:null,earned_at:null,earned_rate:null}];
  if(cmd==='youtube_status')return {connected:false};
  if(cmd==='update_check')return null;
  if(cmd.startsWith('plugin:event|'))return ++callback;
@@ -88,6 +92,50 @@ with sync_playwright() as p:
  page.get_by_role('button',name='Lista de trofeos',exact=True).click()
  page.get_by_text('Primer trofeo',exact=True).wait_for()
  for width in [1280,960]:page.set_viewport_size({'width':width,'height':900});assert page.evaluate('document.documentElement.scrollWidth<=innerWidth')
+
+ # Adding a PC game opens its actual detail, not just a gallery card.
+ page.get_by_role('button',name='← Juegos',exact=True).click()
+ page.get_by_text('Elegir o añadir un juego',exact=True).click()
+ page.get_by_label('Nombre del juego',exact=True).fill('7DS')
+ page.get_by_role('button',name='Ver juegos y aplicaciones abiertos',exact=True).click()
+ page.get_by_label('Elegir proceso abierto',exact=True).select_option('7ds.exe')
+ page.get_by_role('button',name='Añadir y abrir ficha',exact=True).click()
+ page.get_by_role('heading',name='7DS',exact=True).wait_for()
+ seven=db.execute("SELECT id FROM game WHERE title='7DS' AND platform='pc'").fetchone()[0]
+ bindings=page.evaluate("JSON.parse(localStorage.getItem('nexus-pc-process-bindings'))")
+ assert bindings[0]['game_id']==seven and bindings[0]['process']=='7ds.exe'
+ # Repeat adds reuse the same game; a PS5 copy remains a separate edition.
+ page.get_by_role('button',name='← Juegos',exact=True).click()
+ page.get_by_text('Elegir o añadir un juego',exact=True).click()
+ page.get_by_label('Nombre del juego',exact=True).fill(' 7DS ')
+ page.get_by_role('button',name='Añadir y abrir ficha',exact=True).click()
+ page.get_by_role('heading',name='7DS',exact=True).wait_for()
+ assert db.execute("SELECT COUNT(*) FROM game WHERE title='7DS' AND platform='pc'").fetchone()[0]==1
+ page.get_by_role('button',name='← Juegos',exact=True).click()
+ page.get_by_text('Elegir o añadir un juego',exact=True).click()
+ page.get_by_label('Nombre del juego',exact=True).fill('7DS')
+ page.get_by_label('Plataforma del juego',exact=True).select_option('ps5')
+ page.get_by_role('button',name='Añadir y abrir ficha',exact=True).click()
+ page.get_by_role('heading',name='7DS',exact=True).wait_for()
+ assert db.execute("SELECT COUNT(*) FROM game WHERE title='7DS'").fetchone()[0]==2
+ # Import PSN data into a manually created profile, preserving its identity and notes.
+ page.get_by_role('button',name='← Juegos',exact=True).click()
+ page.evaluate('window.testPsnConnected=true')
+ page.get_by_role('button',name='Actualizar biblioteca',exact=True).click()
+ page.get_by_text('Elegir o añadir un juego',exact=True).click()
+ page.get_by_label('Nombre del juego',exact=True).fill('Mi juego PS5')
+ page.get_by_label('Plataforma del juego',exact=True).select_option('ps5')
+ page.get_by_role('button',name='Añadir y abrir ficha',exact=True).click()
+ page.get_by_role('heading',name='Mi juego PS5',exact=True).wait_for()
+ local_id=db.execute("SELECT id FROM game WHERE title='Mi juego PS5'").fetchone()[0]
+ db.execute("UPDATE game SET notes='Notas que deben conservarse' WHERE id=?",[local_id]);db.commit()
+ page.get_by_role('button',name='Importar trofeos de PSN',exact=True).click()
+ page.locator('.psn-title').filter(has_text='Mi juego PS5').get_by_role('button').click()
+ page.get_by_role('button',name='Ruta al platino',exact=True).wait_for()
+ row=db.execute("SELECT id,np_communication_id,notes FROM game WHERE title='Mi juego PS5'").fetchone()
+ assert tuple(row)==(local_id,'local-psn','Notas que deben conservarse')
+ assert db.execute("SELECT COUNT(*) FROM game WHERE title='Mi juego PS5'").fetchone()[0]==1
+ assert db.execute("SELECT COUNT(*) FROM trophy WHERE game_id=?",[local_id]).fetchone()[0]==1
  assert not errors,errors
  print(json.dumps({'sqlite_real':True,'biblioteca_sin_0_0':True,'objetivos_persistentes':True,'notas_portada':True,'clip_a_idea_sin_duplicados':True,'proyecto_asociado':True,'ediciones_aisladas':True,'psn_trofeos':True,'errores_js':errors}))
  b.close()
