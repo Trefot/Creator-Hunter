@@ -13,6 +13,7 @@ export interface GameModeState {
   detectedPsnPlatform?: "ps4"|"ps5";
   error: string | null;
   checkedAt: Date | null;
+  ambiguous?: boolean;
 }
 
 /** PC cada 15 s, PSN como máximo una vez por minuto. La selección manual tiene prioridad. */
@@ -43,9 +44,11 @@ export function useGameMode(onStart: (game: Game) => void): GameModeState {
         let detectedPc: PcGame | null = null;
         let detectedPsn: PlayingGame|null=null;
         let error: string | null = null;
+        let ambiguous = false;
         if (!manual && isGameModeEnabled()) {
           const pc = await pcNowPlaying().catch(err => { error = String(err); return [] as PcGame[]; });
           if (cancelled) return;
+          ambiguous = pc.length > 1;
           detectedPc = pc[0] ?? null;
           game = matchPcPlaying(library, pc);
           if (game) source = "pc";
@@ -78,7 +81,7 @@ export function useGameMode(onStart: (game: Game) => void): GameModeState {
         }
         const changed = game && game.id !== lastId.current;
         lastId.current = game?.id ?? null;
-        setState({ playing: game, source, detectedPc, detectedPsn,detectedPsnPlatform:psnPlatform,error, checkedAt: new Date() });
+        setState({ playing: game, source, detectedPc, detectedPsn,detectedPsnPlatform:psnPlatform,error, ambiguous, checkedAt: new Date() });
         if (changed) onStartRef.current(game!);
       } catch (err) {
         if (!cancelled) {
