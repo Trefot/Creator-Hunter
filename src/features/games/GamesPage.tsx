@@ -1,6 +1,7 @@
+import { bindPcGame,pcRunningApps,pcBindings } from "../../db/pcGames";
 import { useEffect, useState } from "react";
 import { Radar } from "lucide-react";
-import { GAME_MODE_CHANGED, isGameModeEnabled, selectManualGame, setGameModeEnabled } from "./gameMode";
+import { GAME_MODE_CHANGED, isAutoAddEnabled,setAutoAddEnabled,isGameModeEnabled, selectManualGame, setGameModeEnabled } from "./gameMode";
 import type { GameModeState } from "./useGameMode";
 import { EmptyState } from "../../components/EmptyState";
 import { PageTitle } from "../../components/PageTitle";
@@ -35,6 +36,7 @@ export function GamesPage({
   const [platform,setPlatform]=useState("");
   const [games, setGames] = useState<Game[] | null>(null);
   const [gameModeOn, setGameModeOn] = useState(isGameModeEnabled());
+  const [autoAdd,setAutoAdd]=useState(isAutoAddEnabled());
   const [connected, setConnected] = useState(false);
   const [importing, setImporting] = useState(false);
   const [openId, setOpenId] = useState<string | null>(initialOpenId);
@@ -42,15 +44,26 @@ export function GamesPage({
   const [newTitle, setNewTitle] = useState("");
   const [newPlatform, setNewPlatform] = useState<GamePlatform>("pc");
   const [saving, setSaving] = useState(false);
+  const [apps,setApps]=useState<string[]>([]),[newProcess,setNewProcess]=useState("");
+  const [scanning,setScanning]=useState(false);
+  async function scanApps(){setScanning(true);setError("");try{setApps(await pcRunningApps());}catch(e){setError(String(e));}finally{setScanning(false);}}
 
-  async function addGame(title: string, platform: GamePlatform) {
+  async function addGame(title: string, platform: GamePlatform,process=newProcess) {
     if (!title.trim() || saving) return;
     setSaving(true);
     setError("");
     try {
-      await createGame(title, platform);
+      if(platform==="pc"&&process){
+        if(process.length>255||!process.toLowerCase().endsWith(".exe")||/[\\/:\x00-\x1f]/.test(process))throw Error("Introduce solo el nombre del ejecutable, sin su ruta.");
+        const previous=(await listGames()).find(g=>g.platform==="pc"&&g.title.trim().toLowerCase()===title.trim().toLowerCase());
+        if(pcBindings().some(b=>b.process.toLowerCase()===process.trim().toLowerCase()&&b.game_id!==previous?.id))throw Error("Ese ejecutable está asociado a otro juego. Retira esa asociación desde su ficha.");
+      }
+      const id=await createGame(title, platform);
+      if(platform==="pc"&&process){bindPcGame({id,title:title.trim()},process);selectManualGame(null);setGameModeEnabled(true);setGameModeOn(true);}
+      setNewProcess("");
       setNewTitle("");
       await refresh();
+      setSearch("");setPlatform("");setTab("library");setOpenId(id);
       window.dispatchEvent(new Event(GAME_MODE_CHANGED));
     } catch (err) { setError(String(err)); }
     finally { setSaving(false); }
@@ -68,12 +81,19 @@ export function GamesPage({
 
   useEffect(() => {
     refresh();
+    const sync=()=>{setGameModeOn(isGameModeEnabled());setAutoAdd(isAutoAddEnabled());};
+    window.addEventListener("nexus-game-library-changed",refresh);window.addEventListener(GAME_MODE_CHANGED,sync);
+    return()=>{window.removeEventListener("nexus-game-library-changed",refresh);window.removeEventListener(GAME_MODE_CHANGED,sync);};
   }, []);
 
   const visibleGames=(games??[]).filter(g=>(!platform||g.platform===platform)&&g.title.toLocaleLowerCase().includes(search.trim().toLocaleLowerCase()));
   const open = games?.find((g) => g.id === openId);
+  const importDialog=importing?<PsnImport library={games??[]} onImported={async id=>{await refresh();setImporting(false);setOpenId(id);}} onClose={()=>setImporting(false)}/>:null;
   if (open) {
     return (
+      <>
+      {importDialog}
+      {connected&&(open.platform==="ps4"||open.platform==="ps5")&&!open.np_communication_id&&<div className="card"><p>Esta es tu ficha local. Para cargar los trofeos y la portada oficial, importa este juego desde tu cuenta de PSN.</p><button onClick={()=>setImporting(true)}>Importar trofeos de PSN</button></div>}
       <GameDetail
         key={open.id}
         game={open}
@@ -84,6 +104,7 @@ export function GamesPage({
         onOpenProject={onOpenProject}
         onOpenIdeas={onOpenIdeas}
       />
+      </>
     );
   }
 
@@ -117,12 +138,13 @@ export function GamesPage({
                   ? t.gameModePlaying(gameMode.playing.title)
                   : gameMode.detectedPc
                     ? t.pcDetected(gameMode.detectedPc.name)
-                    : gameMode.error ? t.gameModeError(gameMode.error) : t.gameModeIdle}
+                    : gameMode.detectedPsn ? `Detectado en PSN: ${gameMode.detectedPsn.name}` : gameMode.error ? t.gameModeError(gameMode.error) : t.gameModeIdle}
           </span>
         </div>
       }
 
-      <details className="card game-activity-controls" open={gameMode.detectedPc&&!gameMode.playing?true:undefined}><summary>{es.gameStudio.addOrChoose}</summary>
+      <div className="card"><label className="checkbox"><input type="checkbox" checked={autoAdd} onChange={e=>{setAutoAddEnabled(e.target.checked);setAutoAdd(e.target.checked);}}/>Añadir a la biblioteca los juegos detectados</label><p className="muted small">Crea una ficha local para juegos reconocidos de PC y la actividad visible de PSN. Otros juegos de PC necesitan asociarse a su ejecutable. La portada y los trofeos de PSN se cargan al importar sus datos.</p>{gameMode.source==="manual"&&<button onClick={()=>selectManualGame(null)}>Volver a la detección automática</button>}</div>
+      <details className="card game-activity-controls" open={(gameMode.detectedPc||gameMode.detectedPsn)&&!gameMode.playing?true:undefined}><summary>{es.gameStudio.addOrChoose}</summary>
         <h2>{t.currentGame}</h2>
         <label>{t.chooseCurrentGame}
           <select value={gameMode.source === "manual" ? gameMode.playing?.id ?? "" : ""}
@@ -133,28 +155,21 @@ export function GamesPage({
         </label>
         <p className="muted small">{t.manualGameHint}</p>
         {gameMode.detectedPc && !games?.some(g => g.platform === "pc" && g.title.toLowerCase() === gameMode.detectedPc!.name.toLowerCase()) && (
-          <button disabled={saving} onClick={() => addGame(gameMode.detectedPc!.name, "pc")}>{t.addDetectedPc(gameMode.detectedPc.name)}</button>
+          <button disabled={saving} onClick={() => addGame(gameMode.detectedPc!.name, "pc",gameMode.detectedPc!.process??"")}>{t.addDetectedPc(gameMode.detectedPc.name)}</button>
         )}
+        {gameMode.detectedPsn&&!gameMode.playing&&<div className="card"><p>Detectado en PSN: <strong>{gameMode.detectedPsn.name}</strong> · {gameMode.detectedPsnPlatform?.toUpperCase()??"PS5"}</p><button disabled={saving} onClick={()=>addGame(gameMode.detectedPsn!.name,gameMode.detectedPsnPlatform??"ps5","")}>Crear ficha del juego detectado</button><button onClick={()=>setImporting(true)}>Importar desde PSN con trofeos</button></div>}
+        <p className="muted small">Añade un juego para abrir su ficha con objetivos, notas y contenido. En PC elige el ejecutable del juego, no Steam ni su lanzador; la detección no importa logros ni portadas. Para PS5, usa la importación de PSN si quieres sus trofeos.</p>
         <form className="game-add-form" onSubmit={e => { e.preventDefault(); void addGame(newTitle, newPlatform); }}>
           <label>{t.gameTitle}<input required maxLength={150} value={newTitle} onChange={e => setNewTitle(e.target.value)} placeholder="Fortnite" /></label>
-          <label>{t.gamePlatform}<select value={newPlatform} onChange={e => setNewPlatform(e.target.value as GamePlatform)}>
+          <label>{t.gamePlatform}<select aria-label="Plataforma del juego" value={newPlatform} onChange={e => setNewPlatform(e.target.value as GamePlatform)}>
             {GAME_PLATFORMS.map(p => <option key={p} value={p}>{t.platforms[p]}</option>)}
           </select></label>
-          <button disabled={saving || !newTitle.trim()}>{saving ? t.addingGame : t.addGame}</button>
+          {newPlatform==="pc"&&<><button type="button" onClick={scanApps} disabled={scanning}>{scanning?"Consultando…":"Ver juegos y aplicaciones abiertos"}</button><label>Asociar ejecutable (opcional)<input aria-label="Asociar ejecutable" list="new-game-processes" value={newProcess} onChange={e=>setNewProcess(e.target.value)} placeholder="7ds.exe"/><datalist id="new-game-processes">{apps.map(a=><option key={a} value={a}/>)}</datalist></label>{apps.length>0&&<select aria-label="Elegir proceso abierto" value={apps.includes(newProcess)?newProcess:""} onChange={e=>setNewProcess(e.target.value)}><option value="">Elegir proceso abierto</option>{apps.map(a=><option key={a} value={a}>{a}</option>)}</select>}</>}
+          <button disabled={saving || !newTitle.trim()}>{saving ? t.addingGame : "Añadir y abrir ficha"}</button>
         </form>
       </details>
 
-      {importing && (
-        <PsnImport
-          library={games ?? []}
-          onImported={async (gameId) => {
-            await refresh();
-            setImporting(false);
-            setOpenId(gameId);
-          }}
-          onClose={() => setImporting(false)}
-        />
-      )}
+      {importDialog}
 
       {error && <p className="error">{error}</p>}
 
