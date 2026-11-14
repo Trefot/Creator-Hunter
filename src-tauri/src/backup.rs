@@ -112,6 +112,8 @@ pub async fn import_backup(
                 .map_err(|e| format!("No se pudo crear la copia previa: {e}"))?;
             let total = data_safety::restore(&pool, &content).await?;
             crate::obs::reset_after_restore(&app);
+            crate::engagement::reset_after_restore(&app);
+            crate::music::reset_after_restore(&app);
             Ok(ImportResult {
                 rows: total,
                 safety_copy: safety.display().to_string(),
