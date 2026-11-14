@@ -1,3 +1,4 @@
+import { GameResume } from "./GameResume";
 import { PcDetection } from "./PcDetection";
 import { useEffect, useState } from "react";
 import { RefreshCw, Trash2 } from "lucide-react";
@@ -173,6 +174,7 @@ function TrophyGameDetail({ game, psnConnected, initialView = "route", onBack, o
 
       {error && <p className="error">{error}</p>}
 
+      <GameResume gameId={game.id}/>
       <GameAppearance game={game} onChanged={onChanged}/>
       <GameContextProvider value={gameState}>
       <div className="tabs">
