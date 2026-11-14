@@ -262,3 +262,10 @@ test('PSN discovery respects PS4/PS5 editions, shows missing titles, and ignores
  const auto=gameModeFixture({psn,connected:true,library,autoAdd:true,psnPlatform:'PS5'});await settle();assert.equal(library.length,2);assert.equal(auto.state.playing.platform,'ps5');auto.dispose();
  const offline=gameModeFixture({psn,connected:true,online:false,autoAdd:true});await settle();assert.equal(offline.state.playing,null);assert.equal(offline.state.detectedPsn,null);offline.dispose();
 });
+
+
+test('multiple PC games pause category automation until a manual selection resolves ambiguity',async()=>{
+ const f=gameModeFixture({pc:[{name:'Fortnite'},{name:'7DS'}],library:[pcFortnite,{id:'seven',title:'7DS',platform:'pc'}]});
+ await settle();assert.equal(f.state.ambiguous,true);
+ f.mode.selectManualGame('seven');await settle();assert.equal(f.state.ambiguous,false);assert.equal(f.state.source,'manual');assert.equal(f.state.playing.id,'seven');f.dispose();
+});
