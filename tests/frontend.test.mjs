@@ -171,8 +171,8 @@ test('same YouTube video is fetched once but updates every linked adaptation',as
   assert.deepEqual(f.calls.requestedIds,[['video-id']]);assert.deepEqual(f.calls.results,['a','b']);
 });
 
-function gameModeFixture({pc=[], library=[], psn=[], connected=false}={}) {
-  const storage=new Map(),events=new Map(),timers=new Map(),starts=[];
+function gameModeFixture({pc=[], library=[], psn=[], connected=false,autoAdd=false,psnPlatform="PS5",online=true}={}) {
+  const storage=new Map([["game-auto-add",String(autoAdd)]]),events=new Map(),timers=new Map(),starts=[];
   let state,dispose,next=0,pcCalls=0,psnCalls=0;
   const globals={
     localStorage:{getItem:k=>storage.get(k)??null,setItem:(k,v)=>storage.set(k,v),removeItem:k=>storage.delete(k)},
@@ -183,9 +183,9 @@ function gameModeFixture({pc=[], library=[], psn=[], connected=false}={}) {
   const mode=load('src/features/games/gameMode.ts',{},globals);
   const hook=load('src/features/games/useGameMode.ts',{
     react:{useState:initial=>{state=initial;return [initial,v=>{state=typeof v==='function'?v(state):v;}];},useRef:v=>({current:v}),useEffect:fn=>{dispose=fn();}},
-    '../../db/games':{listGames:async()=>library},
+    '../../db/games':{listGames:async()=>library,createGame:async(title,platform)=>{const old=library.find(g=>g.title===title&&g.platform===platform);if(old)return old.id;const id='new-'+library.length;library.push({id,title,platform});return id;}},
     '../../db/pcGames':{pcNowPlaying:async()=>{pcCalls++;return typeof pc==='function'?pc():pc;}},
-    '../../db/psn':{psnStatus:async()=>connected,psnNowPlaying:async()=>{psnCalls++;return {games:psn};}},
+    '../../db/psn':{psnStatus:async()=>connected,psnNowPlaying:async()=>{psnCalls++;return {games:psn,platform:psnPlatform,online};}},
     './gameMode':mode,
   },globals);
   hook.useGameMode(game=>starts.push(game.id));
@@ -243,4 +243,22 @@ test('visual detector rejects blank references and matches distinctive luminance
   assert.equal(templateScore(pixels([20,20,20,20]),pixels([20,20,20,20])),0);
   assert.ok(templateScore(a,pixels([255,0,235,80,210,0,175,110]))<.9);
   assert.equal(templateScore(a,[]),0);
+});
+
+
+test('bound PC processes select the correct edition even when the title differs',async()=>{
+ const f=gameModeFixture({pc:[{name:'7DS',game_id:'chosen'}],library:[{id:'console',title:'7DS',platform:'ps5'},{id:'chosen',title:'The Seven Deadly Sins',platform:'pc'}]});
+ await settle();assert.equal(f.state.playing.id,'chosen');assert.equal(f.state.source,'pc');f.dispose();
+});
+test('optional auto-add creates one PC profile and opens it, without inventing trophies',async()=>{
+ const library=[];const f=gameModeFixture({pc:[{name:'7DS',process:'7ds.exe'}],library,autoAdd:true});await settle();
+ assert.equal(library.length,1);assert.equal(f.state.playing.title,'7DS');assert.equal(f.state.playing.platform,'pc');assert.equal(f.starts.length,1);
+ f.mode.setAutoAddEnabled(true);await settle();assert.equal(library.length,1);assert.equal(f.starts.length,1);f.dispose();
+});
+test('PSN discovery respects PS4/PS5 editions, shows missing titles, and ignores offline activity',async()=>{
+ const psn=[{name:'Mi juego PSN',title_id:'title',icon_url:null}];
+ const f=gameModeFixture({psn,connected:true,library:[],autoAdd:false});await settle();assert.equal(f.state.detectedPsn.name,'Mi juego PSN');assert.equal(f.state.playing,null);f.dispose();
+ const library=[{id:'ps4',title:'Mi juego PSN',platform:'ps4'}];
+ const auto=gameModeFixture({psn,connected:true,library,autoAdd:true,psnPlatform:'PS5'});await settle();assert.equal(library.length,2);assert.equal(auto.state.playing.platform,'ps5');auto.dispose();
+ const offline=gameModeFixture({psn,connected:true,online:false,autoAdd:true});await settle();assert.equal(offline.state.playing,null);assert.equal(offline.state.detectedPsn,null);offline.dispose();
 });
