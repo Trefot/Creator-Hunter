@@ -53,6 +53,6 @@ Con Nexus abierto y las cuentas autorizadas:
 
 Las pruebas automatizadas usan eventos y cuentas simulados. No sustituyen esta comprobación en el canal real.
 
-## Próximas entregas
+## Herramientas de estudio
 
-El plan autorizado continúa con TTS selectivo y recompensas; música y peticiones con una fuente apta para emisión; diagnóstico de OBS; y el flujo momentos → clips → publicaciones. Estas funciones no se presentan como disponibles en esta primera entrega.
+Desde 0.2.26 consulta [ESTUDIO.md](ESTUDIO.md) para TTS por puntos, música, proyectos de captura, retomar partida y diagnóstico/perfiles de OBS.
