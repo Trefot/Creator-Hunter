@@ -204,6 +204,7 @@ pub fn run() {
             psn::psn_download_image,
             psn::psn_now_playing,
             pc_games::pc_now_playing,
+            pc_games::pc_running_apps,
             youtube::youtube_disconnect,
             obs::obs_initialize,
             obs::obs_status,
