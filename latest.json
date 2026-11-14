@@ -1,15 +1,16 @@
 {
-  "version": "0.2.25",
+  "version": "0.2.26",
   "notes": [
-    "Live Studio reúne mensajes de Twitch y YouTube con filtros por plataforma y un historial efímero de hasta 200 mensajes.",
-    "Overlays de chat independientes con estilo Nexus, vista previa ficticia y enlaces locales protegidos. Los mensajes desaparecen a los 25 segundos; las eliminaciones recibidas también se reflejan.",
-    "Categoría automática de Twitch por juego de la biblioteca: búsqueda oficial, asociación por edición, espera de estabilidad, pausa ante detección ambigua y comprobación del directo antes de escribir. Desactivada por defecto.",
-    "Nuevos permisos de Twitch para chat y categoría; las conexiones existentes deben volver a autorizarse. Las alertas conservan su conexión y preferencias.",
-    "Guía de configuración y límites en docs/DIRECTO.md. TTS, peticiones musicales y diagnóstico de OBS continúan pendientes."
+    "TTS local de Windows mediante recompensa propia de puntos de Twitch: selección de voz, velocidad, volumen, filtros, cola limitada y controles de detener/pausar para Stream Deck. Requiere renovar permisos de Twitch y probar el audio en el PC.",
+    "Bandeja de momentos y clips en Live Studio y Proyectos, con conversión directa e idempotente a proyecto, archivo confirmado y marcas de la sesión. No renderiza ni recorta vídeos automáticamente.",
+    "Notas persistentes para retomar cada partida y candidatos a próximos platinos según los trofeos registrados. La detección de juegos ya no cambia de página mientras usas Live Studio.",
+    "Diagnóstico de OBS por red, renderizado y codificación; actividades de charla, gameplay y reacciones con perfiles existentes, escena y presets de vídeo. Aplicación fuera de emisión con copia previa y restauración de perfil/vídeo/escena; no modifica encoder ni bitrate.",
+    "Conexión personal de Spotify Premium mediante PKCE, controles y tarjeta informativa sin audio. Reproductor local para música autorizada, volumen, overlay y peticiones !sr moderadas de Twitch/YouTube. Tokens guardados en Windows, fuera de las copias.",
+    "Las conexiones, voces, dispositivos y audio de emisión se configuran en el PC del usuario. Guía de los cinco módulos en docs/ESTUDIO.md."
   ],
   "date": "2026-11-14",
   "installer": "TrophyHunter-setup.exe",
-  "source_commit": "60059d487d9b618296896c20d4fdcce05b4c9bb3",
-  "sha256": "77a09c89deba3f2dc0c0a66c4428e93ff90e328eeda1283cc7c1e472c4daff18",
-  "size": 18375384
+  "source_commit": "86bc4fdc74f108fefdda534021789bdcaef75032",
+  "sha256": "29c55a6b106e91bf2c43ddc37e38cfb0679055a45794f0f537fefcdefdbc8f8c",
+  "size": 18504470
 }
