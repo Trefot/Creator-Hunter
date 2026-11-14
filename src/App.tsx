@@ -43,6 +43,10 @@ function App() {
     invoke("obs_context", { gameId: gameMode.playing?.id ?? null }).catch(console.error);
   }, [gameMode.playing?.id]);
 
+  useEffect(() => {
+    invoke("stream_game_context", { gameId: gameMode.playing?.id ?? null, ambiguous: !!gameMode.ambiguous || !!gameMode.error }).catch(console.error);
+  }, [gameMode.checkedAt]);
+
   // Skin del juego: mientras se juega, la app toma los colores y el arte de su portada.
   const playingCover = gameMode.playing?.cover ?? null;
   useEffect(() => {
