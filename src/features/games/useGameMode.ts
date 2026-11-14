@@ -1,14 +1,16 @@
 import { useEffect, useRef, useState } from "react";
-import { Game, listGames } from "../../db/games";
+import { Game, createGame, listGames } from "../../db/games";
 import { PlayingGame, psnNowPlaying, psnStatus } from "../../db/psn";
 import { PcGame, pcNowPlaying } from "../../db/pcGames";
-import { GAME_MODE_CHANGED, GAME_MODE_POLL_MS, isGameModeEnabled, manualGameId, matchPcPlaying, matchPlaying } from "./gameMode";
+import { GAME_MODE_CHANGED, GAME_MODE_POLL_MS, isAutoAddEnabled, isGameModeEnabled, manualGameId, matchPcPlaying, matchPlaying } from "./gameMode";
 
 export interface GameModeState {
   playing: Game | null;
   source: "pc" | "psn" | "manual" | null;
   /** Juego de PC abierto que todavía no figura en la biblioteca. */
   detectedPc: PcGame | null;
+  detectedPsn?: PlayingGame|null;
+  detectedPsnPlatform?: "ps4"|"ps5";
   error: string | null;
   checkedAt: Date | null;
 }
@@ -25,6 +27,7 @@ export function useGameMode(onStart: (game: Game) => void): GameModeState {
     let timer: ReturnType<typeof setTimeout>;
     let lastPsnCheck = -Infinity;
     let psnGames: PlayingGame[] = [];
+    let psnPlatform:"ps4"|"ps5"="ps5";
     let psnError: string | null = null;
 
     async function tick() {
@@ -38,6 +41,7 @@ export function useGameMode(onStart: (game: Game) => void): GameModeState {
         let game = manual;
         let source: GameModeState["source"] = manual ? "manual" : null;
         let detectedPc: PcGame | null = null;
+        let detectedPsn: PlayingGame|null=null;
         let error: string | null = null;
         if (!manual && isGameModeEnabled()) {
           const pc = await pcNowPlaying().catch(err => { error = String(err); return [] as PcGame[]; });
@@ -52,18 +56,29 @@ export function useGameMode(onStart: (game: Game) => void): GameModeState {
               psnGames = [];
               psnError = null;
               try {
-                if (await psnStatus()) psnGames = (await psnNowPlaying()).games;
+                if (await psnStatus()) { const activity=await psnNowPlaying();psnGames=activity.online===false?[]:activity.games;psnPlatform=activity.platform?.toLowerCase()==="ps4"?"ps4":"ps5"; }
               } catch (err) { psnError = String(err); }
             }
-            game = matchPlaying(library.filter(g => g.platform === "ps4" || g.platform === "ps5"), psnGames);
+            detectedPsn=psnGames[0]??null;
+            game = matchPlaying(library.filter(g => g.platform === psnPlatform), psnGames);
             if (game) source = "psn";
             error = [error, psnError].filter(Boolean).join(" · ") || null;
           }
         }
         if (cancelled) return;
+        if(!game&&isGameModeEnabled()&&isAutoAddEnabled()&&(detectedPc||detectedPsn)){
+          const title=detectedPc?.name??detectedPsn!.name;
+          const platform=detectedPc?"pc":psnPlatform;
+          const id=await createGame(title,platform);
+          if(cancelled)return;
+          game=(await listGames()).find(g=>g.id===id)??null;
+          if(cancelled)return;
+          source=detectedPc?"pc":"psn";
+          window.dispatchEvent(new Event("nexus-game-library-changed"));
+        }
         const changed = game && game.id !== lastId.current;
         lastId.current = game?.id ?? null;
-        setState({ playing: game, source, detectedPc, error, checkedAt: new Date() });
+        setState({ playing: game, source, detectedPc, detectedPsn,detectedPsnPlatform:psnPlatform,error, checkedAt: new Date() });
         if (changed) onStartRef.current(game!);
       } catch (err) {
         if (!cancelled) {
