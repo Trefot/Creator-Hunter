@@ -36,7 +36,7 @@ function App() {
   const [gameView, setGameView] = useState<"today" | undefined>(undefined);
 
   // Modo juego: al empezar a jugar en la PS5 un juego de la biblioteca, la app abre su ficha.
-  const gameMode = useGameMode((game) => openGame(game.id, "today"));
+  const gameMode = useGameMode((game) => { if(section!=="live") openGame(game.id, "today"); });
   useEffect(() => startGameDetector(), []);
   useEffect(() => { invoke("obs_initialize").catch(console.error); }, []);
   useEffect(() => {
@@ -134,7 +134,7 @@ function App() {
         ) : section === "games" ? (
           <GamesPage key={gameToOpen ?? "list"} initialOpenId={gameToOpen} initialView={gameView} gameMode={gameMode} onOpenProject={openProject} onOpenIdeas={()=>select("ideas")} />
         ) : section === "live" ? (
-          <LivePage />
+          <LivePage onOpenProject={openProject} />
         ) : section === "backups" ? (
           <BackupsPage />
         ) : (
