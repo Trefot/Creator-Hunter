@@ -2,6 +2,14 @@
 
 ## [Sin publicar]
 
+## [0.2.25] · 2026-11-14 · Chat y categoría de Twitch
+
+- Live Studio reúne mensajes de Twitch y YouTube con filtros por plataforma y un historial efímero de hasta 200 mensajes.
+- Overlays de chat independientes con estilo Nexus, vista previa ficticia y enlaces locales protegidos. Los mensajes desaparecen a los 25 segundos; las eliminaciones recibidas también se reflejan.
+- Categoría automática de Twitch por juego de la biblioteca: búsqueda oficial, asociación por edición, espera de estabilidad, pausa ante detección ambigua y comprobación del directo antes de escribir. Desactivada por defecto.
+- Nuevos permisos de Twitch para chat y categoría; las conexiones existentes deben volver a autorizarse. Las alertas conservan su conexión y preferencias.
+- Guía de configuración y límites en docs/DIRECTO.md. TTS, peticiones musicales y diagnóstico de OBS continúan pendientes.
+
 ## [0.2.24] · 2026-11-14 · Actualizaciones sin bloqueos de Git
 
 - El actualizador consulta y descarga por HTTPS desde las publicaciones oficiales. Ya no necesita Git ni utiliza la caché que podía quedar bloqueada por shallow.lock.
