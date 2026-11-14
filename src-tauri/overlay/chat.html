@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="referrer" content="no-referrer"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Nexus · Chat</title>
+<style>
+@font-face{font-family:Inter;src:url('/assets/alerts/inter-latin.woff2')}*{box-sizing:border-box}body{margin:0;background:transparent;color:#fff;font-family:Inter,system-ui,sans-serif}#chat{display:flex;flex-direction:column;gap:10px;padding:14px;max-width:600px}.message{position:relative;padding:12px 16px;background:linear-gradient(120deg,rgba(39,17,48,.94),rgba(18,12,25,.92));border:1px solid #85532d;border-left:3px solid #e5a64c;border-radius:5px 16px 5px 16px;box-shadow:0 3px 12px #0006;animation:enter .3s ease-out}.head{display:flex;gap:8px;align-items:center;margin-bottom:5px;font-size:15px;color:#f5c778}.badge{font-size:11px;text-transform:uppercase;color:#dab9ff}.youtube .badge{color:#ff9393}.name{font-weight:800;overflow-wrap:anywhere}.text{white-space:pre-wrap;overflow-wrap:anywhere;font-size:20px;line-height:1.4}.role{font-size:11px;opacity:.75}@keyframes enter{from{opacity:0;transform:translateX(-15px)}to{opacity:1;transform:none}}@media(prefers-reduced-motion:reduce){.message{animation:none}}
+</style></head><body><main id="chat" aria-label="Chat del directo"></main><script>
+const params=new URLSearchParams(location.search),p=location.pathname.split('/').pop(),key=params.get('key')||'',preview=params.has('preview');
+const root=document.getElementById('chat'),firstSeen=new Map();let revision=-1,messages=[];
+function draw(){
+ const now=Date.now(),visible=messages.slice(-8).filter(m=>{if(!firstSeen.has(m.id))firstSeen.set(m.id,m.received_ms||now);return preview||now-firstSeen.get(m.id)<=25000}),ids=new Set(visible.map(m=>m.id));
+ for(const node of [...root.children])if(!ids.has(node.dataset.id))node.remove();
+ for(const m of visible){if([...root.children].some(n=>n.dataset.id===m.id))continue;
+  const row=document.createElement('article');row.dataset.id=m.id;row.className='message '+m.platform;
+  const head=document.createElement('div');head.className='head';const badge=document.createElement('span');badge.className='badge';badge.textContent=m.platform==='twitch'?'Twitch':'YouTube';
+  const name=document.createElement('span');name.className='name';name.textContent=m.name;head.append(badge,name);
+  if(m.broadcaster||m.moderator){const role=document.createElement('span');role.className='role';role.textContent=m.broadcaster?'CREADOR':'MOD';head.append(role)}
+  const text=document.createElement('div');text.className='text';text.textContent=m.text;row.append(head,text);root.append(row);
+ }
+}
+async function poll(){try{const r=await fetch('/api/chat/'+p+'?key='+encodeURIComponent(key),{cache:'no-store',signal:AbortSignal.timeout(10000)});if(!r.ok)throw Error();const s=await r.json();if(s.revision!==revision){revision=s.revision;messages=s.messages;const ids=new Set(messages.map(m=>m.id));for(const id of firstSeen.keys())if(!ids.has(id))firstSeen.delete(id);draw()}}catch{}finally{setTimeout(poll,2000)}}
+if(preview){messages=[{id:'1',platform:p,name:'Trefot',text:'¡Bienvenidos a la comunidad! 🏮',broadcaster:true},{id:'2',platform:p,name:'LaComunidad',text:'Ese cofre cuenta. ¡Vamos por el siguiente!'}];draw()}else if(['twitch','youtube'].includes(p)&&key){poll();setInterval(draw,1000)}
+</script></body></html>
