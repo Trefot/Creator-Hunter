@@ -59,6 +59,10 @@ export async function listGames(): Promise<Game[]> {
 
 export async function createGame(title: string, platform: GamePlatform): Promise<string> {
   const db = await getDb();
+  const clean=title.trim();
+  if(!clean||clean.length>150||!GAME_PLATFORMS.includes(platform))throw Error("Introduce un título y una plataforma válidos.");
+  const existing=await db.select<{id:string}[]>("SELECT id FROM game WHERE workspace_id=$1 AND platform=$2 AND LOWER(TRIM(title))=LOWER($3) LIMIT 1",[WORKSPACE_ID,platform,clean]);
+  if(existing[0])return existing[0].id;
   const id = newId();
   await db.execute("INSERT INTO game (id, workspace_id, title, platform) VALUES ($1, $2, $3, $4)", [
     id,
@@ -78,6 +82,14 @@ export async function upsertPsnGame(input: {
   cover: string | null;
 }): Promise<string> {
   const db = await getDb();
+  const known=await db.select<{id:string}[]>("SELECT id FROM game WHERE workspace_id=$1 AND np_communication_id=$2",[WORKSPACE_ID,input.np_communication_id]);
+  if(!known.length){
+    const local=await db.select<{id:string}[]>("SELECT id FROM game WHERE workspace_id=$1 AND platform=$2 AND np_communication_id IS NULL AND LOWER(TRIM(title))=LOWER(TRIM($3)) LIMIT 1",[WORKSPACE_ID,input.platform,input.title]);
+    if(local[0]){
+      await db.execute("UPDATE game SET np_communication_id=$1,np_service_name=$2,cover=COALESCE($3,cover),updated_at=strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE id=$4 AND workspace_id=$5",[input.np_communication_id,input.np_service_name,input.cover,local[0].id,WORKSPACE_ID]);
+      return local[0].id;
+    }
+  }
   await db.execute(
     `INSERT INTO game (id, workspace_id, title, platform, np_communication_id, np_service_name, cover)
      VALUES ($1, $2, $3, $4, $5, $6, $7)
