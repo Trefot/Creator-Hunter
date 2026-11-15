@@ -38,3 +38,6 @@ dist-ssr
 
 # Caché de las pruebas Python
 **/__pycache__/
+
+# Artefactos del banco de captura; el código y Cargo.lock sí se versionan.
+/tests/auto-moments/target/
