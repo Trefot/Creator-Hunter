@@ -1,13 +1,12 @@
 {
-  "version": "0.2.35",
+  "version": "0.2.36",
   "notes": [
-    "Al parar una grabación en OBS, Nexus te pregunta cuál de las grabaciones de hoy hiciste; con un clic se marca como hecha y el vídeo pasa a Edición.",
-    "«Hoy toca» detecta tus subidas recientes de YouTube y te propone a qué proyecto corresponden: con un clic quedan marcadas como Publicado (con enlace y fecha) o como Programado si las dejaste programadas.",
-    "Nada cambia sin tu confirmación, y Nexus solo lee YouTube: nunca sube ni modifica vídeos."
+    "En «Hoy toca» ya puedes planificar días de editar y programar con vídeos que aún no has grabado o editado; aparecen al final de la lista marcados «(aún por grabar)» o «(aún por editar)».",
+    "Al marcar como hecha una edición o una programación, también se completan los pasos anteriores que faltaban (guion y grabación)."
   ],
   "date": "2026-11-15",
   "installer": "TrophyHunter-setup.exe",
-  "source_commit": "0f15c493f9c0db91afd6e3dd75fbceaa123ca2c5",
-  "sha256": "ffda7d2380fba18378e8ed2c8e967ad478a68eb28597f63825e485abe5cfc040",
-  "size": 20602138
+  "source_commit": "813358ae49fdffef56c5eddbd62dca9f2c028636",
+  "sha256": "6dada36c6c242956f62491b3545cb4a8516c1b21f1b2911c8c5d3c31066ad707",
+  "size": 20601960
 }
