@@ -55,3 +55,5 @@ Para capturar con **solo Replay Buffer**, copia «Stream Deck · capturar moment
 El banco de Rust compila la lógica real sustituyendo solo Tauri, OBS y el sistema de archivos de prueba. Comprueba activación, cancelación, límites, revisión, errores sin reintentos y guardados que ya están en curso. En Linux con ffmpeg también exporta un vídeo sintético vertical y verifica resolución, duración y audio. En Windows valida la sintaxis del script de reconocimiento, sin abrir un micrófono.
 
 `tests/moments-browser.py` recorre la interfaz con SQLite desechable y servicios simulados (Vite en 1432, Playwright y Chromium). La compilación completa de Tauri y el instalador se verifican en Windows. La escucha real, el idioma instalado, el dispositivo de audio y la captura de tu OBS necesitan una prueba en tu PC.
+
+Al restaurar una copia, Nexus detiene la escucha y cancela las esperas. Si OBS ya está guardando, debes esperar a su confirmación antes de restaurar. La captura permanece desactivada después de la restauración.
