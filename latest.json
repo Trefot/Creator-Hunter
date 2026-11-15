@@ -1,16 +1,16 @@
 {
-  "version": "0.2.27",
+  "version": "0.2.28",
   "notes": [
-    "Nueva identidad visual V2 en tinta, violeta y latón, con el taller ilustrado y el Nexus original. Inicio conserva tus datos reales y permite reducir el detalle con Modo enfoque.",
-    "Navegación principal simplificada: Inicio, Crear contenido, En directo y Juegos. Mi estudio agrupa cuentas, metas e ingresos; búsqueda de secciones con Ctrl+K y ayuda de orientación.",
-    "Crear contenido reúne proyectos, ideas y capturas. El tablero calcula la etapa y el siguiente paso de todas las versiones pendientes; los borradores se conservan al cambiar de pestaña.",
-    "Cabina de directo con escenas reales de OBS, cambio explícito de escena y captura fija a petición; sin previsualización continua. Chat, sonido, alertas, overlays, contadores, categoría, OBS, conexiones y momentos tienen sus propios apartados.",
-    "Biblioteca con banner de la partida activa y su nota real; añadir juegos, detección e importación reunidos en un panel desplegable. Conserva fichas, platinos y overlays existentes.",
-    "Se mantienen datos, identidad de instalación y enlaces de Stream Deck. La señal, el audio y las conexiones reales requieren OBS y tus cuentas configuradas en el PC."
+    "Al detener la emisión en OBS aparece el resumen del directo: duración, juego, personas nuevas, subs y miembros, bits, raids y Super Chats.",
+    "Agradece por nombre a quienes apoyaron (bits, subs, regalos, raids y Super Chats) y muestra cuánto subió cada contador.",
+    "Incluye los momentos y clips guardados durante el directo y los trofeos conseguidos mientras emitías.",
+    "Nuevo apartado En directo → Resúmenes con el historial de tus últimos 30 directos.",
+    "Botón para agradecer en tu canal de directos de Discord, con vista previa antes de publicar y sin menciones masivas. Cada resumen se publica una sola vez.",
+    "Migración 22 aditiva: registro de eventos recibidos y valor de los contadores al empezar y terminar cada emisión, incluidos en las copias de seguridad."
   ],
-  "date": "2026-11-14",
+  "date": "2026-11-15",
   "installer": "TrophyHunter-setup.exe",
-  "source_commit": "385e802ae2eb2a048653775dc02ec233de0088ce",
-  "sha256": "46607f8838f49fe2e22c3ba0e89ea0993217cda0ebdaa0a01ad3e87fafe4f810",
-  "size": 20440591
+  "source_commit": "9f064a13862f26c6dffc4bd59fac8b5406ffceaa",
+  "sha256": "b7522d3b3ae5159eb48002352e1fc2aabb00489c874621ce5cf0214e15fa0cfb",
+  "size": 20478082
 }
