@@ -30,7 +30,11 @@ import {SectionTabs} from "../../components/SectionTabs";
 import {LiveCockpit} from "./LiveCockpit";
 import {SocialAlerts} from "./SocialAlerts";
 import {RecapHistory} from "./StreamRecap";
-const liveTabs=[{id:'cabina',label:'Cabina'},{id:'chat',label:'Chat'},{id:'sound',label:'Sonido'},{id:'alerts',label:'Alertas'},{id:'overlays',label:'Overlays'},{id:'counters',label:'Contadores'},{id:'category',label:'Categoría'},{id:'obs',label:'OBS'},{id:'connections',label:'Conexiones'},{id:'moments',label:'Momentos'},{id:'recaps',label:'Resúmenes'}] as const;
+import {ConnectionsStatus} from "./ConnectionsStatus";
+import {GoLivePanel} from "./GoLivePanel";
+import {ChatCommandsPanel} from "./ChatCommandsPanel";
+import {ShortsPanel} from "./ShortsPanel";
+const liveTabs=[{id:'cabina',label:'Cabina'},{id:'estado',label:'Estado'},{id:'chat',label:'Chat'},{id:'commands',label:'Comandos'},{id:'sound',label:'Sonido'},{id:'alerts',label:'Alertas'},{id:'overlays',label:'Overlays'},{id:'counters',label:'Contadores'},{id:'category',label:'Categoría'},{id:'obs',label:'OBS'},{id:'connections',label:'Conexiones'},{id:'moments',label:'Momentos'},{id:'recaps',label:'Resúmenes'}] as const;
 type LiveTab=typeof liveTabs[number]['id'];
 const asTab=(value:string):LiveTab=>liveTabs.find(t=>t.id===value)?.id??'cabina';
 const t = es.live;
@@ -448,12 +452,14 @@ export function LivePage({onOpenProject,initialTab='cabina',navigationRevision=0
 
       <SectionTabs tabs={liveTabs} value={tab} onChange={setTab} label="Herramientas de directo"/>
       <div className={tab==='cabina'?'live-cabina-grid':''} hidden={!['cabina','chat','category','overlays'].includes(tab)}>
-       <div hidden={tab!=='cabina'}><LiveCockpit active={tab==='cabina'} onNavigate={value=>setTab(asTab(value))}/></div>
+       <div hidden={tab!=='cabina'}><GoLivePanel onNavigate={value=>setTab(asTab(value))}/><LiveCockpit active={tab==='cabina'} onNavigate={value=>setTab(asTab(value))}/></div>
        <StreamingPanel view={tab==='category'?'category':tab==='overlays'?'overlays':'chat'}/>
       </div>
       <div hidden={tab!=='sound'} role="tabpanel" aria-label="Sonido"><TtsPanel base={base} keyValue={info?.key??""}/><MusicPanel base={base} keyValue={info?.key??""}/></div>
       <div hidden={tab!=='recaps'} role="tabpanel" aria-label="Resúmenes"><RecapHistory active={tab==='recaps'}/></div>
-      <div hidden={tab!=='moments'} role="tabpanel" aria-label="Momentos"><CaptureInbox expanded onOpenProject={onOpenProject}/></div>
+      <div hidden={tab!=='estado'} role="tabpanel" aria-label="Estado"><ConnectionsStatus active={tab==='estado'} onNavigate={value=>setTab(asTab(value))}/></div>
+      <div hidden={tab!=='commands'} role="tabpanel" aria-label="Comandos"><ChatCommandsPanel active={tab==='commands'}/></div>
+      <div hidden={tab!=='moments'} role="tabpanel" aria-label="Momentos"><ShortsPanel active={tab==='moments'}/><CaptureInbox expanded onOpenProject={onOpenProject}/></div>
       <div hidden={tab!=='alerts'} role="tabpanel" aria-label="Alertas"><AlertsPanel showConnections={false}/></div>
       <div hidden={tab!=='connections'} role="tabpanel" aria-label="Conexiones"><SocialAlerts/><DiscordPanel/></div>
       <div hidden={tab!=='obs'} role="tabpanel" aria-label="OBS"><ObsAssistant/>

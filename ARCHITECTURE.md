@@ -271,6 +271,18 @@ Cuentan lo recibido en USD desde la fecha local de creación de la meta, filtrad
 - El aviso (`stream-recap-ready`) solo sale cuando OBS **detiene** la emisión, no al reiniciarla ni al perder la conexión. Una conexión perdida a mitad de directo parte la emisión en dos sesiones; ambas aparecen en el historial.
 - Los cálculos (totales, apoyos destacados, texto para Discord) viven en `recap_core.rs`, sin base de datos ni red, con tests. El agradecimiento en Discord reutiliza el envío protegido contra duplicados (clave `stream-recap:<id>`) y no permite menciones.
 
+### D-030 · Estado de conexiones, Empezar directo y comandos de chat (2026-11-14)
+- **Estado:** el panel solo junta las comprobaciones que ya existían (OBS, YouTube, PSN, Discord, Spotify, servidor local) y añade dos: los permisos concedidos por Twitch (`/oauth2/validate`) y el último error de los comandos. Cada comprobación falla por separado sin tumbar a las demás. ⚪ significa «sin usar», no error.
+- **Empezar directo:** lista de preparación en la Cabina. Cambia el título de Twitch (`PATCH /helix/channels`, permiso `channel:manage:broadcast` que ya existía). **Nunca inicia la emisión ni controla OBS**: igual que el resto de Nexus, solo lee OBS.
+- **Comandos:** se enganchan a los mensajes que ya llegaban por EventSub (Twitch) y por la lectura del chat de YouTube, como `!sr`. Responden con `POST /helix/chat/messages` (nuevo permiso `user:write:chat`) y `liveChatMessages.insert` (nuevo permiso `youtube.force-ssl`). Las conexiones existentes deben **renovar la autorización una vez**; mientras tanto, el envío falla con un aviso claro y Estado lo muestra.
+- Reglas en `chat_commands_core.rs` con tests: disparadores `!palabra`, espera por comando y plataforma, respuestas que no pueden empezar por `!` ni `/` (evita bucles y órdenes de moderación), límites de 500 (Twitch) y 200 (YouTube) caracteres. Las variables salen del estado de emisión de juegos y de los contadores.
+
+### D-031 · Clips para Shorts con ffmpeg (2026-11-14)
+- ffmpeg **no se incluye** en el instalador (unos 80 MB en cada actualización). Se busca en el PC (herramientas de Nexus, accesos y paquetes de winget, PATH) y, si falta, un botón abre una consola visible con `winget install --id Gyan.FFmpeg`.
+- **Momento:** se recorta la grabación de OBS (`obs_session.output_path`) entre `record_ms − antes` y `record_ms + después`. Un momento marcado sin grabación local no se puede recortar, y se explica por qué. **Clip del Replay Buffer:** se convierte entero.
+- Formatos: horizontal, vertical recortado (centro 9:16) y vertical con fondo difuminado. Se vuelve a codificar (H.264 + AAC, `+faststart`) para que el corte sea exacto. Argumentos y cálculos en `shorts_core.rs` con tests.
+- Resultado en Vídeos → Nexus Shorts. Cada Short queda registrado en `clip_export` (migración 23, incluida en las copias); Nexus nunca borra ni mueve los vídeos.
+
 ## Dependencias
 
 | Dependencia | Para qué |

@@ -27,7 +27,7 @@ const CHANNELS_URL: &str = "https://www.googleapis.com/youtube/v3/channels";
 const ANALYTICS_URL: &str = "https://youtubeanalytics.googleapis.com/v2/reports";
 /// Lectura del canal y de Analytics (horas, vistas, suscriptores). Sin permiso monetario (D-015).
 const SCOPES: &str =
-    "https://www.googleapis.com/auth/youtube.readonly https://www.googleapis.com/auth/yt-analytics.readonly";
+    "https://www.googleapis.com/auth/youtube.readonly https://www.googleapis.com/auth/youtube.force-ssl https://www.googleapis.com/auth/yt-analytics.readonly";
 const KEYRING_SERVICE: &str = "TrophyHunter";
 const KEYRING_USER: &str = if cfg!(debug_assertions) { "youtube-refresh-token-dev" } else { "youtube-refresh-token" };
 const CLIENT_FILE: &str = if cfg!(debug_assertions) { "google-client-dev.json" } else { "google-client.json" };

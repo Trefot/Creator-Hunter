@@ -1,0 +1,52 @@
+/* Estado, Empezar directo, Comandos y Shorts (D-030, D-031) */
+.tools-panel { display: flex; flex-direction: column; gap: 12px; }
+.tools-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; }
+.tools-head h2 { display: flex; align-items: center; gap: 8px; margin: 0 0 4px; font-size: 18px; }
+.tools-head p { margin: 0; }
+.tools-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.tools-warn {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0;
+  padding: 10px 12px; border-radius: 10px; border: 1px solid color-mix(in srgb, var(--warning) 50%, transparent);
+  background: color-mix(in srgb, var(--warning) 10%, transparent);
+}
+
+.status-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.status-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--border); background: var(--bg); }
+.status-item.error { border-color: color-mix(in srgb, var(--danger) 55%, transparent); }
+.status-item.warn { border-color: color-mix(in srgb, var(--warning) 55%, transparent); }
+.status-dot { font-size: 14px; }
+.status-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+
+.golive-start, .golive-start:hover:not(:disabled) {
+  display: flex; align-items: center; gap: 8px; width: 100%; padding: 14px 18px; border-radius: 14px;
+  font-size: 16px; font-weight: 700; color: var(--text); text-align: left;
+  border: 1px solid var(--accent); background: linear-gradient(90deg, var(--accent-soft), transparent 70%), var(--surface);
+}
+.golive-steps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.golive-steps li { display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px; border-radius: 10px; background: var(--bg); border: 1px solid var(--border); }
+.golive-steps li.done { border-color: color-mix(in srgb, var(--success) 45%, transparent); }
+.golive-steps li.done .golive-check { color: var(--success); }
+.golive-check, .golive-check:hover:not(:disabled) { display: grid; place-items: center; padding: 0; border: 0; background: none; color: var(--muted); }
+.golive-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.golive-title { display: flex; gap: 6px; }
+.golive-title input { flex: 1; }
+.golive-ready { margin: 0; padding: 12px; border-radius: 10px; font-weight: 700; background: color-mix(in srgb, var(--success) 14%, transparent); }
+
+.commands-list { display: flex; flex-direction: column; gap: 10px; }
+.command-row { display: flex; flex-direction: column; gap: 6px; padding: 10px; border-radius: 10px; border: 1px solid var(--border); background: var(--bg); }
+.command-row.off { opacity: 0.65; }
+.command-top { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.command-trigger { width: 150px; font-weight: 700; }
+.command-top input[type="number"] { width: 70px; margin: 0 4px; }
+.command-preview { margin: 0; padding: 6px 10px; border-radius: 8px; background: var(--surface-hover); }
+.commands-help ul { margin: 6px 0; padding-left: 18px; }
+
+.short-maker { display: flex; flex-direction: column; gap: 8px; padding: 10px; margin-top: 6px; border-radius: 10px; border: 1px solid var(--border); background: var(--bg); }
+.short-formats { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 6px; }
+.short-format { display: flex; flex-direction: column; gap: 2px; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--border); cursor: pointer; }
+.short-format.on { border-color: var(--accent); background: var(--accent-soft); }
+.short-format input { display: none; }
+.short-window { display: flex; flex-wrap: wrap; gap: 12px; }
+.short-window input { width: 70px; margin-left: 6px; }
+.shorts-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.shorts-list li { display: flex; justify-content: space-between; align-items: center; gap: 8px; }

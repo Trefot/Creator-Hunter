@@ -21,7 +21,12 @@ mod obs;
 mod obs_protocol;
 mod obs_store;
 mod premigrate;
+mod chat_commands;
+mod chat_commands_core;
 mod recap;
+mod shorts;
+mod shorts_core;
+mod stream_prep;
 mod recap_core;
 mod data_safety;
 mod updater;
@@ -165,6 +170,12 @@ fn migrations() -> Vec<Migration> {
             sql: include_str!("../migrations/022_stream_recap.sql"),
             kind: MigrationKind::Up,
         },
+        Migration {
+            version: 23,
+            description: "clips para shorts",
+            sql: include_str!("../migrations/023_clip_exports.sql"),
+            kind: MigrationKind::Up,
+        },
     ]
 }
 
@@ -208,6 +219,16 @@ pub fn run() {
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
+            shorts::shorts_status,
+            shorts::shorts_install_ffmpeg,
+            shorts::shorts_render,
+            shorts::shorts_list,
+            chat_commands::chat_commands_get,
+            chat_commands::chat_commands_save,
+            chat_commands::chat_commands_preview,
+            stream_prep::twitch_scopes,
+            stream_prep::stream_title_get,
+            stream_prep::stream_title_set,
             recap::stream_recaps,
             recap::stream_recap,
             recap::stream_recap_seen,

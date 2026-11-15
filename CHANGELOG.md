@@ -2,6 +2,15 @@
 
 ## [Sin publicar]
 
+## [0.2.29] · 2026-11-14 · Preparar, responder y recortar
+
+- Nuevo En directo → Estado: semáforos de todas tus conexiones (OBS, Twitch y sus permisos, YouTube, Discord, Spotify, PlayStation, comandos y ffmpeg) con un botón para arreglar cada una antes del directo.
+- «Empezar directo» en la Cabina: lista de preparación de unos dos minutos con conexiones, OBS, juego y objetivo, título de Twitch editable, comandos de chat y comprobaciones tuyas. Nexus nunca empieza la emisión.
+- Comandos de chat en En directo → Comandos: !platino, !juego, !redes, !discord y los que crees, con variables como {platinos}, {juego}, {progreso} y {contador:Nombre}, espera entre usos y vista previa. Responden en Twitch y YouTube.
+- Para que los comandos puedan contestar hay que renovar una vez los permisos de Twitch (Conexiones) y volver a conectar YouTube; Estado te avisa.
+- Clips para Shorts: «Crear Short» en cada momento o clip recorta la grabación alrededor de la marca en vertical con fondo difuminado, vertical recortado u horizontal, y lo guarda en Vídeos → Nexus Shorts. Necesita ffmpeg, que se instala con un clic mediante winget.
+- Migración 23 aditiva para el historial de Shorts, incluido en las copias de seguridad.
+
 ## [0.2.28] · 2026-11-14 · Resumen del directo
 
 - Al detener la emisión en OBS aparece el resumen del directo: duración, juego, personas nuevas, subs y miembros, bits, raids y Super Chats.
