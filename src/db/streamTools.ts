@@ -32,7 +32,7 @@ export const streamTitleGet = () => invoke<{ title: string | null; game: string 
 export const streamTitleSet = (title: string) => invoke<void>("stream_title_set", { title });
 
 /** Clips para Shorts (D-031). */
-export type ShortFormat = "horizontal" | "vertical_crop" | "vertical_blur";
+export type ShortFormat = "original" | "horizontal" | "vertical_crop" | "vertical_blur";
 export interface ShortExport {
   id: string;
   created_at: string;
@@ -44,6 +44,6 @@ export interface ShortExport {
 }
 export const shortsStatus = () => invoke<{ ffmpeg: string | null }>("shorts_status");
 export const shortsInstallFfmpeg = () => invoke<void>("shorts_install_ffmpeg");
-export const shortsRender = (kind: "moment" | "clip", id: string, format: ShortFormat, before: number, after: number) =>
-  invoke<{ path: string;warning?:string|null }>("shorts_render", { kind, id, format, before, after });
+export const shortsRender = (kind: "moment" | "clip", id: string, format: ShortFormat, before: number, after: number, audio?:number[],encoder="cpu") =>
+  invoke<{ id:string;path: string;warning?:string|null }>("shorts_render", { kind, id, format, before, after, audio,encoder });
 export const shortsList = () => invoke<ShortExport[]>("shorts_list");

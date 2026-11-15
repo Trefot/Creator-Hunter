@@ -1,3 +1,4 @@
+import { productionReady } from "../projects/projectBoard";
 import type { Adaptation, Step } from "../../db/adaptations";
 
 /** Tipos de sesión de la rutina semanal (D-032). */
@@ -58,9 +59,9 @@ export function candidates(
   const list: Candidate[] = versions
     .filter((a) => {
       const step = current(a);
-      return !a.published_at && a.format !== "live" && step !== null && order.includes(step);
+      return !a.published_at && a.format !== "live" && ((step !== null && order.includes(step)) || (kind === "schedule" && productionReady(a) && (step === null || step === "analysis")));
     })
-    .sort((a, b) => order.indexOf(current(a)!) - order.indexOf(current(b)!))
+    .sort((a,b)=>{const rank=(v:Adaptation)=>{const n=order.indexOf(current(v)!);return n<0?1:n};return rank(a)-rank(b)})
     .map((a) => ({
       projectId: a.project_id,
       adaptationId: a.id,
@@ -89,11 +90,7 @@ export interface BufferStatus {
  * publicarlas). Menos de 4 piezas listas = semana de grabar.
  */
 export function bufferStatus(versions: Adaptation[]): BufferStatus {
-  const ready = versions.filter((a) => {
-    if (a.published_at || !a.steps.length) return false;
-    const step = current(a);
-    return step === null || step === "scheduling" || step === "publishing" || step === "analysis";
-  });
+  const ready = versions.filter(productionReady);
   const long = ready.filter((a) => a.format === "long_video").length;
   const short = ready.filter((a) => a.format === "short" || a.format === "tiktok" || a.format === "reel").length;
   const level =
@@ -107,7 +104,7 @@ export function weekProgress(
   sessions: { day: string; done_at: string | null }[],
   days: string[],
 ): { done: number; planned: number } {
-  const planned = days.filter((d) => isPlanned(routine[weekdayIndex(d)])).length;
-  const done = new Set(sessions.filter((s) => s.done_at && days.includes(s.day)).map((s) => s.day)).size;
-  return { done, planned };
+  const completed=new Set(sessions.filter(s=>s.done_at&&days.includes(s.day)).map(s=>s.day));
+  const planned=new Set([...days.filter(d=>isPlanned(routine[weekdayIndex(d)])),...completed]).size;
+  return {done:completed.size,planned};
 }

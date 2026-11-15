@@ -1,3 +1,5 @@
+import {invoke} from "@tauri-apps/api/core";
+import {AudioPicker,ExportNextSteps} from "./MediaTools";
 import { useEffect, useState } from "react";
 import { revealItemInDir } from "@tauri-apps/plugin-opener";
 import { Download, FolderOpen, RefreshCw, Scissors } from "lucide-react";
@@ -7,7 +9,8 @@ import "./streamTools.css";
 const FORMATS: { id: ShortFormat; label: string; hint: string }[] = [
   { id: "vertical_blur", label: "Vertical con fondo", hint: "9:16, imagen completa y fondo difuminado" },
   { id: "vertical_crop", label: "Vertical recortado", hint: "9:16, solo el centro de la imagen" },
-  { id: "horizontal", label: "Horizontal", hint: "16:9, como la grabación" },
+  { id: "horizontal", label: "Horizontal", hint: "16:9, imagen completa con bandas si hacen falta" },
+  { id: "original", label: "Original", hint: "Conserva la proporción y resolución de la grabación" },
 ];
 
 /** Botón «✂️ Short» de cada momento o clip de la bandeja. */
@@ -17,8 +20,13 @@ export function ShortMaker({ kind, id, captureWindow }: { kind: "moment" | "clip
   const [before, setBefore] = useState(captureWindow?.before??20);
   const [after, setAfter] = useState(captureWindow?.after??10);
   const [state, setState] = useState<"idle" | "busy">("idle");
+  const [exportId,setExportId]=useState<string|undefined>(undefined);
   const [result, setResult] = useState<string | null>(null);
   const [error, setError] = useState("");
+  const [encoder,setEncoder]=useState("cpu");
+  const [audio,setAudio]=useState<number[]|undefined>(undefined);
+  const [preview,setPreview]=useState("");
+  const [previewBusy,setPreviewBusy]=useState(false);
   const [warning,setWarning]=useState<string|null>(null);
 
   async function render() {
@@ -27,7 +35,7 @@ export function ShortMaker({ kind, id, captureWindow }: { kind: "moment" | "clip
     setResult(null);
     setWarning(null);
     try {
-      const result=await shortsRender(kind,id,format,before,after);setResult(result.path);setWarning(result.warning??null);
+      const result=await shortsRender(kind,id,format,before,after,audio,encoder);setResult(result.path);setExportId(result.id);setWarning(result.warning??null);
     } catch (e) {
       setError(String(e));
     } finally {
@@ -64,8 +72,13 @@ export function ShortMaker({ kind, id, captureWindow }: { kind: "moment" | "clip
       ) : (
         <p className="muted small">El clip del Replay Buffer se convierte entero al formato elegido.</p>
       )}
+      <label>Procesar con<select value={encoder} onChange={e=>setEncoder(e.target.value)}><option value="cpu">CPU · compatible</option><option value="nvenc">GPU NVIDIA · requiere prueba de NVENC</option></select></label><p className="muted small">Comprueba la GPU desde «Procesamiento local» antes de elegirla. La prueba debe repetirse al abrir Nexus. Los subtítulos usan CPU.</p>
+      <AudioPicker kind={kind} id={id} value={audio} onChange={setAudio}/>
+      <p className="muted small">1. Revisa la imagen y el audio · 2. Exporta · 3. Desde la bandeja, crea el proyecto y programa su publicación. Los subtítulos se generan en el panel de grabaciones; todavía no se incrustan en el Short.</p>
+      <button className="ghost small-button" disabled={previewBusy} onClick={async()=>{setPreviewBusy(true);setError('');try{setPreview(await invoke<string>('shorts_preview',{kind,id,format}))}catch(e){setError(String(e))}finally{setPreviewBusy(false)}}}>{previewBusy?'Generando vista…':'Vista previa del formato'}</button>
+      {preview&&<img src={preview} alt="Vista previa del formato elegido" style={{maxWidth:'100%',maxHeight:300,objectFit:'contain',display:'block'}}/>}
       <div className="tools-actions">
-        <button className="small-button" disabled={state === "busy"} onClick={render}>
+        <button className="small-button" disabled={state === "busy" || audio===undefined} onClick={render}>
           {state === "busy" ? <RefreshCw size={14} className="spin" /> : <Scissors size={14} />} {state === "busy" ? "Creando… (puede tardar)" : "Crear"}
         </button>
         <button className="ghost small-button" onClick={() => setOpen(false)}>
@@ -80,6 +93,7 @@ export function ShortMaker({ kind, id, captureWindow }: { kind: "moment" | "clip
           </button>
         </p>
       )}
+      {result&&<ExportNextSteps path={result} exportId={exportId}/>}
       {warning&&<p role="status" className="small">{warning}</p>}
       {error && <p role="alert" className="error small">{error}</p>}
     </div>
@@ -102,7 +116,7 @@ export function ShortsPanel({ active }: { active: boolean }) {
     }
   }
   useEffect(() => {
-    if (active) void refresh();
+    if(!active)return;void refresh();const timer=setInterval(()=>void refresh(),5000);return()=>clearInterval(timer);
   }, [active]);
 
   return (
@@ -138,9 +152,9 @@ export function ShortsPanel({ active }: { active: boolean }) {
                 <strong>{s.title}</strong> · {FORMATS.find((f) => f.id === s.format)?.label} · {new Date(s.created_at).toLocaleString("es")}
               </span>
               {s.exists ? (
-                <button className="ghost small-button" onClick={() => revealItemInDir(s.path)}>
+                <div><ExportNextSteps path={s.path} exportId={s.id}/><button className="ghost small-button" onClick={() => revealItemInDir(s.path)}>
                   <FolderOpen size={13} /> Mostrar
-                </button>
+                </button></div>
               ) : (
                 <span className="muted">archivo movido o borrado</span>
               )}

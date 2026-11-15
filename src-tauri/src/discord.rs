@@ -72,7 +72,7 @@ async fn settings(app: &AppHandle) -> Result<Settings, String> {
 pub async fn discord_status(app: AppHandle) -> Result<Value, String> {
     Ok(
         json!({"settings":settings(&app).await?, "live_configured":entry("live")?.get_password().is_ok(),
-        "videos_configured":entry("videos")?.get_password().is_ok(),"activity":load(&app,"discord-activity").await?,"live_image":!load(&app,"discord-brand-live").await?.is_null()}),
+        "videos_configured":entry("videos")?.get_password().is_ok(),"activity":load(&app,"discord-activity").await?,"history":load(&app,"discord-history").await?,"live_image":!load(&app,"discord-brand-live").await?.is_null()}),
     )
 }
 #[tauri::command]
@@ -147,7 +147,13 @@ fn client() -> Result<reqwest::Client, String> {
         .map_err(|_| "No se pudo iniciar la conexión.".into())
 }
 async fn activity(app: &AppHandle, message: &str) {
-    let _ = save(app, "discord-activity", &json!({"message":message})).await;
+    let now=std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap_or_default().as_millis()as u64;
+    let value=json!({"message":message,"at":now});
+    let _=save(app,"discord-activity",&value).await;
+    let mut history=load(app,"discord-history").await.unwrap_or(Value::Null).as_array().cloned().unwrap_or_default();
+    if history.last().is_none_or(|h|h["message"]!=message){history.push(value);}
+    if history.len()>50{history.drain(..history.len()-50);}
+    let _=save(app,"discord-history",&json!(history)).await;
 }
 async fn claim(pool: &sqlx::SqlitePool, id: &str) -> Result<bool, String> {
     let result = sqlx::query("INSERT OR IGNORE INTO alert_cursor(id,content) VALUES(?,?)")

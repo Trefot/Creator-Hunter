@@ -2,6 +2,16 @@
 
 ## [Sin publicar]
 
+## [0.2.38] · 2026-11-15 · Estudio integrado y correcciones
+
+- Elige o mezcla las pistas de audio para Shorts y subtítulos. Corregidos los formatos verticales y añadido Original, horizontal 16:9 y vista previa.
+- Nueva cola de procesamiento con cancelación, progreso al navegar y modo ligero durante grabación o emisión. Prueba de NVIDIA antes de activar NVENC opcional.
+- Subtítulos sin sobrescrituras, importación de grabaciones anteriores y continuidad del Short hacia subtítulos, proyecto y calendario.
+- Corregido el seguimiento de vídeos programados de YouTube, sus coincidencias entre cuentas y plataformas, el colchón y el progreso semanal.
+- Guía general de conexiones, estados más claros y navegación separada entre uso del directo y configuración. Historial de avisos de Discord.
+- Perfiles e historial para la detección visual de objetos y guía PC/PlayStation. Los cofres de Fortnite mantienen el control manual hasta validar su detección.
+- Carga de los apartados principales bajo demanda y protección de restauraciones mientras se procesa vídeo.
+
 ## [0.2.37] · 2026-11-15 · Subtítulos y capítulos
 
 - Nuevo panel en En directo → Momentos: «Subtítulos y capítulos» con tus grabaciones de OBS.

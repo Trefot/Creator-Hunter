@@ -19,7 +19,9 @@ export interface Recording {
 
 export const subtitlesStatus = () => invoke<SubtitleStatus>("subtitles_status");
 export const subtitlesInstall = () => invoke<void>("subtitles_install");
-export const subtitlesRecordings = () => invoke<Recording[]>("subtitles_recordings");
+export const subtitlesRecordings = (offset=0) => invoke<Recording[]>("subtitles_recordings",{offset});
 export const subtitlesChapters = (sessionId: string) =>
   invoke<{ text: string; warning: string | null }>("subtitles_chapters", { sessionId });
-export const subtitlesGenerate = (sessionId: string) => invoke<{ srt: string }>("subtitles_generate", { sessionId });
+export const subtitlesGenerate = (sessionId: string,audio?:number[]) => invoke<{ srt: string }>("subtitles_generate", { sessionId,audio });
+
+export const subtitlesImport=(path:string)=>invoke<string>("subtitles_import",{path});

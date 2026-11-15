@@ -1,7 +1,7 @@
 import { FormEvent, useEffect, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 interface Settings { enabled:boolean; twitch_live:boolean; youtube_live:boolean; twitch_videos:boolean; youtube_videos:boolean }
-interface Status { settings:Settings; live_image:boolean; live_configured:boolean; videos_configured:boolean; activity:{message?:string}|null }
+interface Status {history?:{at:number;message:string}[]; settings:Settings; live_image:boolean; live_configured:boolean; videos_configured:boolean; activity:{message?:string}|null }
 const empty:Settings={enabled:false,twitch_live:false,youtube_live:false,twitch_videos:false,youtube_videos:false};
 export function DiscordPanel(){
  const [status,setStatus]=useState<Status|null>(null),[settings,setSettings]=useState(empty),[live,setLive]=useState(""),[videos,setVideos]=useState("");
@@ -49,6 +49,7 @@ export function DiscordPanel(){
   <details><summary>Compartir una publicación</summary><p className="muted small">TikTok e Instagram: envío por enlace. La detección automática todavía no está conectada. También sirve para compartir un vídeo o clip de YouTube/Twitch que no se haya anunciado.</p>
    <form onSubmit={publish}><label>Plataforma<select value={platform} disabled={busy} onChange={e=>setPlatform(e.target.value)}><option value="youtube">YouTube</option><option value="twitch">Twitch</option><option value="tiktok">TikTok</option><option value="instagram">Instagram</option></select></label><label>Título<input required maxLength={200} value={title} onChange={e=>setTitle(e.target.value)} disabled={busy}/></label><label>Enlace de la publicación<input required type="url" value={url} onChange={e=>setUrl(e.target.value)} disabled={busy} placeholder="https://…"/></label><button disabled={busy||!status?.videos_configured} type="submit">Publicar aviso en vídeos</button></form>
   </details>
+  <details><summary>Historial de avisos de Discord</summary><ul>{(status?.history??[]).slice().reverse().map((h,i)=><li key={i}>{new Date(h.at).toLocaleString('es')} · {h.message}</li>)}</ul><p className="muted small">Los rechazos confirmados se reintentan en la siguiente consulta y se respeta el límite de Discord. Una entrega incierta requiere revisar el canal antes de reenviar para evitar duplicados.</p></details>
   <p className="muted small">{status?.activity?.message||"Todavía no hay actividad de Discord."}</p><button className="ghost small-button" disabled={busy} onClick={()=>void run(async()=>{await refresh();})}>Actualizar estado</button>
  </section>;
 }

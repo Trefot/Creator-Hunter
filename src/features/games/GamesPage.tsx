@@ -111,7 +111,7 @@ export function GamesPage({
   }
 
   return (
-    <section className="page">
+    <section className="page"><details className="card"><summary>Configurar juegos de PC y PlayStation paso a paso</summary><ol><li><strong>PC:</strong> abre el juego, añádelo con plataforma PC y usa «Ver aplicaciones abiertas» para asociar su .exe, sin elegir el lanzador.</li><li><strong>PS5/PS4:</strong> conecta PlayStation e importa la edición correcta para cargar portada y trofeos. La actividad depende de lo que PSN permita consultar.</li><li><strong>Durante el directo:</strong> elige un objetivo en «En directo» del apartado Juegos y copia su overlay a OBS.</li><li><strong>Detección visual:</strong> calibra cada objeto, guarda un perfil de resolución y prueba coincidencias antes de activar el marcado automático.</li></ol><p className="muted small">Seleccionar un juego manualmente sigue disponible. Detectar el ejecutable no importa logros ni lee el inventario; el contador de cofres conserva sus botones manuales.</p></details>
       <header className="page-header">
         <PageTitle section="games" subtitle={t.subtitle} />
       </header>

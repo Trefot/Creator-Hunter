@@ -296,7 +296,7 @@ test('Bulk ideas: one per line, optional fields, no duplicates',()=>{
 });
 
 test('Habit plan: routine, user-picked candidates, buffer and week progress',()=>{
-  const p=load('src/features/habit/plan.ts',{});
+  const p=load('src/features/habit/plan.ts',{'../projects/projectBoard':load('src/features/projects/projectBoard.ts',{})});
   assert.equal(p.weekdayIndex('2026-11-16'),0); assert.equal(p.weekdayIndex('2026-11-22'),6);
   assert.deepEqual([...p.routineFrom([{weekday:6,kind:'rest'},{weekday:1,kind:'bogus'}])],['record','record','edit','stream','edit','record','rest']);
   const step=(s,done,enabled=true)=>({id:s,step:s,enabled,completed_at:done?'x':null});
@@ -307,7 +307,7 @@ test('Habit plan: routine, user-picked candidates, buffer and week progress',()=
   const projects=[{id:'p-a',title:'P a',adaptation_count:1},{id:'new',title:'Idea aprobada',adaptation_count:0}];
   assert.deepEqual(p.candidates('record',projects,versions).map(c=>c.adaptationId),['a',null]);
   assert.deepEqual(JSON.parse(JSON.stringify(p.candidates('edit',projects,versions).map(c=>[c.adaptationId,c.early]))),[['b',false],['a',true]]);
-  assert.deepEqual(JSON.parse(JSON.stringify(p.candidates('schedule',projects,versions).map(c=>[c.adaptationId,c.early]))),[['c',false],['b',true],['a',true]]);
+  assert.deepEqual(JSON.parse(JSON.stringify(p.candidates('schedule',projects,versions).map(c=>[c.adaptationId,c.early]))),[['c',false],['d',false],['b',true],['a',true]]);
   assert.equal(p.stepToComplete('edit'),'editing');
   assert.deepEqual({...p.bufferStatus(versions)},{long:0,short:2,level:'low'});
   assert.equal(p.bufferStatus([]).level,'empty');
@@ -317,22 +317,43 @@ test('Habit plan: routine, user-picked candidates, buffer and week progress',()=
 });
 
 test('YouTube uploads are matched to unpublished versions only with confirmation data',()=>{
-  const m=load('src/features/habit/autoMatch.ts',{});
+  const m=load('src/features/habit/autoMatch.ts',{}, {URL});
   assert.ok(m.titleScore('Cómo pasar el ciervo piso 4 con equipo F2P | 7DS','7DS · Cómo pasar el ciervo piso 4 con equipo F2P')>=0.9);
   assert.ok(m.titleScore('Mi primera granja automática','Guía de Surtr')<0.6);
   const steps=(done)=>['script','recording','editing','scheduling','publishing'].map(s=>({id:s,step:s,enabled:true,completed_at:done.includes(s)?'x':null}));
-  const v=(id,title,extra={})=>({id,project_id:'p'+id,project_title:title,title,format:'long_video',scheduled_at:null,published_at:null,published_url:null,steps:steps(['script','recording','editing']),...extra});
+  const v=(id,title,extra={})=>({id,profile_id:'yt',project_id:'p'+id,project_title:title,title,format:'long_video',scheduled_at:null,published_at:null,published_url:null,steps:steps(['script','recording','editing']),...extra});
   const versions=[v('a','Los dupes que siguen funcionando en Minecraft 26.2'),v('b','Guía de Surtr: las posturas'),
-    v('c','Ya enlazado',{published_url:'https://youtu.be/AAAAAAAAAAA'}),v('d','Granja de hierro fácil',{published_at:'2026-11-01T10:00'})];
+    v('c','Ya enlazado',{published_url:'https://youtu.be/AAAAAAAAAAA',published_at:'2026-11-10T10:00'}),v('d','Granja de hierro fácil',{published_at:'2026-11-01T10:00'})];
   const uploads=[
     {id:'BBBBBBBBBBB',title:'Los DUPES que siguen funcionando en Minecraft 26.2 😱',published_at:'2026-11-15T15:00:00Z',privacy:'public',publish_at:null},
     {id:'CCCCCCCCCCC',title:'Guía de Surtr: todas las posturas',published_at:'2026-11-15T15:00:00Z',privacy:'private',publish_at:'2026-11-20T18:00:00Z'},
     {id:'AAAAAAAAAAA',title:'Ya enlazado',published_at:'2026-11-10T15:00:00Z',privacy:'public',publish_at:null},
     {id:'DDDDDDDDDDD',title:'Granja de hierro fácil',published_at:'2026-11-01T15:00:00Z',privacy:'public',publish_at:null},
     {id:'EEEEEEEEEEE',title:'Borrador sin fecha',published_at:'2026-11-15T15:00:00Z',privacy:'private',publish_at:null}];
-  const found=m.matchUploads(uploads,versions,new Set());
+  const found=m.matchUploads(uploads,versions,new Set(),'yt');
   assert.deepEqual(JSON.parse(JSON.stringify(found.map(f=>[f.upload.id,f.version.id,f.action]))),[['BBBBBBBBBBB','a','publish'],['CCCCCCCCCCC','b','schedule']]);
   assert.equal(found[0].url,'https://youtu.be/BBBBBBBBBBB');
   assert.match(found[1].at,/^2026-11-2\d{1}T\d{2}:\d{2}$/);
-  assert.equal(m.matchUploads(uploads,versions,new Set(['BBBBBBBBBBB:a'])).length,1);
+  assert.equal(m.matchUploads(uploads,versions,new Set(['BBBBBBBBBBB:a']),'yt').length,1);
+});
+
+test('scheduled YouTube link advances to published and excludes other accounts and platforms',()=>{
+ const m=load('src/features/habit/autoMatch.ts',{}, {URL});
+ const video={id:'abcdefghijk',title:'Fortnite cofres piratas',privacy:'public',published_at:'2026-11-15T12:00:00Z',publish_at:null};
+ const v={id:'a',profile_id:'yt',format:'long_video',title:video.title,project_title:video.title,published_at:null,published_url:'https://youtu.be/abcdefghijk',scheduled_at:'2026-11-15T07:00',steps:[]};
+ const found=m.matchUploads([video],[v],new Set(),'yt');assert.equal(found.length,1);assert.equal(found[0].action,'publish');
+ assert.equal(m.matchUploads([video],[{...v,profile_id:'other'}],new Set(),'yt').length,0);
+ assert.equal(m.matchUploads([video],[{...v,format:'tiktok'}],new Set(),'yt').length,0);
+ assert.equal(m.matchUploads([video],[v],new Set()).length,0);
+ assert.ok(m.titleScore('Fortnite','Fortnite cofres piratas guía completa')<0.7);
+ assert.equal(m.matchUploads([video],[{...v,published_url:null},{...v,id:'b',published_url:null}],new Set(),'yt').length,0);
+});
+
+test('production readiness agrees with buffer and completed unscheduled content remains actionable',()=>{
+ const board=load('src/features/projects/projectBoard.ts',{});
+ const p=load('src/features/habit/plan.ts',{'../projects/projectBoard':board});
+ const version={id:'a',project_id:'p',title:'a',project_title:'p',format:'long_video',published_at:null,scheduled_at:null,steps:['script','recording','editing','scheduling','publishing','analysis'].map(step=>({step,enabled:true,completed_at:['script','recording','editing'].includes(step)?'done':null}))};
+ assert.equal(board.projectStage([version]),'ready');assert.equal(p.bufferStatus([version]).long,1);
+ const full={...version,steps:version.steps.map(s=>({...s,completed_at:'done'}))};assert.equal(p.candidates('schedule',[],[full]).length,1);
+ const week=p.weekProgress(Array(7).fill('rest'),[{day:'2026-11-16',done_at:'done'}],['2026-11-16']);assert.deepEqual({...week},{done:1,planned:1});
 });

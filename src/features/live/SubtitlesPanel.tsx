@@ -1,8 +1,9 @@
+import {AudioPicker} from "./MediaTools";
 import { useEffect, useState } from "react";
 import { listen } from "@tauri-apps/api/event";
 import { revealItemInDir } from "@tauri-apps/plugin-opener";
 import { Captions, Copy, Download, ListOrdered, RefreshCw } from "lucide-react";
-import { Recording, SubtitleStatus, subtitlesChapters, subtitlesGenerate, subtitlesInstall, subtitlesRecordings, subtitlesStatus } from "../../db/subtitles";
+import { Recording, SubtitleStatus, subtitlesChapters, subtitlesGenerate, subtitlesInstall, subtitlesImport, subtitlesRecordings, subtitlesStatus } from "../../db/subtitles";
 import { es } from "../../i18n/es";
 import { formatDateTime } from "../../i18n/format";
 import { toLocalMinute } from "../habit/autoMatch";
@@ -21,33 +22,35 @@ export function SubtitlesPanel({ active }: { active: boolean }) {
   const [install, setInstall] = useState<{ stage: string; done: number; total: number } | null>(null);
   const [installing, setInstalling] = useState(false);
   const [chapters, setChapters] = useState<Record<string, { text: string; warning: string | null }>>({});
-  const [progress, setProgress] = useState<Record<string, number>>({});
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState("");
+  const [selected,setSelected]=useState<string|null>(null);
+  const [audio,setAudio]=useState<number[]|undefined>(undefined);
+  const [importPath,setImportPath]=useState("");
+  const [importBusy,setImportBusy]=useState(false);
+  const [query,setQuery]=useState("");
+  const [hasMore,setHasMore]=useState(true);
   const [copied, setCopied] = useState<string | null>(null);
 
   async function refresh() {
     try {
       const [s, r] = await Promise.all([subtitlesStatus(), subtitlesRecordings()]);
       setStatus(s);
-      setRecordings(r);
+      setRecordings(r);setHasMore(r.length===30);
     } catch (err) {
       setError(String(err));
     }
   }
 
+  useEffect(()=>{const select=async(event:Event)=>{const id=(event as CustomEvent).detail;if(typeof id==='string'){await refresh();setAudio(undefined);setSelected(id);setTimeout(()=>document.getElementById(`subtitle-${id}`)?.scrollIntoView({block:'center',behavior:'smooth'}),100)}};window.addEventListener('nexus-select-recording',select);return()=>window.removeEventListener('nexus-select-recording',select)},[]);
   useEffect(() => {
     if (active) refresh();
   }, [active]);
 
   useEffect(() => {
     const a = listen<{ stage: string; done: number; total: number }>("subtitles-install", (e) => setInstall(e.payload));
-    const b = listen<{ session_id: string; percent: number }>("subtitles-progress", (e) =>
-      setProgress((p) => ({ ...p, [e.payload.session_id]: e.payload.percent })),
-    );
     return () => {
       a.then((f) => f());
-      b.then((f) => f());
     };
   }, []);
 
@@ -77,9 +80,8 @@ export function SubtitlesPanel({ active }: { active: boolean }) {
   async function generate(r: Recording) {
     setError("");
     setBusy(r.id);
-    setProgress((p) => ({ ...p, [r.id]: 0 }));
     try {
-      await subtitlesGenerate(r.id);
+      await subtitlesGenerate(r.id,audio);
     } catch (err) {
       setError(String(err));
     }
@@ -120,12 +122,14 @@ export function SubtitlesPanel({ active }: { active: boolean }) {
       )}
       {error && <p className="error">{error}</p>}
 
+      <details><summary>Importar una grabación anterior</summary><p className="muted small">En el Explorador, pulsa Mayús + clic derecho sobre el vídeo → Copiar como ruta. Nexus lo registra sin moverlo. Necesita ffmpeg.</p><input aria-label="Ruta de la grabación" placeholder="Ruta completa del vídeo" value={importPath} onChange={e=>setImportPath(e.target.value)}/><button disabled={importBusy||!importPath.trim()} onClick={async()=>{setImportBusy(true);setError('');try{await subtitlesImport(importPath);setImportPath('');await refresh()}catch(e){setError(String(e))}finally{setImportBusy(false)}}}>Importar vídeo</button></details>
+      <input aria-label="Buscar grabaciones" placeholder="Buscar entre las grabaciones cargadas…" value={query} onChange={e=>setQuery(e.target.value)}/>
       {recordings.length === 0 ? (
         <p className="muted small">{t.empty}</p>
       ) : (
         <ul className="status-list">
-          {recordings.map((r) => (
-            <li key={r.id} className="status-item" style={{ flexDirection: "column", alignItems: "stretch" }}>
+          {recordings.filter(r=>`${r.path} ${r.game??""}`.toLocaleLowerCase().includes(query.trim().toLocaleLowerCase())).map((r) => (
+            <li id={`subtitle-${r.id}`} key={r.id} className="status-item" style={{ flexDirection: "column", alignItems: "stretch" }}>
               <div className="tools-head">
                 <div className="status-text">
                   <strong>{fileName(r.path)}</strong>
@@ -139,12 +143,13 @@ export function SubtitlesPanel({ active }: { active: boolean }) {
                   {r.srt ? (
                     <button className="ghost" onClick={() => revealItemInDir(r.srt!)}>{t.showSrt}</button>
                   ) : (
-                    <button disabled={!ready || !r.exists || !status?.ffmpeg || busy !== null} onClick={() => generate(r)}>
-                      <Captions size={15} />{busy === r.id ? t.working(progress[r.id] ?? 0) : t.generate}
+                    <button disabled={!ready || !r.exists || !status?.ffmpeg || busy !== null} onClick={() => {setAudio(undefined);setSelected(r.id)}}>
+                      <Captions size={15} />{busy === r.id ? "En cola o procesando · consulta Procesamiento local" : t.generate}
                     </button>
                   )}
                 </div>
               </div>
+              {selected===r.id&&<div className="short-maker"><AudioPicker kind="recording" id={r.id} value={audio} onChange={setAudio} required/><button disabled={!audio?.length||busy!==null} onClick={()=>void generate(r)}>Transcribir las pistas elegidas</button><button className="ghost" onClick={()=>setSelected(null)}>Cerrar</button></div>}
               {chapters[r.id] && (
                 <div className="short-maker">
                   {chapters[r.id].warning && <p className="tools-warn small">{chapters[r.id].warning}</p>}
@@ -159,6 +164,7 @@ export function SubtitlesPanel({ active }: { active: boolean }) {
           ))}
         </ul>
       )}
+      {hasMore&&recordings.length>=30&&<button className="ghost" onClick={async()=>{try{const more=await subtitlesRecordings(recordings.length);setRecordings(list=>[...list,...more]);setHasMore(more.length===30)}catch(e){setError(String(e))}}}>Cargar grabaciones anteriores</button>}
     </section>
   );
 }

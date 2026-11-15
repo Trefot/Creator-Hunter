@@ -3,7 +3,15 @@ fn main() {
     let source = PathBuf::from(env::var("CARGO_MANIFEST_DIR").unwrap()).join("../../src-tauri/src");
     let out = PathBuf::from(env::var("OUT_DIR").unwrap());
     let mut modules = String::new();
-    for name in ["auto_moments", "auto_moments_core", "shorts", "shorts_core"] {
+    for name in [
+        "auto_moments",
+        "auto_moments_core",
+        "shorts",
+        "shorts_core",
+        "subtitles",
+        "subtitles_core",
+        "media_jobs",
+    ] {
         let file = source.join(format!("{name}.rs"));
         println!("cargo:rerun-if-changed={}", file.display());
         let code = fs::read_to_string(file)

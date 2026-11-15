@@ -1,9 +1,9 @@
 //! Subtítulos y capítulos (D-034). La transcripción es local con whisper.cpp: el audio nunca sale
 //! del PC. El programa y el modelo se descargan una vez, cuando el usuario lo pide, desde fuentes
 //! fijas y se comprueba su SHA-256 antes de usarlos.
-use std::io::{BufRead, BufReader, Write};
+use std::io::Write;
 use std::path::{Path, PathBuf};
-use std::process::{Command, Stdio};
+use std::process::Command;
 
 use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
@@ -14,18 +14,27 @@ use crate::obs_store::WORKSPACE;
 use crate::shorts::{find_ffmpeg, hidden, probe_duration};
 use crate::subtitles_core as core;
 
-const WHISPER_ZIP: &str = "https://github.com/ggml-org/whisper.cpp/releases/download/v1.9.2/whisper-bin-x64.zip";
+const WHISPER_ZIP: &str =
+    "https://github.com/ggml-org/whisper.cpp/releases/download/v1.9.2/whisper-bin-x64.zip";
 const WHISPER_SHA: &str = "49dcc16de826f20bd53d44f947a1ae49dfa81f86cad67a64d80820cb192d674a";
 const MODEL_URL: &str = "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-small.bin";
 const MODEL_SHA: &str = "1be3a9b2063867b937e64e2ec7483364a79917e157fa98c5d94b5c1fffea987b";
 const MODEL_FILE: &str = "ggml-small.bin";
 
 fn tools(app: &AppHandle) -> Result<PathBuf, String> {
-    Ok(app.path().app_local_data_dir().map_err(|e| e.to_string())?.join("tools").join("whisper"))
+    Ok(app
+        .path()
+        .app_local_data_dir()
+        .map_err(|e| e.to_string())?
+        .join("tools")
+        .join("whisper"))
 }
 
 fn installed(dir: &Path) -> (bool, bool) {
-    (dir.join("whisper-cli.exe").is_file(), dir.join(MODEL_FILE).is_file())
+    (
+        dir.join("whisper-cli.exe").is_file(),
+        dir.join(MODEL_FILE).is_file(),
+    )
 }
 
 #[tauri::command]
@@ -33,12 +42,20 @@ pub async fn subtitles_status(app: AppHandle) -> Result<Value, String> {
     let dir = tools(&app)?;
     let (whisper, model) = installed(&dir);
     let handle = app.clone();
-    let ffmpeg = tauri::async_runtime::spawn_blocking(move || find_ffmpeg(&handle)).await.map_err(|e| e.to_string())?;
+    let ffmpeg = tauri::async_runtime::spawn_blocking(move || find_ffmpeg(&handle))
+        .await
+        .map_err(|e| e.to_string())?;
     Ok(json!({"whisper": whisper, "model": model, "ffmpeg": ffmpeg.is_some()}))
 }
 
 /// Descarga a un archivo `.part` comprobando la huella; solo si coincide se renombra al destino.
-async fn download(app: &AppHandle, url: &str, sha: &str, target: &Path, stage: &str) -> Result<(), String> {
+async fn download(
+    app: &AppHandle,
+    url: &str,
+    sha: &str,
+    target: &Path,
+    stage: &str,
+) -> Result<(), String> {
     let part = target.with_extension("part");
     let mut response = reqwest::Client::new()
         .get(url)
@@ -51,13 +68,20 @@ async fn download(app: &AppHandle, url: &str, sha: &str, target: &Path, stage: &
     let mut file = std::fs::File::create(&part).map_err(|e| e.to_string())?;
     let mut hasher = Sha256::new();
     let (mut done, mut last) = (0u64, 0u64);
-    while let Some(chunk) = response.chunk().await.map_err(|e| format!("La descarga se cortó: {e}"))? {
+    while let Some(chunk) = response
+        .chunk()
+        .await
+        .map_err(|e| format!("La descarga se cortó: {e}"))?
+    {
         file.write_all(&chunk).map_err(|e| e.to_string())?;
         hasher.update(&chunk);
         done += chunk.len() as u64;
         if done - last > 2_000_000 || done == total {
             last = done;
-            let _ = app.emit("subtitles-install", json!({"stage": stage, "done": done, "total": total}));
+            let _ = app.emit(
+                "subtitles-install",
+                json!({"stage": stage, "done": done, "total": total}),
+            );
         }
     }
     drop(file);
@@ -71,6 +95,12 @@ async fn download(app: &AppHandle, url: &str, sha: &str, target: &Path, stage: &
 /// Instala whisper.cpp (8 MB) y el modelo small (488 MB) en las herramientas de Nexus.
 #[tauri::command]
 pub async fn subtitles_install(app: AppHandle) -> Result<(), String> {
+    static INSTALL: std::sync::OnceLock<tauri::async_runtime::Mutex<()>> =
+        std::sync::OnceLock::new();
+    let _guard = INSTALL
+        .get_or_init(|| tauri::async_runtime::Mutex::new(()))
+        .lock()
+        .await;
     let dir = tools(&app)?;
     std::fs::create_dir_all(&dir).map_err(|e| e.to_string())?;
     let (whisper, model) = installed(&dir);
@@ -81,16 +111,28 @@ pub async fn subtitles_install(app: AppHandle) -> Result<(), String> {
         let _ = std::fs::remove_dir_all(&unpack);
         std::fs::create_dir_all(&unpack).map_err(|e| e.to_string())?;
         // tar.exe viene con Windows 10/11 y sabe abrir zip: no hace falta otra dependencia.
-        let status = hidden(Command::new("tar").arg("-xf").arg(&zip).arg("-C").arg(&unpack))
-            .status()
-            .map_err(|e| format!("No se pudo descomprimir: {e}"))?;
+        let status = hidden(
+            Command::new("tar")
+                .arg("-xf")
+                .arg(&zip)
+                .arg("-C")
+                .arg(&unpack),
+        )
+        .status()
+        .map_err(|e| format!("No se pudo descomprimir: {e}"))?;
         if !status.success() {
             return Err("No se pudo descomprimir whisper.cpp.".into());
         }
         let release = unpack.join("Release");
-        for entry in std::fs::read_dir(&release).map_err(|e| e.to_string())?.flatten() {
+        for entry in std::fs::read_dir(&release)
+            .map_err(|e| e.to_string())?
+            .flatten()
+        {
             let name = entry.file_name().to_string_lossy().to_string();
-            if name == "whisper-cli.exe" || name == "whisper.dll" || (name.starts_with("ggml") && name.ends_with(".dll")) {
+            if name == "whisper-cli.exe"
+                || name == "whisper.dll"
+                || (name.starts_with("ggml") && name.ends_with(".dll"))
+            {
                 std::fs::copy(entry.path(), dir.join(&name)).map_err(|e| e.to_string())?;
             }
         }
@@ -108,16 +150,20 @@ pub async fn subtitles_install(app: AppHandle) -> Result<(), String> {
 
 /// Grabaciones de OBS con archivo, de la más reciente a la más antigua, con sus marcas.
 #[tauri::command]
-pub async fn subtitles_recordings(app: AppHandle) -> Result<Vec<Value>, String> {
+pub async fn subtitles_recordings(
+    app: AppHandle,
+    offset: Option<i64>,
+) -> Result<Vec<Value>, String> {
     let pool = crate::backup::pool(&app).await?;
     let rows = sqlx::query(
-        "SELECT s.id, s.observed_at, s.output_path, g.title AS game,
+        "SELECT s.id, s.observed_at, s.output_path, g.title AS game, c.content AS subtitle_result,
                 (SELECT COUNT(*) FROM obs_marker m WHERE m.session_id = s.id) AS marks
-           FROM obs_session s LEFT JOIN game g ON g.id = s.game_id
+           FROM obs_session s LEFT JOIN game g ON g.id = s.game_id LEFT JOIN alert_cursor c ON c.id = 'subtitle:' || s.id
           WHERE s.workspace_id = $1 AND s.kind = 'recording' AND s.output_path IS NOT NULL AND s.ended_at IS NOT NULL
-          ORDER BY s.observed_at DESC LIMIT 30",
+          ORDER BY s.observed_at DESC LIMIT 30 OFFSET $2",
     )
     .bind(WORKSPACE)
+    .bind(offset.unwrap_or(0).clamp(0,100000))
     .fetch_all(&pool)
     .await
     .map_err(|e| e.to_string())?;
@@ -125,7 +171,12 @@ pub async fn subtitles_recordings(app: AppHandle) -> Result<Vec<Value>, String> 
         .iter()
         .map(|r| {
             let path: String = r.get("output_path");
-            let srt = format!("{}.srt", core::base_path(&path));
+            let saved: Option<String> = r.get("subtitle_result");
+            let srt = saved
+                .and_then(|s| serde_json::from_str::<Value>(&s).ok())
+                .and_then(|v| v["srt"].as_str().map(str::to_owned))
+                .filter(|p| Path::new(p).is_file())
+                .unwrap_or_else(|| format!("{}.srt", core::base_path(&path)));
             json!({
                 "id": r.get::<String, _>("id"),
                 "observed_at": r.get::<String, _>("observed_at"),
@@ -139,7 +190,10 @@ pub async fn subtitles_recordings(app: AppHandle) -> Result<Vec<Value>, String> 
         .collect())
 }
 
-async fn session_video(app: &AppHandle, session_id: &str) -> Result<(String, Vec<(i64, String)>), String> {
+pub(crate) async fn session_video(
+    app: &AppHandle,
+    session_id: &str,
+) -> Result<(String, Vec<(i64, String)>), String> {
     let pool = crate::backup::pool(app).await?;
     let path: Option<String> = sqlx::query_scalar("SELECT output_path FROM obs_session WHERE id = $1 AND workspace_id = $2 AND kind = 'recording'")
         .bind(session_id)
@@ -167,76 +221,230 @@ pub async fn subtitles_chapters(app: AppHandle, session_id: String) -> Result<Va
     let handle = app.clone();
     let file = path.clone();
     // La duración solo afina el último capítulo; sin ffprobe se calcula igualmente.
-    let duration = tauri::async_runtime::spawn_blocking(move || find_ffmpeg(&handle).and_then(|f| probe_duration(&f, &file).ok()))
-        .await
-        .map_err(|e| e.to_string())?
-        .map(|s| (s * 1000.0) as i64);
+    let duration = tauri::async_runtime::spawn_blocking(move || {
+        find_ffmpeg(&handle).and_then(|f| probe_duration(&f, &file).ok())
+    })
+    .await
+    .map_err(|e| e.to_string())?
+    .map(|s| (s * 1000.0) as i64);
     let (text, warning) = core::chapters(&marks, duration);
     Ok(json!({"text": text, "warning": warning}))
 }
 
-/// Transcribe la grabación y guarda `<vídeo>.srt` junto al vídeo (sin sobrescribir uno existente).
+/// Importa una grabación existente sin moverla ni modificarla.
 #[tauri::command]
-pub async fn subtitles_generate(app: AppHandle, session_id: String) -> Result<Value, String> {
+pub async fn subtitles_import(app: AppHandle, path: String) -> Result<String, String> {
+    let input = PathBuf::from(path.trim().trim_matches('"'));
+    if !input.is_file() {
+        return Err(
+            "No se encuentra ese archivo. Copia su ruta completa desde el Explorador.".into(),
+        );
+    }
+    let ext = input
+        .extension()
+        .and_then(|s| s.to_str())
+        .unwrap_or("")
+        .to_ascii_lowercase();
+    if !["mkv", "mp4", "mov", "webm", "avi", "flv", "ts", "m4v"].contains(&ext.as_str()) {
+        return Err("Elige un archivo de vídeo compatible.".into());
+    }
+    let input = input
+        .canonicalize()
+        .map_err(|e| e.to_string())?
+        .display()
+        .to_string();
+    let handle = app.clone();
+    let file = input.clone();
+    tauri::async_runtime::spawn_blocking(move || {
+        let f = find_ffmpeg(&handle).ok_or("Instala ffmpeg antes de importar.")?;
+        let v = crate::shorts::probe(&f, &file)?;
+        if !v["streams"]
+            .as_array()
+            .is_some_and(|a| a.iter().any(|s| s["codec_type"] == "video"))
+        {
+            return Err("El archivo no contiene vídeo.".to_string());
+        }
+        Ok(())
+    })
+    .await
+    .map_err(|e| e.to_string())??;
+    let pool = crate::backup::pool(&app).await?;
+    if let Some(id) = sqlx::query_scalar::<_, String>(
+        "SELECT id FROM obs_session WHERE workspace_id=$1 AND output_path=$2 AND kind='recording'",
+    )
+    .bind(WORKSPACE)
+    .bind(&input)
+    .fetch_optional(&pool)
+    .await
+    .map_err(|e| e.to_string())?
+    {
+        return Ok(id);
+    }
+    let id = format!("{:032x}", rand::random::<u128>());
+    sqlx::query("INSERT INTO obs_session(id,workspace_id,kind,output_path,ended_at,end_reason) VALUES($1,$2,'recording',$3,strftime('%Y-%m-%dT%H:%M:%fZ','now'),'imported')").bind(&id).bind(WORKSPACE).bind(input).execute(&pool).await.map_err(|e|e.to_string())?;
+    Ok(id)
+}
+
+/// Reserva un nombre único sin sobrescribir. El temporal de Whisper nunca usa el nombre final.
+fn publish_srt(temp: &Path, base: &str) -> Result<String, String> {
+    for n in 0..10000 {
+        let path = if n == 0 {
+            format!("{base}.srt")
+        } else {
+            format!("{base} (Nexus {n}).srt")
+        };
+        match std::fs::OpenOptions::new()
+            .write(true)
+            .create_new(true)
+            .open(&path)
+        {
+            Ok(mut target) => {
+                let result = std::fs::File::open(temp)
+                    .and_then(|mut source| std::io::copy(&mut source, &mut target));
+                drop(target);
+                if let Err(e) = result {
+                    let _ = std::fs::remove_file(&path);
+                    return Err(e.to_string());
+                }
+                return Ok(path);
+            }
+            Err(e) if e.kind() == std::io::ErrorKind::AlreadyExists => continue,
+            Err(e) => return Err(format!("No se pudieron guardar los subtítulos: {e}")),
+        }
+    }
+    Err("Hay demasiados archivos de subtítulos con ese nombre.".into())
+}
+struct Temporary(Vec<PathBuf>);
+impl Drop for Temporary {
+    fn drop(&mut self) {
+        for path in &self.0 {
+            let _ = std::fs::remove_file(path);
+        }
+    }
+}
+
+#[tauri::command]
+pub async fn subtitles_generate(
+    app: AppHandle,
+    session_id: String,
+    audio: Option<Vec<usize>>,
+) -> Result<Value, String> {
+    let ticket = crate::media_jobs::Ticket::enqueue("Crear subtítulos")?;
+    let handle = app.clone();
+    let ticket = tauri::async_runtime::spawn_blocking(move || ticket.wait(&handle))
+        .await
+        .map_err(|e| e.to_string())??;
     let (video, _) = session_video(&app, &session_id).await?;
+    ticket.title(&format!(
+        "Subtítulos · {}",
+        Path::new(&video)
+            .file_name()
+            .unwrap_or_default()
+            .to_string_lossy()
+    ));
     if !Path::new(&video).is_file() {
         return Err(format!("No se encuentra el vídeo: {video}"));
     }
     let dir = tools(&app)?;
     if installed(&dir) != (true, true) {
-        return Err("Falta instalar la transcripción (botón de este panel).".into());
+        return Err("Instala la transcripción desde este panel.".into());
     }
     let handle = app.clone();
     let ffmpeg = tauri::async_runtime::spawn_blocking(move || find_ffmpeg(&handle))
         .await
         .map_err(|e| e.to_string())?
-        .ok_or("Falta ffmpeg. Instálalo desde el panel de Shorts.")?;
+        .ok_or("Falta ffmpeg.")?;
     let base = core::base_path(&video);
-    let out_base = if Path::new(&format!("{base}.srt")).exists() { format!("{base} (Nexus)") } else { base };
-    let temp = app.path().app_local_data_dir().map_err(|e| e.to_string())?.join("tmp");
+    let temp = app
+        .path()
+        .app_local_data_dir()
+        .map_err(|e| e.to_string())?
+        .join("tmp");
     std::fs::create_dir_all(&temp).map_err(|e| e.to_string())?;
-    let wav = temp.join(format!("{session_id}.wav"));
+    let temp_base = temp.join(format!("subtitle-{:032x}", rand::random::<u128>()));
+    let wav = temp_base.with_extension("wav");
+    let srt_temp = temp_base.with_extension("srt");
+    let _cleanup = Temporary(vec![wav.clone(), srt_temp.clone()]);
     let wav_text = wav.display().to_string();
-    let threads = std::thread::available_parallelism().map(|n| n.get()).unwrap_or(4).min(8);
-    let emitter = app.clone();
-    let id = session_id.clone();
-    let srt_base = out_base.clone();
-    let result = tauri::async_runtime::spawn_blocking(move || -> Result<(), String> {
-        let audio = hidden(Command::new(&ffmpeg).args(core::audio_args(&video, &wav_text)))
-            .output()
-            .map_err(|e| format!("No se pudo ejecutar ffmpeg: {e}"))?;
-        if !audio.status.success() {
-            return Err("ffmpeg no pudo extraer el audio de la grabación.".into());
-        }
-        let mut child = hidden(
-            Command::new(dir.join("whisper-cli.exe"))
-                .args(core::whisper_args(&dir.join(MODEL_FILE).display().to_string(), &wav_text, &srt_base, threads))
-                .current_dir(&dir)
-                .stdout(Stdio::null())
-                .stderr(Stdio::piped()),
-        )
-        .spawn()
-        .map_err(|e| format!("No se pudo ejecutar Whisper: {e}"))?;
-        if let Some(err) = child.stderr.take() {
-            for line in BufReader::new(err).lines().map_while(Result::ok) {
-                if let Some(p) = core::parse_progress(&line) {
-                    let _ = emitter.emit("subtitles-progress", json!({"session_id": id, "percent": p}));
-                }
+    let output_base = temp_base.display().to_string();
+    let (mut ticket, result) = tauri::async_runtime::spawn_blocking(move || {
+        let result = (|| -> Result<(), String> {
+            let info = crate::shorts::probe(&ffmpeg, &video)?;
+            let tracks = crate::shorts::tracks(&info, audio)?;
+            if tracks.is_empty() {
+                return Err("Selecciona una pista con voz para transcribir.".into());
             }
-        }
-        let status = child.wait().map_err(|e| e.to_string())?;
-        if !status.success() {
-            return Err("Whisper no pudo transcribir la grabación.".into());
-        }
-        Ok(())
+            let args = core::audio_args_selected(&video, &wav_text, &tracks)?;
+            let out = ticket.run(Command::new(&ffmpeg).args(args), None)?;
+            if !out.status.success() {
+                return Err("ffmpeg no pudo extraer las pistas elegidas.".into());
+            }
+            let out = ticket.run(
+                Command::new(dir.join("whisper-cli.exe"))
+                    .args(core::whisper_args(
+                        &dir.join(MODEL_FILE).display().to_string(),
+                        &wav_text,
+                        &output_base,
+                        crate::media_jobs::threads(),
+                    ))
+                    .current_dir(&dir),
+                None,
+            )?;
+            if !out.status.success() {
+                return Err(format!(
+                    "Whisper no pudo transcribir: {}",
+                    String::from_utf8_lossy(&out.stderr)
+                        .chars()
+                        .rev()
+                        .take(500)
+                        .collect::<String>()
+                        .chars()
+                        .rev()
+                        .collect::<String>()
+                ));
+            }
+            Ok(())
+        })();
+        (ticket, result)
     })
     .await
     .map_err(|e| e.to_string())?;
-    let _ = std::fs::remove_file(&wav);
-    result?;
-    let srt = format!("{out_base}.srt");
-    if !Path::new(&srt).is_file() {
-        return Err("Whisper terminó pero no se encontró el archivo de subtítulos.".into());
+    if let Err(e) = result {
+        ticket.finish(Err(&e));
+        return Err(e);
     }
-    Ok(json!({"srt": srt}))
+    ticket.commit()?;
+    if !srt_temp.is_file() {
+        return Err("Whisper terminó sin generar subtítulos.".into());
+    }
+    let srt = publish_srt(&srt_temp, &base)?;
+    let pool = crate::backup::pool(&app).await?;
+    sqlx::query("INSERT INTO alert_cursor(id,content) VALUES($1,$2) ON CONFLICT(id) DO UPDATE SET content=excluded.content").bind(format!("subtitle:{session_id}")).bind(json!({"srt":srt}).to_string()).execute(&pool).await.map_err(|e|e.to_string())?;
+    ticket.finish(Ok(&srt));
+    Ok(json!({"srt":srt}))
+}
+
+#[cfg(test)]
+mod output_tests {
+    use super::*;
+    #[test]
+    fn srt_names_are_reserved_without_overwriting_existing_files() {
+        let dir =
+            std::env::temp_dir().join(format!("nexus-srt-test-{:032x}", rand::random::<u128>()));
+        std::fs::create_dir_all(&dir).unwrap();
+        let base = dir.join("clip").display().to_string();
+        let temp = dir.join("temporary.srt");
+        std::fs::write(&temp, b"new subtitles").unwrap();
+        std::fs::write(format!("{base}.srt"), b"original").unwrap();
+        std::fs::write(format!("{base} (Nexus 1).srt"), b"previous").unwrap();
+        let next = publish_srt(&temp, &base).unwrap();
+        assert_eq!(next, format!("{base} (Nexus 2).srt"));
+        assert_eq!(std::fs::read(format!("{base}.srt")).unwrap(), b"original");
+        assert_eq!(
+            std::fs::read(format!("{base} (Nexus 1).srt")).unwrap(),
+            b"previous"
+        );
+        assert_eq!(std::fs::read(next).unwrap(), b"new subtitles");
+        std::fs::remove_dir_all(dir).unwrap();
+    }
 }

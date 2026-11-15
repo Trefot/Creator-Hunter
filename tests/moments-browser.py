@@ -49,9 +49,13 @@ def native(args):
   if a['action']!='open':next(c for c in auto['items'] if c['id']==a['id'])['state']=a['action']
   return
  if cmd=='auto_moments_cleanup':return 0
+ if cmd=='media_jobs_status':return {'jobs':[],'light':True,'obs_busy':False}
+ if cmd=='media_inspect':return {'audio':[{'index':0,'channels':2,'title':'Mezcla OBS'},{'index':1,'channels':1,'title':'Micrófono'}]}
+ if cmd=='subtitles_status':return {'whisper':True,'model':True,'ffmpeg':True}
+ if cmd=='subtitles_recordings':return []
  if cmd=='shorts_status':return {'ffmpeg':'C:/tools/ffmpeg.exe'}
  if cmd=='shorts_list':return []
- if cmd=='shorts_render':return {'path':'D:/Videos/Nexus Shorts/short.mp4','warning':'El buffer no contiene todo el tramo solicitado.'}
+ if cmd=='shorts_render':return {'id':'export-fixture','path':'D:/Videos/Nexus Shorts/short.mp4','warning':'El buffer no contiene todo el tramo solicitado.'}
  if cmd=='chat_commands_get':return {'config':{'enabled':False,'commands':[]},'status':{}}
  if cmd=='stream_recaps':return []
  if cmd=='studio_tts_status':return speech

@@ -565,3 +565,9 @@ pub async fn obs_choose_scene(app:AppHandle,scene:String)->Result<(),String>{
   client.request_data("SetCurrentProgramScene",Some(json!({"sceneName":scene})))?;Ok(())
  })).await.map_err(|e|e.to_string())?
 }
+
+/// El modo ligero deja los trabajos nuevos en cola durante grabación o emisión.
+pub(crate) fn media_busy(app:&AppHandle)->bool {
+    let state=app.state::<ObsState>(); let i=state.inner.lock().unwrap();
+    i.view.recording || i.view.streaming
+}

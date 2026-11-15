@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState,useRef } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { RefreshCw } from "lucide-react";
 import { chatCommandsGet, shortsStatus, twitchScopes } from "../../db/streamTools";
@@ -27,17 +27,19 @@ const safe = async <T,>(p: Promise<T>): Promise<T | null> => {
 
 /** Revisa todas las conexiones a la vez. Ninguna comprobación tumba a las demás. */
 export async function runChecks(): Promise<Check[]> {
-  const [obs, scopes, social, yt, discord, music, psn, live, commands, ffmpeg] = await Promise.all([
+  const [obs, scopes, social, yt, discord, music, psn, live, commands, ffmpeg, streaming, alerts] = await Promise.all([
     safe(obsStatus()),
     safe(twitchScopes()),
     safe(invoke<{ settings: Record<string, boolean> | null; platforms: Record<string, { connected?: boolean; message?: string }> | null }>("social_status")),
     safe(youtubeStatus()),
-    safe(invoke<{ live_configured: boolean; settings: Record<string, unknown> | null }>("discord_status")),
-    safe(invoke<{ spotify: unknown; spotify_error?: string }>("music_status")),
+    safe(invoke<{ live_configured: boolean; videos_configured?:boolean; activity?:{message?:string}; settings: Record<string, unknown> | null }>("discord_status")),
+    safe(invoke<{ spotify: unknown; spotify_connected?:boolean; spotify_error?: string }>("music_status")),
     safe(psnStatus()),
     safe(invoke<{ running: boolean; error: string | null }>("live_status")),
     safe(chatCommandsGet()),
     safe(shortsStatus()),
+    safe(invoke<{category_enabled:boolean;category_message:string}>('stream_settings')),
+    safe(invoke<{twitch_pending:number;youtube_pending:number;tiktok_pending:number}>('alerts_status')),
   ]);
   const checks: Check[] = [];
 
@@ -50,14 +52,15 @@ export async function runChecks(): Promise<Check[]> {
   );
 
   checks.push(
-    !obs || !obs.enabled
+    !obs ? {id:"obs",name:"OBS",state:"error",detail:"No se pudo consultar OBS.",tab:"obs"} : !obs.enabled
       ? { id: "obs", name: "OBS", state: "off", detail: "Sin configurar.", tab: "obs" }
       : obs.connected
         ? { id: "obs", name: "OBS", state: "ok", detail: obs.streaming ? "Conectado y emitiendo." : "Conectado.", tab: "obs" }
         : { id: "obs", name: "OBS", state: "error", detail: obs.error ?? "No conecta: ¿está OBS abierto con WebSocket activado?", tab: "obs" },
   );
 
-  if (!scopes || !scopes.connected) {
+  if(!scopes){checks.push({id:"twitch",name:"Twitch",state:"warn",detail:"No se pudo comprobar la autorización.",tab:"connections"});}
+  else if (!scopes.connected) {
     checks.push({ id: "twitch", name: "Twitch", state: "off", detail: scopes?.error ?? "Sin conectar.", tab: "connections" });
   } else if (scopes.missing.length) {
     checks.push({
@@ -76,7 +79,7 @@ export async function runChecks(): Promise<Check[]> {
   }
 
   checks.push(
-    !yt || !yt.configured
+    !yt ? {id:"youtube",name:"YouTube",state:"warn",detail:"No se pudo comprobar la cuenta."} : !yt.configured
       ? { id: "youtube", name: "YouTube", state: "off", detail: "Sin configurar." }
       : yt.connected
         ? { id: "youtube", name: "YouTube", state: "ok", detail: "Conectado." }
@@ -84,24 +87,24 @@ export async function runChecks(): Promise<Check[]> {
   );
 
   checks.push(
-    discord?.live_configured
-      ? { id: "discord", name: "Discord", state: "ok", detail: "Aviso de directos configurado.", tab: "connections" }
+    !discord ? {id:"discord",name:"Discord",state:"warn",detail:"No se pudo consultar Discord.",tab:"connections"} : discord.live_configured
+      ? { id: "discord", name: "Discord", state: "ok", detail: discord.activity?.message || "Webhook guardado. Usa la prueba en Discord para verificar la entrega.", tab: "connections" }
       : { id: "discord", name: "Discord", state: "off", detail: "Sin webhook de directos.", tab: "connections" },
   );
 
   checks.push(
-    music?.spotify_error
+    !music ? {id:"spotify",name:"Spotify",state:"warn",detail:"No se pudo consultar Spotify.",tab:"sound"} : music.spotify_error
       ? { id: "spotify", name: "Spotify", state: "warn", detail: music.spotify_error, tab: "sound" }
-      : music?.spotify
-        ? { id: "spotify", name: "Spotify", state: "ok", detail: "Conectado.", tab: "sound" }
+      : music?.spotify_connected
+        ? { id: "spotify", name: "Spotify", state: "ok", detail: music?.spotify ? "Autorizado, con reproducción." : "Autorizado, sin reproducción activa.", tab: "sound" }
         : { id: "spotify", name: "Spotify", state: "off", detail: "Sin conectar.", tab: "sound" },
   );
 
-  checks.push(psn ? { id: "psn", name: "PlayStation", state: "ok", detail: "Conectado." } : { id: "psn", name: "PlayStation", state: "off", detail: "Sin conectar." });
+  checks.push(psn===null?{id:"psn",name:"PlayStation",state:"warn",detail:"No se pudo comprobar la sesión."}:psn ? { id: "psn", name: "PlayStation", state: "ok", detail: "Conectado." } : { id: "psn", name: "PlayStation", state: "off", detail: "Sin conectar." });
 
   const cmdErrors = Object.entries(commands?.status ?? {}).filter(([, s]) => s?.error);
   checks.push(
-    !commands?.config.enabled
+    !commands ? {id:"commands",name:"Comandos de chat",state:"warn",detail:"No se pudo consultar los comandos.",tab:"commands"} : !commands.config.enabled
       ? { id: "commands", name: "Comandos de chat", state: "off", detail: "Desactivados.", tab: "commands" }
       : cmdErrors.length
         ? { id: "commands", name: "Comandos de chat", state: "warn", detail: cmdErrors.map(([, s]) => s.error).join(" "), tab: "commands" }
@@ -113,6 +116,9 @@ export async function runChecks(): Promise<Check[]> {
       ? { id: "ffmpeg", name: "ffmpeg (Shorts)", state: "ok", detail: "Instalado.", tab: "moments" }
       : { id: "ffmpeg", name: "ffmpeg (Shorts)", state: "off", detail: "Necesario para crear Shorts.", tab: "moments" },
   );
+  if(discord?.videos_configured)checks.push({id:'discord-videos',name:'Publicaciones a Discord',state:'ok',detail:'Webhook de vídeos guardado. La entrega se consulta en su historial.',tab:'connections'});
+  checks.push({id:'category',name:'Categoría de Twitch',state:streaming?streaming.category_enabled?'ok':'off':'warn',detail:streaming?.category_message||'Sin estado disponible. Revisa la asociación del juego.',tab:'category'});
+  checks.push({id:'alerts',name:'Cola de alertas',state:alerts?'ok':'warn',detail:alerts?`Pendientes: Twitch ${alerts.twitch_pending}, YouTube ${alerts.youtube_pending}, TikTok ${alerts.tiktok_pending}. La entrega visual se comprueba en OBS.`:'No se pudo consultar.',tab:'alerts'});
   return checks;
 }
 
@@ -122,16 +128,18 @@ const ICON: Record<CheckState, string> = { ok: "🟢", warn: "🟡", error: "�
 export function ConnectionsStatus({ active, onNavigate }: { active: boolean; onNavigate: (tab: string) => void }) {
   const [checks, setChecks] = useState<Check[] | null>(null);
   const [busy, setBusy] = useState(false);
+  const running=useRef(false),previous=useRef<Record<string,string>>({});
+  const [history,setHistory]=useState<{at:string;name:string;state:string}[]>([]);
 
   async function refresh() {
-    setBusy(true);
-    setChecks(await runChecks());
-    setBusy(false);
+    if(running.current)return;running.current=true;setBusy(true);
+    try{const next=await runChecks();setChecks(next);const changes=next.filter(c=>previous.current[c.id]!==c.state).map(c=>({at:new Date().toISOString(),name:c.name,state:c.state}));previous.current=Object.fromEntries(next.map(c=>[c.id,c.state]));if(changes.length)setHistory(h=>[...changes,...h].slice(0,60));}finally{running.current=false;setBusy(false)}
   }
   useEffect(() => {
-    if (active) void refresh();
+    if(!active)return;void refresh();const timer=setInterval(()=>void refresh(),15000);return()=>clearInterval(timer);
   }, [active]);
 
+  const unconfigured=(checks??[]).filter(c=>c.state==="off").length;
   const problems = (checks ?? []).filter((c) => c.state === "error" || c.state === "warn").length;
   return (
     <section className="card tools-panel">
@@ -139,7 +147,7 @@ export function ConnectionsStatus({ active, onNavigate }: { active: boolean; onN
         <div>
           <h2>Estado de conexiones</h2>
           <p className="muted small">
-            {checks === null ? "Comprobando…" : problems ? `${problems} ${problems === 1 ? "cosa por revisar" : "cosas por revisar"} antes del directo.` : "Todo en orden."}
+            {checks === null ? "Comprobando…" : problems ? `${problems} ${problems === 1 ? "cosa por revisar" : "cosas por revisar"} antes del directo.` : unconfigured ? `${unconfigured} servicios sin configurar o desactivados. Revisa los que quieras usar.` : "Las comprobaciones de conexión no muestran incidencias."}
           </p>
         </div>
         <button className="ghost small-button" disabled={busy} onClick={refresh}>
@@ -164,6 +172,7 @@ export function ConnectionsStatus({ active, onNavigate }: { active: boolean; onN
           </li>
         ))}
       </ul>
+      <details><summary>Historial de esta sesión</summary><ul>{history.map((h,i)=><li key={i}>{new Date(h.at).toLocaleTimeString('es')} · {h.name}: {h.state==='ok'?'listo':h.state==='off'?'sin usar':'revisar'}</li>)}</ul></details>
       <p className="muted small">⚪ = sin usar (no es un error). 🟡 = funciona a medias o le falta un permiso. 🔴 = no funciona.</p>
     </section>
   );

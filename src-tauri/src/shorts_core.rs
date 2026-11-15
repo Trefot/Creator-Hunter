@@ -2,8 +2,10 @@
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum Format {
-    /// Igual que la grabación (16:9), recortado en el tiempo.
+    /// Lienzo horizontal 16:9, sin cortar la imagen.
     Horizontal,
+    /// Proporción y resolución originales.
+    Original,
     /// 9:16 recortando el centro de la imagen.
     VerticalCrop,
     /// 9:16 con la imagen completa al centro y un fondo difuminado arriba y abajo.
@@ -14,6 +16,7 @@ impl Format {
     pub fn parse(s: &str) -> Result<Self, String> {
         match s {
             "horizontal" => Ok(Self::Horizontal),
+            "original" => Ok(Self::Original),
             "vertical_crop" => Ok(Self::VerticalCrop),
             "vertical_blur" => Ok(Self::VerticalBlur),
             _ => Err("Formato no válido.".into()),
@@ -22,6 +25,7 @@ impl Format {
     pub fn key(self) -> &'static str {
         match self {
             Self::Horizontal => "horizontal",
+            Self::Original => "original",
             Self::VerticalCrop => "vertical_crop",
             Self::VerticalBlur => "vertical_blur",
         }
@@ -43,16 +47,67 @@ pub fn window(mark_ms: i64, before_s: i64, after_s: i64) -> (f64, f64) {
 pub fn file_stem(title: &str) -> String {
     let clean: String = title
         .chars()
-        .map(|c| if c.is_alphanumeric() || c == ' ' || c == '-' || c == '_' { c } else { ' ' })
+        .map(|c| {
+            if c.is_alphanumeric() || c == ' ' || c == '-' || c == '_' {
+                c
+            } else {
+                ' '
+            }
+        })
         .collect();
     let joined = clean.split_whitespace().collect::<Vec<_>>().join(" ");
     let short: String = joined.chars().take(60).collect();
-    if short.trim().is_empty() { "Short".into() } else { short.trim().to_string() }
+    if short.trim().is_empty() {
+        "Short".into()
+    } else {
+        short.trim().to_string()
+    }
 }
 
 /// Argumentos de ffmpeg. Vuelve a codificar (H.264 + AAC) para que el corte sea exacto.
 pub fn args(input: &str, output: &str, cut: Option<(f64, f64)>, format: Format) -> Vec<String> {
-    let mut a: Vec<String> = vec!["-hide_banner".into(), "-loglevel".into(), "error".into(), "-y".into()];
+    args_audio(input, output, cut, format, &[0], 4)
+}
+
+/// Pistas de audio relativas (0:a:N); ninguna = sin audio. Mezclar es una elección explícita.
+pub fn audio_filter(tracks: &[usize]) -> Result<(String, String), String> {
+    if tracks.len() > 16 || tracks.iter().any(|n| *n > 63) {
+        return Err("Selecciona como máximo 16 pistas de audio válidas.".into());
+    }
+    let mut unique = tracks.to_vec();
+    unique.sort_unstable();
+    unique.dedup();
+    if unique.len() != tracks.len() {
+        return Err("No selecciones la misma pista dos veces.".into());
+    }
+    Ok(match tracks {
+        [] => (String::new(), String::new()),
+        [n] => (String::new(), format!("0:a:{n}")),
+        many => (
+            format!(
+                "{}amix=inputs={}:duration=longest:dropout_transition=0:normalize=0,alimiter=limit=0.95[aout]",
+                many.iter()
+                    .map(|n| format!("[0:a:{n}]"))
+                    .collect::<String>(),
+                many.len()
+            ),
+            "[aout]".into(),
+        ),
+    })
+}
+
+pub fn args_audio(
+    input: &str,
+    output: &str,
+    cut: Option<(f64, f64)>,
+    format: Format,
+    tracks: &[usize],
+    threads: usize,
+) -> Vec<String> {
+    let mut a: Vec<String> = ["-hide_banner", "-loglevel", "error", "-n"]
+        .iter()
+        .map(|s| s.to_string())
+        .collect();
     if let Some((start, _)) = cut {
         a.extend(["-ss".into(), format!("{start:.3}")]);
     }
@@ -60,22 +115,59 @@ pub fn args(input: &str, output: &str, cut: Option<(f64, f64)>, format: Format) 
     if let Some((_, duration)) = cut {
         a.extend(["-t".into(), format!("{duration:.3}")]);
     }
-    match format {
-        Format::Horizontal => {}
-        Format::VerticalCrop => a.extend(["-vf".into(), "crop=ih*9/16:ih,scale=1080:1920,setsar=1".into()]),
-        Format::VerticalBlur => a.extend([
+    let video = match format {
+        Format::Original => String::new(),
+        Format::Horizontal => "[0:v:0]scale=1920:1080:force_original_aspect_ratio=decrease:force_divisible_by=2,pad=1920:1080:(ow-iw)/2:(oh-ih)/2,setsar=1[v]".into(),
+        Format::VerticalCrop => "[0:v:0]scale=1080:1920:force_original_aspect_ratio=increase:force_divisible_by=2,crop=1080:1920,setsar=1[v]".into(),
+        Format::VerticalBlur => "[0:v:0]split=2[a][b];[a]scale=1080:1920:force_original_aspect_ratio=increase:force_divisible_by=2,crop=1080:1920,boxblur=24:2[bg];[b]scale=1080:1920:force_original_aspect_ratio=decrease:force_divisible_by=2[fg];[bg][fg]overlay=(W-w)/2:(H-h)/2,setsar=1[v]".into(),
+    };
+    let (audio, mapping) = audio_filter(tracks).expect("validated audio tracks");
+    let filter = [video.as_str(), audio.as_str()]
+        .into_iter()
+        .filter(|s| !s.is_empty())
+        .collect::<Vec<_>>()
+        .join(";");
+    if !filter.is_empty() {
+        a.extend([
             "-filter_complex".into(),
-            "[0:v]split=2[a][b];[a]scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,boxblur=24:2[bg];[b]scale=1080:-2[fg];[bg][fg]overlay=(W-w)/2:(H-h)/2,setsar=1[v]".into(),
-            "-map".into(),
-            "[v]".into(),
-            "-map".into(),
-            "0:a?".into(),
-        ]),
+            filter,
+            "-filter_complex_threads".into(),
+            threads.clamp(1, 8).to_string(),
+        ]);
     }
     a.extend([
-        "-c:v".into(), "libx264".into(), "-preset".into(), "veryfast".into(), "-crf".into(), "20".into(),
-        "-pix_fmt".into(), "yuv420p".into(), "-c:a".into(), "aac".into(), "-b:a".into(), "160k".into(),
-        "-movflags".into(), "+faststart".into(), output.into(),
+        "-map".into(),
+        if video.is_empty() {
+            "0:v:0".into()
+        } else {
+            "[v]".into()
+        },
+    ]);
+    if mapping.is_empty() {
+        a.push("-an".into());
+    } else {
+        a.extend(["-map".into(), mapping]);
+    }
+    a.extend([
+        "-c:v".into(),
+        "libx264".into(),
+        "-threads".into(),
+        threads.clamp(1, 8).to_string(),
+        "-preset".into(),
+        "veryfast".into(),
+        "-crf".into(),
+        "20".into(),
+        "-pix_fmt".into(),
+        "yuv420p".into(),
+        "-c:a".into(),
+        "aac".into(),
+        "-b:a".into(),
+        "160k".into(),
+        "-progress".into(),
+        "pipe:1".into(),
+        "-movflags".into(),
+        "+faststart".into(),
+        output.into(),
     ]);
     a
 }
@@ -95,7 +187,10 @@ mod tests {
 
     #[test]
     fn file_names_are_safe_on_windows() {
-        assert_eq!(file_stem("¡Jugadón final! <3 / \"épico\""), "Jugadón final 3 épico");
+        assert_eq!(
+            file_stem("¡Jugadón final! <3 / \"épico\""),
+            "Jugadón final 3 épico"
+        );
         assert_eq!(file_stem("***"), "Short");
         assert_eq!(file_stem(&"a".repeat(100)).chars().count(), 60);
     }
@@ -105,13 +200,16 @@ mod tests {
         let h = args("in.mkv", "out.mp4", Some((70.0, 30.0)), Format::Horizontal);
         let joined = h.join(" ");
         assert!(joined.contains("-ss 70.000 -i in.mkv -t 30.000"));
-        assert!(!joined.contains("-vf") && !joined.contains("filter_complex"));
+        assert!(joined.contains("pad=1920:1080"));
         assert!(joined.ends_with("+faststart out.mp4"));
         let c = args("in.mkv", "out.mp4", None, Format::VerticalCrop).join(" ");
-        assert!(c.contains("crop=ih*9/16:ih,scale=1080:1920") && !c.contains("-ss"));
+        assert!(c.contains("crop=1080:1920") && !c.contains("-ss"));
         let b = args("in.mkv", "out.mp4", None, Format::VerticalBlur).join(" ");
-        assert!(b.contains("boxblur") && b.contains("-map 0:a?"));
-        assert_eq!(Format::parse("vertical_blur").unwrap().key(), "vertical_blur");
+        assert!(b.contains("boxblur") && b.contains("-map 0:a:0"));
+        assert_eq!(
+            Format::parse("vertical_blur").unwrap().key(),
+            "vertical_blur"
+        );
         assert!(Format::parse("otro").is_err());
     }
 }

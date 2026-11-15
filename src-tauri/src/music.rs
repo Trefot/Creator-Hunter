@@ -569,7 +569,7 @@ pub async fn state(app: &AppHandle, viewer: Option<&str>) -> Result<Value, Strin
         false
     };
     Ok(
-        json!({"volume":volume,"library":list,"requests_enabled":enabled,"requests":if viewer.is_none(){p.requests.clone()}else{vec![]},"queue":p.queue,"track":p.track,"playing":p.playing,"generation":p.generation,"audio_owner":owner,"audio_connected":p.lease.is_some_and(|t|t.elapsed()<Duration::from_secs(5)),"message":p.message,"spotify":spotify,"spotify_error":spotify_error,"app_version":app.package_info().version.to_string()}),
+        json!({"volume":volume,"library":list,"requests_enabled":enabled,"requests":if viewer.is_none(){p.requests.clone()}else{vec![]},"queue":p.queue,"track":p.track,"playing":p.playing,"generation":p.generation,"audio_owner":owner,"audio_connected":p.lease.is_some_and(|t|t.elapsed()<Duration::from_secs(5)),"message":p.message,"spotify":spotify,"spotify_connected":entry().and_then(|e|e.get_password().map_err(|e|e.to_string())).is_ok(),"spotify_error":spotify_error,"app_version":app.package_info().version.to_string()}),
     )
 }
 #[tauri::command]

@@ -1,16 +1,17 @@
+import {MediaQueue} from "./features/live/MediaTools";
 import { startGameDetector } from "./features/games/gameDetector";
 import { UpdateLayer } from "./features/update/UpdateLayer";
 import { StreamRecapLayer } from "./features/live/StreamRecap";
 import { HabitLayer } from "./features/habit/HabitLayer";
 import { invoke } from "@tauri-apps/api/core";
-import { LivePage } from "./features/live/LivePage";
-import { useEffect, useState } from "react";
+const LivePage=lazy(()=>import("./features/live/LivePage").then(m=>({default:m.LivePage})));
+import { lazy,Suspense,useEffect,useState } from "react";
 import { ComingSoon } from "./components/ComingSoon";
 import { Sidebar } from "./components/Sidebar";
 import { BackupsPage } from "./features/backups/BackupsPage";
 import { CalendarPage } from "./features/calendar/CalendarPage";
 import { DashboardPage } from "./features/dashboard/DashboardPage";
-import { GamesPage } from "./features/games/GamesPage";
+const GamesPage=lazy(()=>import("./features/games/GamesPage").then(m=>({default:m.GamesPage})));
 import { useGameMode } from "./features/games/useGameMode";
 import { selectManualGame } from "./features/games/gameMode";
 import { applySkin } from "./features/games/gameSkin";
@@ -19,7 +20,7 @@ import { GoalsPage } from "./features/goals/GoalsPage";
 
 import { IncomePage } from "./features/income/IncomePage";
 
-import { ProfilesPage } from "./features/profiles/ProfilesPage";
+const ProfilesPage=lazy(()=>import("./features/profiles/ProfilesPage").then(m=>({default:m.ProfilesPage})));
 import { startYouTubeAutoSync } from "./features/profiles/youtubeSync";
 import { es } from "./i18n/es";
 import { Section } from "./sections";
@@ -27,7 +28,7 @@ import "./App.css";
 import "./styles/hybrid.css";
 import "./styles/nexus.css";
 import { WorkspaceHeader } from "./components/WorkspaceHeader";
-import { ContentHub } from "./features/projects/ContentHub";
+const ContentHub=lazy(()=>import("./features/projects/ContentHub").then(m=>({default:m.ContentHub})));
 
 import {AutoMomentsIndicator} from "./features/live/AutoMoments";
 
@@ -44,6 +45,7 @@ function App() {
   const [gameToOpen, setGameToOpen] = useState<string | null>(null);
   const [gameView, setGameView] = useState<"today" | undefined>(undefined);
 
+  useEffect(()=>{const handler=(event:Event)=>{const id=(event as CustomEvent).detail;if(typeof id==='string'&&id.length<200)openProject(id)};window.addEventListener('nexus-open-project',handler);return()=>window.removeEventListener('nexus-open-project',handler)},[]);
   // La detección actualiza el banner, sin desmontar formularios ni interrumpir capturas.
   const gameMode = useGameMode(() => {});
   useEffect(() => startGameDetector(), []);
@@ -100,7 +102,7 @@ function App() {
       <Sidebar current={section} onSelect={select} focus={focus} onFocus={()=>setFocus(value=>{try{localStorage.setItem("nexus-focus",String(!value))}catch{}return !value})} />
       <main className="content">
         <WorkspaceHeader section={section} onNavigate={select}/>
-        <AutoMomentsIndicator/>
+        <MediaQueue/><AutoMomentsIndicator/>
         {gameMode.playing && (
           <div className="now-playing">
             <Gamepad2 size={18} />
@@ -116,7 +118,7 @@ function App() {
             {gameMode.source === "manual" && <button className="small-button" onClick={() => selectManualGame(null)}>{es.games.automaticGame}</button>}
           </div>
         )}
-        {section === "dashboard" ? (
+        <Suspense fallback={<p role="status" className="muted">Abriendo apartado…</p>}>{section === "dashboard" ? (
           <DashboardPage dataVersion={dataVersion} onNavigate={select} onOpenProject={openProject} />
         ) : section === "profiles" ? (
           <ProfilesPage dataVersion={dataVersion} />
@@ -133,12 +135,12 @@ function App() {
         ) : section === "games" ? (
           <GamesPage key={gameToOpen ?? "list"} initialOpenId={gameToOpen} initialView={gameView} gameMode={gameMode} onOpenProject={openProject} onOpenIdeas={()=>select("ideas")} />
         ) : section === "live" ? (
-          <LivePage onOpenProject={openProject} initialTab={liveTab.value} navigationRevision={liveTab.revision}/>
+          <LivePage onNavigate={setSection} onOpenProject={openProject} initialTab={liveTab.value} navigationRevision={liveTab.revision}/>
         ) : section === "backups" ? (
           <BackupsPage />
         ) : (
           <ComingSoon title={es.sections[section]} />
-        )}
+        )}</Suspense>
       </main>
       <UpdateLayer />
       <StreamRecapLayer />

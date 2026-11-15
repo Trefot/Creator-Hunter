@@ -1,8 +1,11 @@
+import {detectorProfiles,saveDetectorProfile,applyDetectorProfile,removeDetectorProfile,DetectorProfile} from "./detectorProfiles";
 import { useEffect,useRef,useState } from "react";
 import { GameTarget,captureObs,obsSources,saveDetector,setDetectorMode,changeGameTarget,setDetectorThreshold } from "../../db/gameBroadcast";
-import { detectorStatus,DETECTOR_EVENT,templateScore } from "./gameDetector";
+import { detectorStatus,detectorHistory,dismissDetectorCandidate,recordDetectorDecision,DETECTOR_EVENT,templateScore } from "./gameDetector";
 export function DetectorCalibration({target,onChanged}:{target:GameTarget;onChanged:()=>Promise<void>}){
  const canvas=useRef<HTMLCanvasElement>(null),image=useRef<HTMLImageElement|null>(null),start=useRef<{x:number;y:number}|null>(null);
+ const [profiles,setProfiles]=useState<DetectorProfile[]>([]),[profileName,setProfileName]=useState("");
+ useEffect(()=>{void detectorProfiles(target).then(setProfiles).catch(e=>setError(String(e)))},[target.id]);
  const [sources,setSources]=useState<string[]>([]),[source,setSource]=useState(target.detector_source??"");
  const [frame,setFrame]=useState(""),[rect,setRect]=useState<{x:number;y:number;w:number;h:number}|null>(null);
  const [mode,setMode]=useState<GameTarget["detector_mode"]>(target.detector_mode),[threshold,setThreshold]=useState(target.detector_threshold);
@@ -26,7 +29,10 @@ export function DetectorCalibration({target,onChanged}:{target:GameTarget;onChan
  {target.detector_reference&&<label>Modo<select aria-label="Modo de detección" value={mode} disabled={busy} onChange={e=>{const next=e.target.value as typeof mode;void run(async()=>{await setDetectorMode(target.id,next);setMode(next);await onChanged();});}}><option value="off">Apagado</option><option value="test">Prueba: solo sugerir</option><option value="auto">Marcar automáticamente</option></select></label>}
  <p className="muted small">El marcado automático exige dos coincidencias y que el aviso anterior haya desaparecido. Funciona con Nexus abierto; cambios de resolución, posición o idioma requieren calibrar de nuevo. No reconoce todos los objetos con una sola referencia.</p>
  {status.id===target.id&&<p role="status">{status.message}{status.score!==null?` · ${(status.score*100).toFixed(1)} %`:""}</p>}
- {status.id===target.id&&status.candidate&&mode==="test"&&<button disabled={busy} onClick={()=>run(async()=>{await changeGameTarget(target.id,true,true);await onChanged();})}>Confirmar objeto conseguido</button>}
+ {status.id===target.id&&status.candidate&&mode==="test"&&<button disabled={busy} onClick={()=>run(async()=>{await changeGameTarget(target.id,true,true);recordDetectorDecision(target.id,"Objeto confirmado por el usuario",status.score);await onChanged();})}>Confirmar objeto conseguido</button>}
+ {target.detector_reference&&<details><summary>Perfiles de este objeto y resolución</summary><p className="muted small">Guarda una referencia por idioma, posición o resolución. Al recuperar un perfil comienza en modo de prueba.</p><input aria-label="Nombre del perfil visual" value={profileName} maxLength={80} onChange={e=>setProfileName(e.target.value)} placeholder="1080p · español"/><button disabled={busy||!profileName.trim()} onClick={()=>run(async()=>{await saveDetectorProfile(target,profileName);setProfiles(await detectorProfiles(target));setProfileName('')})}>Guardar perfil</button><ul>{profiles.map(p=><li key={p.id}>{p.name} <button className="ghost" disabled={busy} onClick={()=>run(async()=>{await applyDetectorProfile(target,p);setSource(p.data.source);setMode('test');setThreshold(p.data.threshold);await onChanged()})}>Usar y probar</button><button className="ghost" disabled={busy} onClick={()=>run(async()=>{await removeDetectorProfile(target,p);setProfiles(await detectorProfiles(target))})}>Retirar perfil</button></li>)}</ul></details>}
+ {status.id===target.id&&status.candidate&&mode==='test'&&<button className="ghost" onClick={()=>{dismissDetectorCandidate(target.id)}}>Descartar coincidencia</button>}
+ <details><summary>Historial visual de esta sesión</summary><ul>{detectorHistory(target.id).map((h,i)=><li key={i}>{new Date(h.at).toLocaleTimeString('es')} · {h.message}{h.score!==null?` · ${(h.score*100).toFixed(1)} %`:''}</li>)}</ul><p className="muted small">Si marcó algo por error, puedes deshacerlo.</p><button disabled={busy||!target.done||target.psn_achieved} onClick={()=>run(async()=>{await changeGameTarget(target.id,false);recordDetectorDecision(target.id,'Marcado deshecho por el usuario');await onChanged()})}>Deshacer marcado de este objeto</button></details>
  {error&&<p role="alert" className="error">{error}</p>}
  </section>;
 }

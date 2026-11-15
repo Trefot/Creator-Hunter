@@ -33,7 +33,7 @@ export function titleScore(a: string, b: string): number {
   if (!wa.size || !wb.size) return 0;
   let common = 0;
   for (const w of wa) if (wb.has(w)) common++;
-  return common / Math.min(wa.size, wb.size);
+  return common / Math.max(wa.size, wb.size);
 }
 
 /** Instante ISO (UTC) a fecha local 'AAAA-MM-DDTHH:MM', el formato de Nexus (D-009). */
@@ -48,38 +48,32 @@ export function toLocalMinute(iso: string): string {
  * Ignora subidas ya enlazadas, versiones publicadas o en directo, y lo que el usuario descartó.
  * Cada versión se propone una sola vez, con su subida más parecida (mínimo 0,6).
  */
-export function matchUploads(uploads: Upload[], versions: Adaptation[], dismissed: Set<string>): UploadMatch[] {
-  const linked = new Set(versions.map((v) => v.published_url ?? "").filter(Boolean));
-  const isLinked = (id: string) => [...linked].some((u) => u.includes(id));
-  const open = versions.filter((v) => !v.published_at && v.format !== "live" && v.format !== "post");
-  const used = new Set<string>();
-  const out: UploadMatch[] = [];
-  for (const upload of uploads) {
-    if (isLinked(upload.id)) continue;
-    const isPublic = upload.privacy === "public" || upload.privacy === "unlisted";
-    const scheduled = upload.privacy === "private" && !!upload.publish_at;
-    if (!isPublic && !scheduled) continue;
-    const at = toLocalMinute((isPublic ? upload.published_at : upload.publish_at) ?? new Date().toISOString());
-    let best: { v: Adaptation; score: number } | null = null;
-    for (const v of open) {
-      if (used.has(v.id) || dismissed.has(`${upload.id}:${v.id}`)) continue;
-      if (scheduled && v.scheduled_at === at && v.steps.find((s) => s.step === "scheduling")?.completed_at) continue;
-      const score = Math.max(titleScore(upload.title, v.title), titleScore(upload.title, v.project_title));
-      if (score >= 0.6 && (!best || score > best.score)) best = { v, score };
-    }
-    if (!best) continue;
-    used.add(best.v.id);
-    out.push({
-      upload,
-      version: best.v,
-      action: isPublic ? "publish" : "schedule",
-      url: v_url(upload.id, best.v.format),
-      at,
-    });
+export function videoId(url:string|null):string|null {
+ if(!url)return null;
+ try{const u=new URL(url);if(u.hostname==='youtu.be')return u.pathname.split('/')[1]||null;
+ if(['youtube.com','www.youtube.com','m.youtube.com'].includes(u.hostname))return u.searchParams.get('v')??u.pathname.match(/^\/(?:shorts|live|embed)\/([^/?]+)/)?.[1]??null;
+ }catch{}return null;
+}
+export function matchUploads(uploads: Upload[], versions: Adaptation[], dismissed: Set<string>, youtubeProfileId?:string): UploadMatch[] {
+  if(!youtubeProfileId)return [];
+  const open=versions.filter(v=>v.profile_id===youtubeProfileId&&!v.published_at&&(v.format==='long_video'||v.format==='short'));
+  const used=new Set<string>();const out:UploadMatch[]=[];
+  for(const upload of uploads){
+    const isPublic=upload.privacy==='public'||upload.privacy==='unlisted';
+    const scheduled=upload.privacy==='private'&&!!upload.publish_at;
+    if(!isPublic&&!scheduled)continue;
+    const stamp=(isPublic?upload.published_at:upload.publish_at);if(!stamp||!Number.isFinite(Date.parse(stamp)))continue;
+    const at=toLocalMinute(stamp);
+    const linked=versions.filter(v=>videoId(v.published_url)===upload.id);
+    const scored=open.filter(v=>!used.has(v.id)&&!dismissed.has(`${upload.id}:${v.id}`))
+      .filter(v=>linked.length?linked.some(x=>x.id===v.id):!v.published_url)
+      .filter(v=>!scheduled||v.scheduled_at!==at||!v.steps.find(s=>s.step==='scheduling')?.completed_at)
+      .map(v=>({v,score:linked.length?1:titleScore(upload.title,v.title)})).sort((a,b)=>b.score-a.score);
+    const best=scored[0];
+    // Un título genérico compartido no permite elegir silenciosamente entre versiones.
+    if(!best||best.score<0.7||(!linked.length&&scored[1]&&best.score-scored[1].score<0.15))continue;
+    used.add(best.v.id);out.push({upload,version:best.v,action:isPublic?'publish':'schedule',url:v_url(upload.id,best.v.format),at});
   }
   return out;
 }
-
-function v_url(id: string, format: string): string {
-  return format === "short" ? `https://youtube.com/shorts/${id}` : `https://youtu.be/${id}`;
-}
+function v_url(id:string,format:string):string{return format==='short'?`https://youtube.com/shorts/${id}`:`https://youtu.be/${id}`;}

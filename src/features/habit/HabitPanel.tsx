@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { CalendarCheck, Check, Coffee, Play, ExternalLink, LucideIcon, Plus, Radio, RotateCcw, Scissors, Settings2, Video, X } from "lucide-react";
 import { Adaptation, listAllAdaptations, listInProduction, markScheduled, publishAdaptation } from "../../db/adaptations";
-import { recentUploads } from "../../db/youtube";
+import { recentUploads, youtubeStatus } from "../../db/youtube";
 import { matchUploads, Upload } from "./autoMatch";
 import { notifyHabitChanged } from "./HabitLayer";
 import { listProjects, Project } from "../../db/projects";
@@ -24,12 +24,12 @@ function readDismissed(): Set<string> {
 }
 
 // Las subidas se piden como mucho cada 10 minutos (3 unidades de cuota por consulta).
-let uploadsCache: { at: number; list: Upload[] } | null = null;
-async function cachedUploads(): Promise<Upload[]> {
-  if (uploadsCache && Date.now() - uploadsCache.at < 600_000) return uploadsCache.list;
-  const list = await recentUploads();
-  uploadsCache = { at: Date.now(), list };
-  return list;
+let uploadsCache: { at: number; list: Upload[]; profileId:string } | null = null;
+async function cachedUploads(force=false): Promise<{list:Upload[];profileId:string|null}> {
+  const status=await youtubeStatus();const profileId=status.connected?status.connection?.profile_id:null;
+  if(!profileId){uploadsCache=null;return {list:[],profileId:null};}
+  if(!force&&uploadsCache&&uploadsCache.profileId===profileId&&Date.now()-uploadsCache.at<600_000)return uploadsCache;
+  const list=await recentUploads();uploadsCache={at:Date.now(),list,profileId};return uploadsCache;
 }
 const ICONS: Record<WorkKind, LucideIcon> = { record: Video, edit: Scissors, schedule: CalendarCheck, stream: Radio, rest: Coffee };
 const dayName = new Intl.DateTimeFormat(es.locale, { weekday: "short" });
@@ -47,7 +47,7 @@ interface Props {
 
 /** «Hoy toca», la semana y el medidor del colchón en Inicio (D-032). */
 export function HabitPanel({ onOpenProject, onNavigate }: Props) {
-  const today = todayIso();
+  const [today,setToday]=useState(todayIso);
   const days = Array.from({ length: 7 }, (_, i) => addDays(today, i));
   const [routine, setRoutine] = useState<WorkKind[] | null>(null);
   const [sessions, setSessions] = useState<WorkSession[]>([]);
@@ -59,6 +59,9 @@ export function HabitPanel({ onOpenProject, onNavigate }: Props) {
   const [editingRoutine, setEditingRoutine] = useState(false);
   const [error, setError] = useState("");
   const [allVersions, setAllVersions] = useState<Adaptation[]>([]);
+  const [youtubeProfileId,setYoutubeProfileId]=useState<string|null>(null);
+  const [uploadsBusy,setUploadsBusy]=useState(false);
+  const [uploadsError,setUploadsError]=useState("");
   const [uploads, setUploads] = useState<Upload[]>([]);
   const [dismissed, setDismissed] = useState(readDismissed);
 
@@ -86,14 +89,14 @@ export function HabitPanel({ onOpenProject, onNavigate }: Props) {
     }
   }
 
-  useEffect(() => {
-    refresh();
-    // Sin YouTube conectado simplemente no hay sugerencias.
-    cachedUploads().then(setUploads).catch(() => {});
-    const onChange = () => refresh();
-    window.addEventListener("habit-changed", onChange);
-    return () => window.removeEventListener("habit-changed", onChange);
-  }, []);
+  useEffect(()=>{const timer=setInterval(()=>setToday(todayIso()),30000);return()=>clearInterval(timer)},[]);
+  useEffect(()=>{setSelected(today);void refresh();const onChange=()=>void refresh();window.addEventListener('habit-changed',onChange);return()=>window.removeEventListener('habit-changed',onChange)},[today]);
+  async function refreshUploads(force=false){
+    if(uploadsBusy)return;setUploadsBusy(true);setUploadsError('');
+    try{const data=await cachedUploads(force);setUploads(data.list);setYoutubeProfileId(data.profileId);}catch(e){setUploadsError(`No se pudieron revisar las subidas: ${e}`);setUploads([]);setYoutubeProfileId(null);}finally{setUploadsBusy(false);}
+  }
+  useEffect(()=>{let cancelled=false,working=false;async function poll(){if(working)return;working=true;try{const data=await cachedUploads();if(!cancelled){setUploads(data.list);setYoutubeProfileId(data.profileId);setUploadsError('')}}catch(e){if(!cancelled)setUploadsError(`No se pudieron revisar las subidas: ${e}`)}finally{working=false;}}
+    void poll();const timer=setInterval(()=>void poll(),60000);return()=>{cancelled=true;clearInterval(timer)}},[]);
 
   async function run(action: () => Promise<void>) {
     setError("");
@@ -116,7 +119,7 @@ export function HabitPanel({ onOpenProject, onNavigate }: Props) {
   const buffer = bufferStatus(versions);
   const week = weekProgress(routine, weekSessions, weekDays);
   const isToday = selected === today;
-  const matches = matchUploads(uploads, allVersions, dismissed);
+  const matches = matchUploads(uploads, allVersions, dismissed, youtubeProfileId??undefined);
 
   function dismiss(key: string) {
     const next = new Set(dismissed).add(key);
@@ -222,6 +225,8 @@ export function HabitPanel({ onOpenProject, onNavigate }: Props) {
         <div className="habit-work"><button onClick={() => onNavigate("live")}><Radio size={15} />{t.goLive}</button></div>
       ) : null}
 
+      <div className="tools-actions"><button className="ghost small-button" disabled={uploadsBusy} onClick={()=>void refreshUploads(true)}>{uploadsBusy?'Consultando YouTube…':'Revisar subidas de YouTube'}</button><span className="muted small">Consulta automática cada 10 minutos. Siempre confirmas las coincidencias.</span></div>
+      {uploadsError&&<p role="status" className="muted small">{uploadsError}</p>}
       {matches.length > 0 && (
         <div className="habit-detected">
           <span className="studio-eyebrow"><Play size={14} />{t.detected}</span>

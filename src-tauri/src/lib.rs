@@ -25,6 +25,7 @@ mod chat_commands;
 mod chat_commands_core;
 mod recap;
 mod shorts;
+mod media_jobs;
 mod shorts_core;
 mod subtitles;
 mod subtitles_core;
@@ -221,6 +222,7 @@ pub fn run() {
             if let Some(window) = tauri::Manager::get_webview_window(app, "main") {
                 let _ = window.set_title("Nexus Studio · PRUEBAS");
             }
+            media_jobs::init(app.handle());
             live::start(app.handle().clone());
             social_alerts::start(app.handle().clone());
             discord::start(app.handle().clone());
@@ -240,12 +242,20 @@ pub fn run() {
             shorts::shorts_status,
             shorts::shorts_install_ffmpeg,
             shorts::shorts_render,
+            shorts::studio_export_project,
+            shorts::shorts_preview,
+            shorts::media_inspect,
+            media_jobs::media_jobs_status,
+            media_jobs::media_jobs_cancel,
+            media_jobs::media_jobs_light,
+            media_jobs::media_gpu_test,
             shorts::shorts_list,
             subtitles::subtitles_status,
             subtitles::subtitles_install,
             subtitles::subtitles_recordings,
             subtitles::subtitles_chapters,
             subtitles::subtitles_generate,
+            subtitles::subtitles_import,
             chat_commands::chat_commands_get,
             chat_commands::chat_commands_save,
             chat_commands::chat_commands_preview,
@@ -350,6 +360,7 @@ pub fn run() {
             updater::update_check,
             updater::update_apply,
         ])
-        .run(tauri::generate_context!())
-        .expect("error while running tauri application");
+        .build(tauri::generate_context!())
+        .expect("error while building tauri application")
+        .run(|_, event| { if matches!(event, tauri::RunEvent::ExitRequested { .. }) { media_jobs::shutdown(); std::thread::sleep(std::time::Duration::from_millis(250)); } });
 }

@@ -97,6 +97,7 @@ pub async fn import_backup(
     stamp: String,
 ) -> Result<ImportResult, String> {
     tauri::async_runtime::spawn_blocking(move || {
+        let _media_guard=crate::media_jobs::pause_for_restore()?;
         crate::auto_moments::with_capture_paused(&app, || {
             // Las marcas y el monitor no deben escribir durante la restauración.
             let state = app.state::<crate::obs::ObsState>();

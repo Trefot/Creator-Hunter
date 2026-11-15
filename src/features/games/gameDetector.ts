@@ -4,7 +4,13 @@ export const DETECTOR_EVENT="nexus-game-detector";
 export interface DetectorStatus {id:string|null;score:number|null;message:string;candidate:boolean}
 let status:DetectorStatus={id:null,score:null,message:"Detección apagada",candidate:false};
 export function detectorStatus(){return status;}
-function update(next:DetectorStatus){status=next;window.dispatchEvent(new Event(DETECTOR_EVENT));}
+export interface DetectorHistory {at:string;id:string;message:string;score:number|null}
+let history:DetectorHistory[]=[];
+export function detectorHistory(id?:string){return history.filter(h=>!id||h.id===id)}
+export function recordDetectorDecision(id:string,message:string,score:number|null=null){history=[{at:new Date().toISOString(),id,message,score},...history].slice(0,100);window.dispatchEvent(new Event(DETECTOR_EVENT));}
+const dismissedCandidates=new Set<string>();
+export function dismissDetectorCandidate(id:string){dismissedCandidates.add(id);recordDetectorDecision(id,'Coincidencia descartada por el usuario',status.score);update({...status,candidate:false,message:'Descartada; esperando que desaparezca el aviso'});dismissedCandidates.add(id);}
+function update(next:DetectorStatus){if(next.id){if(!next.candidate)dismissedCandidates.delete(next.id);else if(dismissedCandidates.has(next.id))next={...next,candidate:false,message:'Descartada; esperando que desaparezca el aviso'};}if(next.id&&next.candidate&&(!status.candidate||status.id!==next.id))recordDetectorDecision(next.id,'Coincidencia visual pendiente de revisión',next.score);if(next.id&&next.message.startsWith('Objetivo marcado'))recordDetectorDecision(next.id,next.message,next.score);status=next;window.dispatchEvent(new Event(DETECTOR_EVENT));}
 /** Correlación de luminancia: una referencia sin contraste nunca es una coincidencia. */
 export function templateScore(a:ArrayLike<number>,b:ArrayLike<number>):number{
  if(a.length!==b.length||a.length<16)return 0;

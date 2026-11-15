@@ -71,6 +71,7 @@ mod tauri {
         }
     }
     pub mod async_runtime {
+        pub type Mutex<T> = tokio::sync::Mutex<T>;
         pub async fn spawn_blocking<F, T>(f: F) -> Result<T, String>
         where
             F: FnOnce() -> T + Send + 'static,
@@ -115,10 +116,18 @@ mod social_alerts {
         Ok(())
     }
 }
+mod studio_tools {
+    pub async fn capture_project(_: &sqlx::SqlitePool, _: &str, _: &str) -> Result<String, String> {
+        Ok("fixture-project".into())
+    }
+}
 mod obs_store {
     pub const WORKSPACE: &str = "test";
 }
 mod obs {
+    pub fn media_busy(_: &crate::tauri::AppHandle) -> bool {
+        false
+    }
     use super::*;
     pub struct Client(bool);
     impl Client {
@@ -204,6 +213,227 @@ mod tests {
                 events: Mutex::new(vec![]),
             }),
         }
+    }
+    #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+    async fn media_queue_serializes_cancels_and_blocks_restore() {
+        let a = app().await;
+        let first = media_jobs::Ticket::enqueue("first")
+            .unwrap()
+            .wait(&a)
+            .unwrap();
+        let first_id = first.id;
+        let second = media_jobs::Ticket::enqueue("second").unwrap();
+        let other = a.clone();
+        let waiter = std::thread::spawn(move || second.wait(&other));
+        let runner = std::thread::spawn(move || {
+            let command = if cfg!(windows) {
+                let mut c = std::process::Command::new("powershell");
+                c.args([
+                    "-NoProfile",
+                    "-NonInteractive",
+                    "-Command",
+                    "Start-Sleep -Seconds 10",
+                ]);
+                c
+            } else {
+                let mut c = std::process::Command::new("/bin/sleep");
+                c.arg("10");
+                c
+            };
+            let mut command = command;
+            first.run(&mut command, None)
+        });
+        tokio::time::sleep(Duration::from_millis(100)).await;
+        assert!(!waiter.is_finished());
+        assert!(media_jobs::pause_for_restore().is_err());
+        media_jobs::media_jobs_cancel(first_id).unwrap();
+        assert!(runner.join().unwrap().unwrap_err().contains("cancelado"));
+        let mut second = waiter.join().unwrap().unwrap();
+        second.finish(Ok("fixture"));
+        let queued = media_jobs::Ticket::enqueue("cancel queued").unwrap();
+        media_jobs::media_jobs_cancel(queued.id).unwrap();
+        assert!(queued.wait(&a).is_err());
+        let guard = media_jobs::pause_for_restore().unwrap();
+        assert!(media_jobs::Ticket::enqueue("during restore").is_err());
+        drop(guard);
+        assert!(media_jobs::Ticket::enqueue("after restore").is_ok());
+    }
+    #[test]
+    fn real_exports_preserve_selected_audio_and_handle_tall_video() {
+        use std::process::Command;
+        if !std::path::Path::new("/usr/bin/ffmpeg").is_file() {
+            return;
+        }
+        let dir =
+            std::env::temp_dir().join(format!("nexus-media-regression-{}", rand::random::<u64>()));
+        std::fs::create_dir_all(&dir).unwrap();
+        let input = dir.join("two.mkv");
+        assert!(
+            Command::new("ffmpeg")
+                .args([
+                    "-v",
+                    "error",
+                    "-f",
+                    "lavfi",
+                    "-i",
+                    "color=c=blue:s=320x800:r=2:d=1.5",
+                    "-f",
+                    "lavfi",
+                    "-i",
+                    "sine=frequency=400:sample_rate=8000:duration=1.5",
+                    "-f",
+                    "lavfi",
+                    "-i",
+                    "sine=frequency=1000:sample_rate=8000:duration=1.5",
+                    "-map",
+                    "0:v",
+                    "-map",
+                    "1:a",
+                    "-map",
+                    "2:a",
+                    "-c:v",
+                    "libx264",
+                    "-preset",
+                    "ultrafast",
+                    "-c:a",
+                    "aac"
+                ])
+                .arg(&input)
+                .output()
+                .unwrap()
+                .status
+                .success()
+        );
+        fn ratio(path: &std::path::Path) -> f64 {
+            let out = Command::new("ffmpeg")
+                .args(["-v", "error", "-i"])
+                .arg(path)
+                .args([
+                    "-map", "0:a:0", "-t", "1", "-f", "s16le", "-ac", "1", "-ar", "8000", "-",
+                ])
+                .output()
+                .unwrap();
+            assert!(out.status.success());
+            let samples: Vec<f64> = out
+                .stdout
+                .chunks_exact(2)
+                .map(|b| i16::from_le_bytes([b[0], b[1]]) as f64)
+                .collect();
+            let power = |frequency: f64| {
+                let (re, im) = samples.iter().enumerate().fold((0., 0.), |(r, j), (i, x)| {
+                    let a = 2. * std::f64::consts::PI * frequency * i as f64 / 8000.;
+                    (r + x * a.cos(), j + x * a.sin())
+                });
+                re * re + im * im
+            };
+            power(400.) / power(1000.).max(1.)
+        }
+        for (mode, w, h) in [
+            (shorts_core::Format::Horizontal, 1920, 1080),
+            (shorts_core::Format::Original, 320, 800),
+            (shorts_core::Format::VerticalCrop, 1080, 1920),
+            (shorts_core::Format::VerticalBlur, 1080, 1920),
+        ] {
+            let output = dir.join(format!("{}.mp4", mode.key()));
+            let args = shorts_core::args_audio(
+                input.to_str().unwrap(),
+                output.to_str().unwrap(),
+                None,
+                mode,
+                &[0, 1],
+                2,
+            );
+            let result = Command::new("ffmpeg").args(args).output().unwrap();
+            assert!(
+                result.status.success(),
+                "{}",
+                String::from_utf8_lossy(&result.stderr)
+            );
+            let info = Command::new("ffprobe")
+                .args(["-v", "error", "-show_streams", "-of", "json"])
+                .arg(&output)
+                .output()
+                .unwrap();
+            let info: Value = serde_json::from_slice(&info.stdout).unwrap();
+            let streams = info["streams"].as_array().unwrap();
+            let video = streams.iter().find(|s| s["codec_type"] == "video").unwrap();
+            assert_eq!(video["width"], w);
+            assert_eq!(video["height"], h);
+            assert_eq!(
+                streams
+                    .iter()
+                    .filter(|s| s["codec_type"] == "audio")
+                    .count(),
+                1
+            );
+            assert!((0.3..3.).contains(&ratio(&output)));
+        }
+        let voice = dir.join("voice.wav");
+        let args = subtitles_core::audio_args_selected(
+            input.to_str().unwrap(),
+            voice.to_str().unwrap(),
+            &[1],
+        )
+        .unwrap();
+        assert!(
+            Command::new("ffmpeg")
+                .args(args)
+                .output()
+                .unwrap()
+                .status
+                .success()
+        );
+        assert!(ratio(&voice) < 0.001);
+        let mixed = dir.join("mixed.wav");
+        let args = subtitles_core::audio_args_selected(
+            input.to_str().unwrap(),
+            mixed.to_str().unwrap(),
+            &[0, 1],
+        )
+        .unwrap();
+        assert!(
+            Command::new("ffmpeg")
+                .args(args)
+                .output()
+                .unwrap()
+                .status
+                .success()
+        );
+        assert!((0.3..3.).contains(&ratio(&mixed)));
+        std::fs::remove_dir_all(dir).unwrap();
+    }
+    #[tokio::test]
+    async fn subtitle_history_returns_the_actual_unique_srt() {
+        let a = app().await;
+        let path = a.env.dir.join("clip.mkv");
+        let srt = a.env.dir.join("clip (Nexus 2).srt");
+        std::fs::write(&path, b"fixture").unwrap();
+        std::fs::write(&srt, b"subtitles").unwrap();
+        sqlx::raw_sql("CREATE TABLE game(id TEXT,title TEXT);CREATE TABLE obs_session(id TEXT,workspace_id TEXT,observed_at TEXT,output_path TEXT,game_id TEXT,kind TEXT,ended_at TEXT);CREATE TABLE obs_marker(session_id TEXT);").execute(&a.env.pool).await.unwrap();
+        sqlx::query(
+            "INSERT INTO obs_session VALUES('r',?,'2026-11-16',?,NULL,'recording','2026-11-16')",
+        )
+        .bind(obs_store::WORKSPACE)
+        .bind(path.display().to_string())
+        .execute(&a.env.pool)
+        .await
+        .unwrap();
+        social_alerts::save(&a, "subtitle:r", &json!({"srt":srt.display().to_string()}))
+            .await
+            .unwrap();
+        let rows = subtitles::subtitles_recordings(a.clone(), Some(0))
+            .await
+            .unwrap();
+        assert_eq!(rows.len(), 1);
+        assert_eq!(rows[0]["srt"], srt.display().to_string());
+        assert_eq!(rows[0]["exists"], true);
+        assert!(
+            subtitles::subtitles_recordings(a.clone(), Some(30))
+                .await
+                .unwrap()
+                .is_empty()
+        );
+        std::fs::remove_dir_all(&a.env.dir).unwrap();
     }
     async fn setup(app: &tauri::AppHandle, after: u32) {
         auto_moments_configure(
