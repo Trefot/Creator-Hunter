@@ -1,14 +1,17 @@
 {
-  "version": "0.2.37",
+  "version": "0.2.38",
   "notes": [
-    "Nuevo panel en En directo → Momentos: «Subtítulos y capítulos» con tus grabaciones de OBS.",
-    "«Capítulos» convierte los momentos que marcaste con «¡Clip!» en capítulos listos para pegar en la descripción de YouTube (empiezan en 00:00 y cumplen la regla de 10 s); te avisa si faltan momentos.",
-    "«Crear subtítulos» transcribe la grabación en tu PC con Whisper y guarda un .srt junto al vídeo para subirlo en YouTube Studio. El audio nunca sale de tu ordenador.",
-    "La primera vez se instala la transcripción con un botón (unos 500 MB, una sola vez); Nexus comprueba la huella de cada descarga antes de usarla."
+    "Elige o mezcla las pistas de audio para Shorts y subtítulos. Corregidos los formatos verticales y añadido Original, horizontal 16:9 y vista previa.",
+    "Nueva cola de procesamiento con cancelación, progreso al navegar y modo ligero durante grabación o emisión. Prueba de NVIDIA antes de activar NVENC opcional.",
+    "Subtítulos sin sobrescrituras, importación de grabaciones anteriores y continuidad del Short hacia subtítulos, proyecto y calendario.",
+    "Corregido el seguimiento de vídeos programados de YouTube, sus coincidencias entre cuentas y plataformas, el colchón y el progreso semanal.",
+    "Guía general de conexiones, estados más claros y navegación separada entre uso del directo y configuración. Historial de avisos de Discord.",
+    "Perfiles e historial para la detección visual de objetos y guía PC/PlayStation. Los cofres de Fortnite mantienen el control manual hasta validar su detección.",
+    "Carga de los apartados principales bajo demanda y protección de restauraciones mientras se procesa vídeo."
   ],
   "date": "2026-11-15",
   "installer": "TrophyHunter-setup.exe",
-  "source_commit": "f3846592cd2d55c0bc3dfa3626c11c6970c12d5a",
-  "sha256": "eb085463d98517f6c9084a580b7b981fca84b26763d553a7de6664ac90ff801d",
-  "size": 20633425
+  "source_commit": "8dbf0af452f59af35dda1ca96e15290f5364ee67",
+  "sha256": "7a7834220bd2b704c2b128fe69492dffc1be883cae50ebeb91d322df7c2420e5",
+  "size": 20709415
 }
