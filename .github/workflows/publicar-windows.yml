@@ -7,7 +7,8 @@ permissions:
   contents: read
 concurrency:
   group: nexus-studio-publicacion
-  cancel-in-progress: false
+  # Por defecto serializa las publicaciones; la marca permite sustituir un build propio obsoleto.
+  cancel-in-progress: ${{ contains(github.event.head_commit.message, '[replace-pending-build]') }}
 jobs:
   build:
     runs-on: windows-latest
@@ -20,10 +21,19 @@ jobs:
           node-version: 24
           cache: npm
       - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: nexus-windows
+          cache-on-failure: true
+          workspaces: |
+            src-tauri -> target
+            tests/data-safety -> target
+            tests/auto-moments -> target
       - run: npm ci
       - run: npm run release:check
       - run: npm test
       - run: cargo test --locked --manifest-path tests/data-safety/Cargo.toml
+      - run: cargo test --locked --manifest-path tests/auto-moments/Cargo.toml
       - run: cargo test --locked --manifest-path src-tauri/Cargo.toml
       - run: npm run tauri -- build --bundles nsis
       - run: npm run release:prepare

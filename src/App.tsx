@@ -28,6 +28,8 @@ import "./styles/nexus.css";
 import { WorkspaceHeader } from "./components/WorkspaceHeader";
 import { ContentHub } from "./features/projects/ContentHub";
 
+import {AutoMomentsIndicator} from "./features/live/AutoMoments";
+
 function App() {
   const [focus,setFocus]=useState(()=>{try{return localStorage.getItem("nexus-focus")==="true"}catch{return false}});
   const [liveTab,setLiveTab]=useState({value:"cabina",revision:0});
@@ -41,8 +43,8 @@ function App() {
   const [gameToOpen, setGameToOpen] = useState<string | null>(null);
   const [gameView, setGameView] = useState<"today" | undefined>(undefined);
 
-  // Modo juego: al empezar a jugar en la PS5 un juego de la biblioteca, la app abre su ficha.
-  const gameMode = useGameMode((game) => { if(section!=="live") openGame(game.id, "today"); });
+  // La detección actualiza el banner, sin desmontar formularios ni interrumpir capturas.
+  const gameMode = useGameMode(() => {});
   useEffect(() => startGameDetector(), []);
   useEffect(() => { invoke("obs_initialize").catch(console.error); }, []);
   useEffect(() => {
@@ -97,6 +99,7 @@ function App() {
       <Sidebar current={section} onSelect={select} focus={focus} onFocus={()=>setFocus(value=>{try{localStorage.setItem("nexus-focus",String(!value))}catch{}return !value})} />
       <main className="content">
         <WorkspaceHeader section={section} onNavigate={select}/>
+        <AutoMomentsIndicator/>
         {gameMode.playing && (
           <div className="now-playing">
             <Gamepad2 size={18} />

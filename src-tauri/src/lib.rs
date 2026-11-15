@@ -26,6 +26,8 @@ mod chat_commands_core;
 mod recap;
 mod shorts;
 mod shorts_core;
+mod auto_moments_core;
+mod auto_moments;
 mod stream_prep;
 mod recap_core;
 mod data_safety;
@@ -205,6 +207,7 @@ pub fn run() {
         .manage(music::MusicState::default())
         .manage(discord::DiscordState::default())
         .manage(obs::ObsState::default())
+        .manage(auto_moments::AutoMomentsState::default())
         .manage(premigrate::Preparation::default())
         .setup(|app| {
             if let Some(window) = tauri::Manager::get_webview_window(app, "main") {
@@ -225,6 +228,13 @@ pub fn run() {
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
+            auto_moments::auto_moments_status,
+            auto_moments::auto_moments_activity,
+            auto_moments::auto_moments_configure,
+            auto_moments::auto_moments_control,
+            auto_moments::auto_moments_review,
+            auto_moments::auto_moments_languages,
+            auto_moments::auto_moments_cleanup,
             shorts::shorts_status,
             shorts::shorts_install_ffmpeg,
             shorts::shorts_render,

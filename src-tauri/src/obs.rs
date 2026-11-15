@@ -438,6 +438,7 @@ pub fn mark(app: &AppHandle, title: Option<String>) -> Result<Value, String> {
     ))?;
     let result = json!({"id":marker,"record_ms":record,"stream_ms":stream});
     let _ = app.emit("obs-markers-changed", &marker);
+    crate::auto_moments::on_mark(app);
     Ok(result)
 }
 #[tauri::command]
@@ -499,6 +500,7 @@ pub fn save_replay(app: &AppHandle, title: Option<String>) -> Result<Value, Stri
             i.game.clone(),
         )
     };
+    let requested_at_ms = now();
     let path = client.save_replay()?;
     let clip = id();
     let marker = session.as_ref().map(|_| id());
@@ -507,7 +509,7 @@ pub fn save_replay(app: &AppHandle, title: Option<String>) -> Result<Value, Stri
         .map_err(|e|format!("OBS confirmó el archivo {path}, pero Nexus no pudo registrarlo: {e}. Conserva el archivo y no repitas el guardado para recuperarlo."))?;
     let _ = app.emit("obs-markers-changed", &clip);
     Ok(
-        json!({"id":clip,"output_path":path,"marker_id":marker,"record_ms":record,"stream_ms":stream}),
+        json!({"id":clip,"output_path":path,"marker_id":marker,"record_ms":record,"stream_ms":stream,"requested_at_ms":requested_at_ms}),
     )
 }
 #[tauri::command]

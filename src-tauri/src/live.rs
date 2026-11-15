@@ -229,6 +229,12 @@ fn handle_request(app: &AppHandle, key: &str, request: Request) {
                 Err(error) => respond_json(request, 409, json!({"error":error})),
             }
         }
+        ["api", "moments", "capture"] => {
+            if query("key").as_deref() != Some(key) {
+                return respond_json(request,403,json!({"error":"Falta la clave local o no es correcta."}));
+            }
+            match crate::auto_moments::capture_from_deck(app){Ok(result)=>respond_json(request,202,result),Err(error)=>respond_json(request,409,json!({"error":error}))}
+        }
         ["api", "moments", "mark"] => {
             if query("key").as_deref() != Some(key) {
                 return respond_json(request, 403, json!({ "error": "Falta la clave local o no es correcta." }));

@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import assert from 'node:assert/strict';
+import {execFileSync} from 'node:child_process';
 import {assertWindowsInstaller,checkChannel,checkRelease,releaseNotes,compareVersions,sourceCommit} from '../scripts/release.mjs';
 
 test('release versions, stable installation identity and notes are consistent',()=>{
@@ -42,4 +43,18 @@ test('exported ZIP retains its source commit without requiring a .git folder',()
     fs.writeFileSync(path.join(temp,'.release-source.json'),JSON.stringify({commit:'$Format:%H$'}));
     assert.throws(()=>sourceCommit(temp),/ZIP exportado/);
   } finally { fs.rmSync(temp,{recursive:true,force:true}); }
+});
+
+test('capture test artifacts keep release provenance clean while source edits remain blocked',()=>{
+  const temp=fs.mkdtempSync(path.join(os.tmpdir(),'nexus-provenance-'));
+  const git=(args)=>execFileSync('git',args,{cwd:temp,encoding:'utf8',stdio:['ignore','pipe','pipe']});
+  try{
+    git(['init','-q']);
+    fs.copyFileSync(new URL('../.gitignore',import.meta.url),path.join(temp,'.gitignore'));
+    git(['add','.gitignore']);git(['-c','user.name=Nexus Test','-c','user.email=test@example.invalid','commit','-q','-m','Fixture']);
+    const expected=git(['rev-parse','HEAD']).trim();
+    const artifacts=path.join(temp,'tests','auto-moments','target','debug');fs.mkdirSync(artifacts,{recursive:true});fs.writeFileSync(path.join(artifacts,'fixture.bin'),'generated');
+    assert.equal(sourceCommit(temp),expected);
+    fs.writeFileSync(path.join(temp,'source.ts'),'real source edit');assert.throws(()=>sourceCommit(temp),/Guarda los cambios/);
+  }finally{fs.rmSync(temp,{recursive:true,force:true});}
 });

@@ -34,6 +34,7 @@ import {ConnectionsStatus} from "./ConnectionsStatus";
 import {GoLivePanel} from "./GoLivePanel";
 import {ChatCommandsPanel} from "./ChatCommandsPanel";
 import {ShortsPanel} from "./ShortsPanel";
+import {AutoMomentsPanel} from "./AutoMoments";
 const liveTabs=[{id:'cabina',label:'Cabina'},{id:'estado',label:'Estado'},{id:'chat',label:'Chat'},{id:'commands',label:'Comandos'},{id:'sound',label:'Sonido'},{id:'alerts',label:'Alertas'},{id:'overlays',label:'Overlays'},{id:'counters',label:'Contadores'},{id:'category',label:'Categoría'},{id:'obs',label:'OBS'},{id:'connections',label:'Conexiones'},{id:'moments',label:'Momentos'},{id:'recaps',label:'Resúmenes'}] as const;
 type LiveTab=typeof liveTabs[number]['id'];
 const asTab=(value:string):LiveTab=>liveTabs.find(t=>t.id===value)?.id??'cabina';
@@ -459,7 +460,7 @@ export function LivePage({onOpenProject,initialTab='cabina',navigationRevision=0
       <div hidden={tab!=='recaps'} role="tabpanel" aria-label="Resúmenes"><RecapHistory active={tab==='recaps'}/></div>
       <div hidden={tab!=='estado'} role="tabpanel" aria-label="Estado"><ConnectionsStatus active={tab==='estado'} onNavigate={value=>setTab(asTab(value))}/></div>
       <div hidden={tab!=='commands'} role="tabpanel" aria-label="Comandos"><ChatCommandsPanel active={tab==='commands'}/></div>
-      <div hidden={tab!=='moments'} role="tabpanel" aria-label="Momentos"><ShortsPanel active={tab==='moments'}/><CaptureInbox expanded onOpenProject={onOpenProject}/></div>
+      <div hidden={tab!=='moments'} role="tabpanel" aria-label="Momentos"><AutoMomentsPanel active={tab==='moments'}/><ShortsPanel active={tab==='moments'}/><CaptureInbox expanded onOpenProject={onOpenProject}/></div>
       <div hidden={tab!=='alerts'} role="tabpanel" aria-label="Alertas"><AlertsPanel showConnections={false}/></div>
       <div hidden={tab!=='connections'} role="tabpanel" aria-label="Conexiones"><SocialAlerts/><DiscordPanel/></div>
       <div hidden={tab!=='obs'} role="tabpanel" aria-label="OBS"><ObsAssistant/>

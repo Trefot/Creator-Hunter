@@ -45,5 +45,5 @@ export interface ShortExport {
 export const shortsStatus = () => invoke<{ ffmpeg: string | null }>("shorts_status");
 export const shortsInstallFfmpeg = () => invoke<void>("shorts_install_ffmpeg");
 export const shortsRender = (kind: "moment" | "clip", id: string, format: ShortFormat, before: number, after: number) =>
-  invoke<{ path: string }>("shorts_render", { kind, id, format, before, after });
+  invoke<{ path: string;warning?:string|null }>("shorts_render", { kind, id, format, before, after });
 export const shortsList = () => invoke<ShortExport[]>("shorts_list");
