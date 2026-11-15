@@ -246,6 +246,7 @@ mod tests {
             .unwrap();
         let s = settled(&a).await;
         assert_eq!(s["items"].as_array().unwrap().len(), 1);
+        assert!(s["bytes"].as_u64().is_some());
         assert_eq!(a.env.saves.load(Ordering::SeqCst), 1);
         let id = s["items"][0]["id"].as_str().unwrap().to_string();
         auto_moments_review(a.clone(), id.clone(), "discarded".into())
@@ -551,5 +552,35 @@ mod tests {
                 < 0.2
         );
         std::fs::remove_dir_all(dir).unwrap();
+    }
+    #[tokio::test]
+    async fn restore_cancels_waiting_and_reloads_config_without_rearming() {
+        let a = app().await;
+        setup(&a, 1).await;
+        auto_moments_control(a.clone(), "capture".into())
+            .await
+            .unwrap();
+        let handle = a.clone();
+        tokio::task::spawn_blocking(move || {
+            with_capture_paused(&handle, || {
+                tauri::async_runtime::block_on(social_alerts::save(
+                    &handle,
+                    "auto-moments-config",
+                    &json!(auto_moments_core::Config {
+                        phrase: "Nexus nuevo momento".into(),
+                        ..Default::default()
+                    }),
+                ))
+            })
+        })
+        .await
+        .unwrap()
+        .unwrap();
+        tokio::time::sleep(Duration::from_millis(1200)).await;
+        let s = auto_moments_status(a.clone()).await.unwrap();
+        assert_eq!(s["config"]["phrase"], "Nexus nuevo momento");
+        assert_eq!(s["activity"]["armed"], false);
+        assert!(s["activity"]["pending"].is_null());
+        assert_eq!(a.env.saves.load(Ordering::SeqCst), 0);
     }
 }

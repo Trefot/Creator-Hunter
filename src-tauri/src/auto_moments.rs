@@ -222,6 +222,37 @@ fn disarm(app: &AppHandle) {
     }
     emit(app);
 }
+/// Orden de bloqueo compartido con la restauración: captura → operación OBS.
+pub(crate) fn with_capture_paused<T>(
+    app: &AppHandle,
+    work: impl FnOnce() -> Result<T, String>,
+) -> Result<T, String> {
+    let state = app.state::<AutoMomentsState>();
+    let _gate = state.gate.lock().map_err(|e| e.to_string())?;
+    if state
+        .inner
+        .lock()
+        .unwrap()
+        .pending
+        .as_ref()
+        .is_some_and(|p| p.phase == "saving")
+    {
+        return Err("Espera a que OBS confirme el candidato antes de restaurar una copia.".into());
+    }
+    disarm(app);
+    let result = work();
+    {
+        let mut i = state.inner.lock().unwrap();
+        i.hydrated = false;
+        i.config = Config::default();
+        i.last_trigger = None;
+        i.message =
+            "Captura desactivada para restaurar los datos. Actívala de nuevo cuando estés listo."
+                .into();
+    }
+    emit(app);
+    result
+}
 fn finish(app: &AppHandle, token: u64, result: Result<(), String>) {
     {
         let state = app.state::<AutoMomentsState>();
@@ -591,7 +622,7 @@ fn start_voice(app: &AppHandle) -> Result<(), String> {
 }
 #[tauri::command]
 pub async fn auto_moments_status(app: AppHandle) -> Result<Value, String> {
-    tauri::async_runtime::spawn_blocking(move||{let state=app.state::<AutoMomentsState>();let _gate=state.gate.lock().map_err(|e|e.to_string())?;hydrate(&app)?;let items=candidates(&app)?;let bytes=usage(&items);let entries:Vec<Value>=items.iter().map(|c|{let mut v=json!(c);v["exists"]=json!(std::path::Path::new(&c.output_path).is_file());v}).collect();let config=state.inner.lock().unwrap().config.clone();Ok(json!({"config":config,"activity":activity(&app),"items":entries,"bytes":bytes,"limit_bytes":LIMIT_BYTES}))}).await.map_err(|e|e.to_string())?
+    tauri::async_runtime::spawn_blocking(move||{let state=app.state::<AutoMomentsState>();let _gate=state.gate.lock().map_err(|e|e.to_string())?;hydrate(&app)?;let items=candidates(&app)?;let bytes=usage(&items)?;let entries:Vec<Value>=items.iter().map(|c|{let mut v=json!(c);v["exists"]=json!(std::path::Path::new(&c.output_path).is_file());v}).collect();let config=state.inner.lock().unwrap().config.clone();Ok(json!({"config":config,"activity":activity(&app),"items":entries,"bytes":bytes,"limit_bytes":LIMIT_BYTES}))}).await.map_err(|e|e.to_string())?
 }
 #[tauri::command]
 pub fn auto_moments_activity(app: AppHandle) -> Value {
