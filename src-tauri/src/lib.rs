@@ -259,6 +259,7 @@ pub fn run() {
             youtube::youtube_channel,
             youtube::youtube_sync,
             youtube::youtube_video_stats,
+            youtube::youtube_recent_uploads,
             psn::psn_connect,
             psn::psn_status,
             psn::psn_disconnect,

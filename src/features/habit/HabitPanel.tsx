@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
-import { CalendarCheck, Check, Coffee, ExternalLink, LucideIcon, Plus, Radio, RotateCcw, Scissors, Settings2, Video, X } from "lucide-react";
-import { Adaptation, listInProduction } from "../../db/adaptations";
+import { CalendarCheck, Check, Coffee, Play, ExternalLink, LucideIcon, Plus, Radio, RotateCcw, Scissors, Settings2, Video, X } from "lucide-react";
+import { Adaptation, listAllAdaptations, listInProduction, markScheduled, publishAdaptation } from "../../db/adaptations";
+import { recentUploads } from "../../db/youtube";
+import { matchUploads, Upload } from "./autoMatch";
+import { notifyHabitChanged } from "./HabitLayer";
 import { listProjects, Project } from "../../db/projects";
 import { completeSession, getRoutine, listSessions, planSession, removeSession, reopenSession, setRoutineDay, WorkSession } from "../../db/workPlan";
 import { es } from "../../i18n/es";
@@ -10,6 +13,24 @@ import { BUFFER_GOAL, bufferStatus, candidates, isPlanned, weekdayIndex, WORK_KI
 import "./habit.css";
 
 const t = es.habit;
+const DISMISSED = "nexus-habit-dismissed";
+
+function readDismissed(): Set<string> {
+  try {
+    return new Set(JSON.parse(localStorage.getItem(DISMISSED) ?? "[]"));
+  } catch {
+    return new Set();
+  }
+}
+
+// Las subidas se piden como mucho cada 10 minutos (3 unidades de cuota por consulta).
+let uploadsCache: { at: number; list: Upload[] } | null = null;
+async function cachedUploads(): Promise<Upload[]> {
+  if (uploadsCache && Date.now() - uploadsCache.at < 600_000) return uploadsCache.list;
+  const list = await recentUploads();
+  uploadsCache = { at: Date.now(), list };
+  return list;
+}
 const ICONS: Record<WorkKind, LucideIcon> = { record: Video, edit: Scissors, schedule: CalendarCheck, stream: Radio, rest: Coffee };
 const dayName = new Intl.DateTimeFormat(es.locale, { weekday: "short" });
 const longDay = new Intl.DateTimeFormat(es.locale, { weekday: "long", day: "numeric", month: "long" });
@@ -37,6 +58,9 @@ export function HabitPanel({ onOpenProject, onNavigate }: Props) {
   const [choice, setChoice] = useState("");
   const [editingRoutine, setEditingRoutine] = useState(false);
   const [error, setError] = useState("");
+  const [allVersions, setAllVersions] = useState<Adaptation[]>([]);
+  const [uploads, setUploads] = useState<Upload[]>([]);
+  const [dismissed, setDismissed] = useState(readDismissed);
 
   // La semana del progreso es de lunes a domingo.
   const monday = addDays(today, -weekdayIndex(today));
@@ -56,6 +80,7 @@ export function HabitPanel({ onOpenProject, onNavigate }: Props) {
       setWeekSessions(w);
       setVersions(v);
       setProjects(p);
+      setAllVersions(await listAllAdaptations());
     } catch (err) {
       setError(`${t.error} ${err}`);
     }
@@ -63,6 +88,11 @@ export function HabitPanel({ onOpenProject, onNavigate }: Props) {
 
   useEffect(() => {
     refresh();
+    // Sin YouTube conectado simplemente no hay sugerencias.
+    cachedUploads().then(setUploads).catch(() => {});
+    const onChange = () => refresh();
+    window.addEventListener("habit-changed", onChange);
+    return () => window.removeEventListener("habit-changed", onChange);
   }, []);
 
   async function run(action: () => Promise<void>) {
@@ -86,6 +116,17 @@ export function HabitPanel({ onOpenProject, onNavigate }: Props) {
   const buffer = bufferStatus(versions);
   const week = weekProgress(routine, weekSessions, weekDays);
   const isToday = selected === today;
+  const matches = matchUploads(uploads, allVersions, dismissed);
+
+  function dismiss(key: string) {
+    const next = new Set(dismissed).add(key);
+    setDismissed(next);
+    try {
+      localStorage.setItem(DISMISSED, JSON.stringify([...next]));
+    } catch {
+      /* solo se pierde el descarte al reiniciar */
+    }
+  }
 
   function add() {
     const pick = options.find((o) => `${o.projectId}|${o.adaptationId ?? ""}` === choice) ?? options[0];
@@ -180,6 +221,25 @@ export function HabitPanel({ onOpenProject, onNavigate }: Props) {
       ) : kind === "stream" ? (
         <div className="habit-work"><button onClick={() => onNavigate("live")}><Radio size={15} />{t.goLive}</button></div>
       ) : null}
+
+      {matches.length > 0 && (
+        <div className="habit-detected">
+          <span className="studio-eyebrow"><Play size={14} />{t.detected}</span>
+          {matches.map((m) => (
+            <div key={m.upload.id} className="habit-detected-row">
+              <span className="small">{m.action === "publish" ? t.detectedPublish(m.upload.title, m.version.title) : t.detectedSchedule(m.upload.title, m.version.title)}</span>
+              <div className="tools-actions">
+                <button onClick={() => run(async () => {
+                  if (m.action === "publish") await publishAdaptation(m.version.id, m.at, m.url);
+                  else await markScheduled(m.version.id, m.at, m.url);
+                  notifyHabitChanged();
+                })}><Check size={15} />{m.action === "publish" ? t.detectedYesPublish : t.detectedYesSchedule}</button>
+                <button className="ghost" onClick={() => dismiss(`${m.upload.id}:${m.version.id}`)}>{t.detectedNo}</button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
 
       <div className={`habit-buffer level-${buffer.level}`}>
         <div className="habit-buffer-head">

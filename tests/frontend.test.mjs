@@ -315,3 +315,24 @@ test('Habit plan: routine, user-picked candidates, buffer and week progress',()=
   const w=p.weekProgress(p.DEFAULT_ROUTINE,[{day:'2026-11-16',done_at:'x'},{day:'2026-11-16',done_at:'y'},{day:'2026-11-18',done_at:null}],days);
   assert.deepEqual({...w},{done:1,planned:6});
 });
+
+test('YouTube uploads are matched to unpublished versions only with confirmation data',()=>{
+  const m=load('src/features/habit/autoMatch.ts',{});
+  assert.ok(m.titleScore('Cómo pasar el ciervo piso 4 con equipo F2P | 7DS','7DS · Cómo pasar el ciervo piso 4 con equipo F2P')>=0.9);
+  assert.ok(m.titleScore('Mi primera granja automática','Guía de Surtr')<0.6);
+  const steps=(done)=>['script','recording','editing','scheduling','publishing'].map(s=>({id:s,step:s,enabled:true,completed_at:done.includes(s)?'x':null}));
+  const v=(id,title,extra={})=>({id,project_id:'p'+id,project_title:title,title,format:'long_video',scheduled_at:null,published_at:null,published_url:null,steps:steps(['script','recording','editing']),...extra});
+  const versions=[v('a','Los dupes que siguen funcionando en Minecraft 26.2'),v('b','Guía de Surtr: las posturas'),
+    v('c','Ya enlazado',{published_url:'https://youtu.be/AAAAAAAAAAA'}),v('d','Granja de hierro fácil',{published_at:'2026-11-01T10:00'})];
+  const uploads=[
+    {id:'BBBBBBBBBBB',title:'Los DUPES que siguen funcionando en Minecraft 26.2 😱',published_at:'2026-11-15T15:00:00Z',privacy:'public',publish_at:null},
+    {id:'CCCCCCCCCCC',title:'Guía de Surtr: todas las posturas',published_at:'2026-11-15T15:00:00Z',privacy:'private',publish_at:'2026-11-20T18:00:00Z'},
+    {id:'AAAAAAAAAAA',title:'Ya enlazado',published_at:'2026-11-10T15:00:00Z',privacy:'public',publish_at:null},
+    {id:'DDDDDDDDDDD',title:'Granja de hierro fácil',published_at:'2026-11-01T15:00:00Z',privacy:'public',publish_at:null},
+    {id:'EEEEEEEEEEE',title:'Borrador sin fecha',published_at:'2026-11-15T15:00:00Z',privacy:'private',publish_at:null}];
+  const found=m.matchUploads(uploads,versions,new Set());
+  assert.deepEqual(JSON.parse(JSON.stringify(found.map(f=>[f.upload.id,f.version.id,f.action]))),[['BBBBBBBBBBB','a','publish'],['CCCCCCCCCCC','b','schedule']]);
+  assert.equal(found[0].url,'https://youtu.be/BBBBBBBBBBB');
+  assert.match(found[1].at,/^2026-11-2\d{1}T\d{2}:\d{2}$/);
+  assert.equal(m.matchUploads(uploads,versions,new Set(['BBBBBBBBBBB:a'])).length,1);
+});

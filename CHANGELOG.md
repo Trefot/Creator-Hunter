@@ -2,6 +2,12 @@
 
 ## [Sin publicar]
 
+## [0.2.35] · 2026-11-15 · Hoy toca se actualiza solo
+
+- Al parar una grabación en OBS, Nexus te pregunta cuál de las grabaciones de hoy hiciste; con un clic se marca como hecha y el vídeo pasa a Edición.
+- «Hoy toca» detecta tus subidas recientes de YouTube y te propone a qué proyecto corresponden: con un clic quedan marcadas como Publicado (con enlace y fecha) o como Programado si las dejaste programadas.
+- Nada cambia sin tu confirmación, y Nexus solo lee YouTube: nunca sube ni modifica vídeos.
+
 ## [0.2.34] · 2026-11-15 · Momentos por voz y Shorts
 
 - Captura voluntaria por frase local de Windows («Nexus guarda esto») y por botón. Se activa en cada sesión; el micrófono tiene indicador global y controles de detener. Requiere un reconocedor local compatible y el micrófono predeterminado de Windows.

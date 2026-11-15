@@ -25,6 +25,8 @@ export interface YouTubeStatus {
 }
 
 export const youtubeStatus = () => invoke<YouTubeStatus>("youtube_status");
+/** Últimas subidas del canal, incluidas privadas y programadas (solo lectura, D-033). */
+export const recentUploads = () => invoke<import("../features/habit/autoMatch").Upload[]>("youtube_recent_uploads");
 
 export const importGoogleClient = (content: string) => invoke<void>("youtube_import_client", { content });
 

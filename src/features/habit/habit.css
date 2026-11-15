@@ -47,3 +47,16 @@
 .habit-meter-bar { height: 8px; border-radius: 99px; background: var(--surface-hover); overflow: hidden; }
 .habit-meter-bar span { display: block; height: 100%; border-radius: 99px; background: var(--accent); transition: width 0.3s; }
 .habit-buffer.level-full .habit-meter-bar span { background: var(--success); }
+
+/* Sugerencias de YouTube y aviso al parar la grabación (D-033) */
+.habit-detected { display: flex; flex-direction: column; gap: 8px; padding: 12px; border-radius: 12px; background: var(--bg); border: 1px solid color-mix(in srgb, #ff3355 45%, transparent); }
+.habit-detected-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+.habit-toast {
+  position: fixed; right: 24px; bottom: 24px; z-index: 60; width: min(380px, calc(100vw - 48px));
+  display: flex; flex-direction: column; gap: 8px; padding: 16px; border-radius: 14px;
+  border: 1px solid var(--accent); background: var(--surface); box-shadow: 0 18px 50px rgb(0 0 0 / 45%);
+}
+.habit-toast p { margin: 0; }
+.habit-toast ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.habit-toast li { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-weight: 600; }
+.habit-toast-close { position: absolute; top: 8px; right: 8px; }

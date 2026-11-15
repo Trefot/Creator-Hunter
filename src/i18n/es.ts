@@ -2,7 +2,7 @@
 export const es = {
   appName: "Nexus Studio",
   appTagline: "Tu espacio para crear",
-  version: "Alpha 0.2 · v0.2.34",
+  version: "Alpha 0.2 · v0.2.35",
   /** Marca de la versión de pruebas (D-019). */
   devBadge: "PRUEBAS",
   startup: {
@@ -638,6 +638,16 @@ export const es = {
     longs: "Largos",
     shorts: "Shorts",
     error: "Algo salió mal:",
+    recordedTitle: "Grabación terminada",
+    recordedHint: "¿Cuál grabaste? La marco como hecha y pasa a Edición.",
+    recordedYes: "Sí, esta",
+    notNow: "Ahora no",
+    detected: "Detectado en YouTube",
+    detectedPublish: (video: string, project: string) => `«${video}» está publicado. ¿Es «${project}»?`,
+    detectedSchedule: (video: string, project: string) => `«${video}» está programado. ¿Es «${project}»?`,
+    detectedYesPublish: "Sí, marcar publicado",
+    detectedYesSchedule: "Sí, marcar programado",
+    detectedNo: "No es este",
   },
   ideas: {
     subtitle: "Guarda todas tus ideas. Al aprobar una se crea su proyecto y empieza la producción.",

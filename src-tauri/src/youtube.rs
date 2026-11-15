@@ -573,6 +573,84 @@ pub async fn youtube_video_stats(
     Ok(VideoSyncData { videos: out.into_values().collect(), warning })
 }
 
+const PLAYLIST_ITEMS_URL: &str = "https://www.googleapis.com/youtube/v3/playlistItems";
+
+/// Una subida reciente del canal (D-033). `published_at` solo es la fecha real si el vídeo es público;
+/// `publish_at` es la fecha programada de un vídeo privado.
+#[derive(Serialize)]
+pub struct Upload {
+    id: String,
+    title: String,
+    published_at: Option<String>,
+    privacy: Option<String>,
+    publish_at: Option<String>,
+}
+
+async fn get_json(token: &str, url: &str, query: &[(&str, &str)], what: &str) -> Result<Value, String> {
+    reqwest::Client::new()
+        .get(url)
+        .query(query)
+        .bearer_auth(token)
+        .send()
+        .await
+        .map_err(|e| e.to_string())?
+        .error_for_status()
+        .map_err(|e| format!("YouTube rechazó la consulta {what}: {e}"))?
+        .json()
+        .await
+        .map_err(|e| e.to_string())
+}
+
+/// Las 15 subidas más recientes, incluidas las privadas y programadas (consulta el propietario).
+/// Solo lectura: 3 unidades de cuota. Nexus nunca sube ni cambia nada en YouTube.
+#[tauri::command]
+pub async fn youtube_recent_uploads(app: AppHandle, state: State<'_, YouTubeState>) -> Result<Vec<Upload>, String> {
+    let token = access_token(&app, &state).await?;
+    let channel = get_json(&token, CHANNELS_URL, &[("part", "contentDetails"), ("mine", "true")], "del canal").await?;
+    let playlist = channel["items"][0]["contentDetails"]["relatedPlaylists"]["uploads"]
+        .as_str()
+        .ok_or("Esta cuenta de Google no tiene canal de YouTube.")?
+        .to_string();
+    let items = get_json(
+        &token,
+        PLAYLIST_ITEMS_URL,
+        &[("part", "contentDetails"), ("playlistId", &playlist), ("maxResults", "15")],
+        "de las subidas",
+    )
+    .await?;
+    let ids: Vec<String> = items["items"]
+        .as_array()
+        .cloned()
+        .unwrap_or_default()
+        .iter()
+        .filter_map(|i| i["contentDetails"]["videoId"].as_str().map(String::from))
+        .filter(|id| is_video_id(id))
+        .collect();
+    if ids.is_empty() {
+        return Ok(vec![]);
+    }
+    let videos = get_json(
+        &token,
+        VIDEOS_URL,
+        &[("part", "snippet,status"), ("id", &ids.join(",")), ("maxResults", "50")],
+        "de vídeos",
+    )
+    .await?;
+    let found = videos["items"].as_array().cloned().unwrap_or_default();
+    let text = |v: &Value| v.as_str().map(String::from);
+    Ok(ids
+        .iter()
+        .filter_map(|id| found.iter().find(|v| v["id"].as_str() == Some(id.as_str())))
+        .map(|v| Upload {
+            id: v["id"].as_str().unwrap_or_default().to_string(),
+            title: v["snippet"]["title"].as_str().unwrap_or_default().to_string(),
+            published_at: text(&v["snippet"]["publishedAt"]),
+            privacy: text(&v["status"]["privacyStatus"]),
+            publish_at: text(&v["status"]["publishAt"]),
+        })
+        .collect())
+}
+
 /// Pruebas desconecta solo en local: revocar en Google afecta a todos los clientes del proyecto.
 #[tauri::command]
 pub async fn youtube_disconnect(app: AppHandle, state: State<'_, YouTubeState>) -> Result<(), String> {

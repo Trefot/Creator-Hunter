@@ -181,6 +181,22 @@ export async function publishAdaptation(id: string, publishedAt: string, url: st
   );
 }
 
+/** Fecha programada (local 'AAAA-MM-DDTHH:MM') y paso de programación completado. */
+export async function markScheduled(id: string, scheduledAt: string, url: string | null): Promise<void> {
+  const db = await getDb();
+  await db.execute(
+    `UPDATE adaptation SET scheduled_at = $1, published_url = COALESCE($2, published_url), updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
+      WHERE id = $3 AND workspace_id = $4`,
+    [scheduledAt, url, id, WORKSPACE_ID],
+  );
+  await db.execute(
+    `UPDATE adaptation_step SET completed_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now'),
+            updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
+      WHERE adaptation_id = $1 AND workspace_id = $2 AND step = 'scheduling' AND completed_at IS NULL`,
+    [id, WORKSPACE_ID],
+  );
+}
+
 /** Deshace la publicación y deja pendiente su paso de publicación. Los resultados se conservan. */
 export async function unpublishAdaptation(id: string): Promise<void> {
   const db = await getDb();

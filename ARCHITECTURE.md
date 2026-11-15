@@ -289,6 +289,11 @@ Cuentan lo recibido en USD desde la fecha local de creación de la meta, filtrad
 - «Hecho» completa el paso correspondiente de la versión (`setStepDone`) y marca la sesión; «Deshacer» solo quita la marca de la sesión (el paso se cambia desde el proyecto, para no borrar trabajo por error).
 - **Colchón** = versiones sin publicar con todos los pasos hasta la edición hechos. Meta fija de 2 semanas: 4 largos y 10 Shorts (Short, TikTok o Reel). Menos de 4 piezas = aviso de semana de grabar. Lógica pura en `features/habit/plan.ts` con tests.
 
+### D-033 · Avance automático del hábito con OBS y YouTube (2026-11-15)
+- **OBS:** al cerrarse una sesión de grabación (no un reinicio), `obs.rs` emite `obs-recording-stopped`. `HabitLayer` pregunta cuál de las sesiones de grabar de hoy se hizo; el clic completa la sesión y su paso de grabación. Sin sesiones de hoy no aparece nada.
+- **YouTube:** `youtube_recent_uploads` (solo lectura, 3 unidades de cuota, como mucho cada 10 min) devuelve las 15 últimas subidas con su privacidad y fecha programada. `autoMatch.ts` propone la versión sin publicar con el título más parecido (palabras en común ≥ 0,6), ignorando subidas ya enlazadas por URL. Público u oculto → «marcar publicado» (`publishAdaptation`); privado con `publishAt` → «marcar programado» (`markScheduled`). Los descartes se guardan en el navegador de la app.
+- Nunca se cambia nada sin un clic del usuario (autonomía híbrida, PRODUCT.md).
+
 ## Dependencias
 
 | Dependencia | Para qué |

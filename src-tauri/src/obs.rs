@@ -304,6 +304,10 @@ fn poll(app: &AppHandle, client: &mut Client) -> Result<(), String> {
             if kind == "stream" && !restarted {
                 let _ = app.emit("stream-recap-ready", current.clone());
             }
+            // Hábito (D-033): al parar una grabación, Inicio pregunta qué se grabó.
+            if kind == "recording" && !restarted {
+                let _ = app.emit("obs-recording-stopped", current.clone());
+            }
             *current = None;
         }
         if elapsed.is_some() && current.is_none() {
