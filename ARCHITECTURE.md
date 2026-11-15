@@ -294,6 +294,12 @@ Cuentan lo recibido en USD desde la fecha local de creación de la meta, filtrad
 - **YouTube:** `youtube_recent_uploads` (solo lectura, 3 unidades de cuota, como mucho cada 10 min) devuelve las 15 últimas subidas con su privacidad y fecha programada. `autoMatch.ts` propone la versión sin publicar con el título más parecido (palabras en común ≥ 0,6), ignorando subidas ya enlazadas por URL. Público u oculto → «marcar publicado» (`publishAdaptation`); privado con `publishAt` → «marcar programado» (`markScheduled`). Los descartes se guardan en el navegador de la app.
 - Nunca se cambia nada sin un clic del usuario (autonomía híbrida, PRODUCT.md).
 
+### D-034 · Subtítulos locales con Whisper y capítulos desde marcas (2026-11-15)
+- **Transcripción local** con whisper.cpp v1.9.2 (`whisper-bin-x64.zip`, CPU) y el modelo `ggml-small.bin` (488 MB, buen español). No se incluyen en el instalador: se descargan solo cuando el usuario pulsa «Instalar transcripción», a `tools/whisper`, desde URL fijas y con **SHA-256 fijado** (archivo `.part` que se borra si no coincide). Se descomprime con el `tar.exe` de Windows: sin dependencias nuevas.
+- **Subtítulos:** ffmpeg extrae audio mono 16 kHz a un WAV temporal (se borra), `whisper-cli -l es -osrt -pp` escribe `<vídeo>.srt` junto a la grabación (o `<vídeo> (Nexus).srt` si ya existe uno: nunca se sobrescribe). El progreso llega por el evento `subtitles-progress`.
+- **Capítulos:** marcas (`obs_marker.record_ms`) de la sesión → reglas de YouTube en `subtitles_core.rs` con tests: primero en 00:00 («Inicio» si no hay marca en los primeros 10 s), separación mínima de 10 s, formato h:mm:ss si dura 1 h o más, aviso con menos de 3.
+- Pendiente: versión GPU (CUDA) y subtítulos grabados en los Shorts.
+
 ## Dependencias
 
 | Dependencia | Para qué |

@@ -13,7 +13,7 @@ use crate::shorts_core::{self as core, Format};
 
 const NO_WINDOW: u32 = 0x0800_0000;
 
-fn hidden(cmd: &mut Command) -> &mut Command {
+pub(crate) fn hidden(cmd: &mut Command) -> &mut Command {
     #[cfg(windows)]
     {
         use std::os::windows::process::CommandExt;
@@ -23,7 +23,7 @@ fn hidden(cmd: &mut Command) -> &mut Command {
 }
 
 /// Busca ffmpeg.exe: herramientas de Nexus, accesos de winget, paquetes de winget y PATH.
-fn find_ffmpeg(app: &AppHandle) -> Option<PathBuf> {
+pub(crate) fn find_ffmpeg(app: &AppHandle) -> Option<PathBuf> {
     let mut candidates: Vec<PathBuf> = Vec::new();
     if let Ok(dir) = app.path().app_local_data_dir() {
         candidates.push(dir.join("tools").join("ffmpeg.exe"));
@@ -105,7 +105,7 @@ async fn source(pool: &sqlx::SqlitePool, kind: &str, id: &str) -> Result<(String
 }
 
 /// ffprobe mide el archivo realmente guardado; no suponemos que el buffer conserve todo.
-fn probe_duration(ffmpeg:&Path,input:&str)->Result<f64,String>{
+pub(crate) fn probe_duration(ffmpeg:&Path,input:&str)->Result<f64,String>{
  let mut probes=vec![ffmpeg.with_file_name("ffprobe.exe")];
  if let Ok(real)=ffmpeg.canonicalize(){probes.push(real.with_file_name("ffprobe.exe"));}
  if let Ok(out)=hidden(Command::new("where").arg("ffprobe")).output(){probes.extend(String::from_utf8_lossy(&out.stdout).lines().map(PathBuf::from));}

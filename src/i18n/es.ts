@@ -2,7 +2,7 @@
 export const es = {
   appName: "Nexus Studio",
   appTagline: "Tu espacio para crear",
-  version: "Alpha 0.2 · v0.2.36",
+  version: "Alpha 0.2 · v0.2.37",
   /** Marca de la versión de pruebas (D-019). */
   devBadge: "PRUEBAS",
   startup: {
@@ -597,6 +597,27 @@ export const es = {
       target: "El objetivo debe ser un número mayor que 0.",
       generic: "Algo salió mal:",
     },
+  },
+  subtitles: {
+    title: "Subtítulos y capítulos",
+    hint: "Transcribe tus grabaciones en tu PC con Whisper (el audio no sale de tu ordenador) y convierte los momentos marcados en capítulos para YouTube.",
+    refresh: "Actualizar",
+    needFfmpeg: "Necesita ffmpeg: instálalo con el botón del panel de Shorts.",
+    installHint: "Primera vez: hay que descargar el programa de transcripción y su modelo en español (unos 500 MB, una sola vez).",
+    install: "Instalar transcripción",
+    installing: "Instalando…",
+    stageProgram: "Programa",
+    stageModel: "Modelo",
+    empty: "Todavía no hay grabaciones de OBS terminadas. Graba con OBS conectado y aparecerán aquí.",
+    marks: (n: number) => (n === 1 ? "1 momento" : `${n} momentos`),
+    missing: "archivo no encontrado",
+    chapters: "Capítulos",
+    generate: "Crear subtítulos",
+    working: (p: number) => `Transcribiendo… ${p}%`,
+    showSrt: "Ver subtítulos",
+    copy: "Copiar capítulos",
+    copied: "¡Copiado!",
+    chaptersHint: "Pégalos en la descripción de YouTube. Los subtítulos (.srt) se suben en YouTube Studio → Subtítulos.",
   },
   habit: {
     title: "Hoy toca",

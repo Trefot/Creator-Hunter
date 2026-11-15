@@ -2,6 +2,13 @@
 
 ## [Sin publicar]
 
+## [0.2.37] · 2026-11-15 · Subtítulos y capítulos
+
+- Nuevo panel en En directo → Momentos: «Subtítulos y capítulos» con tus grabaciones de OBS.
+- «Capítulos» convierte los momentos que marcaste con «¡Clip!» en capítulos listos para pegar en la descripción de YouTube (empiezan en 00:00 y cumplen la regla de 10 s); te avisa si faltan momentos.
+- «Crear subtítulos» transcribe la grabación en tu PC con Whisper y guarda un .srt junto al vídeo para subirlo en YouTube Studio. El audio nunca sale de tu ordenador.
+- La primera vez se instala la transcripción con un botón (unos 500 MB, una sola vez); Nexus comprueba la huella de cada descarga antes de usarla.
+
 ## [0.2.36] · 2026-11-15 · Planificar la semana entera el domingo
 
 - En «Hoy toca» ya puedes planificar días de editar y programar con vídeos que aún no has grabado o editado; aparecen al final de la lista marcados «(aún por grabar)» o «(aún por editar)».

@@ -26,6 +26,8 @@ mod chat_commands_core;
 mod recap;
 mod shorts;
 mod shorts_core;
+mod subtitles;
+mod subtitles_core;
 mod auto_moments_core;
 mod auto_moments;
 mod stream_prep;
@@ -239,6 +241,11 @@ pub fn run() {
             shorts::shorts_install_ffmpeg,
             shorts::shorts_render,
             shorts::shorts_list,
+            subtitles::subtitles_status,
+            subtitles::subtitles_install,
+            subtitles::subtitles_recordings,
+            subtitles::subtitles_chapters,
+            subtitles::subtitles_generate,
             chat_commands::chat_commands_get,
             chat_commands::chat_commands_save,
             chat_commands::chat_commands_preview,
