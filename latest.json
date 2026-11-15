@@ -1,13 +1,12 @@
 {
-  "version": "0.2.30",
+  "version": "0.2.31",
   "notes": [
-    "El overlay de música (/music) ahora muestra la canción de tu Spotify cuando no suena nada del reproductor local. Si ya lo tenías en OBS, empieza a funcionar sin tocar nada.",
-    "Botones más claros en Sonido → Overlays: «overlay de música (local + Spotify)» y «tarjeta solo de Spotify».",
-    "El overlay de música se recarga solo en las próximas actualizaciones. Esta vez, en OBS pulsa una vez «Actualizar caché de la página actual» en esa fuente (o reinicia OBS)."
+    "Nuevo botón «Añadir varias» en Crear contenido → Ideas: pega una lista (una idea por línea: Título | descripción | etiquetas) y se crean todas a la vez.",
+    "Las ideas cuyo título ya existe se saltan, así que pegar la misma lista dos veces no duplica nada."
   ],
   "date": "2026-11-15",
   "installer": "TrophyHunter-setup.exe",
-  "source_commit": "ffb0af2afc383241533f6fc0e87a0af4829dc312",
-  "sha256": "d5370c7823dce4be15b521ffc3f7807c82d649b09021c45ef1914586a23239c5",
-  "size": 20533729
+  "source_commit": "76eade9d4c9c9b200e637e59b9a608b8fe37d1e1",
+  "sha256": "f2998003880a292ad1f3f74308df977f750a78e069f97eae6545eacb15baa631",
+  "size": 20534017
 }
