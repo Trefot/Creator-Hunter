@@ -2,7 +2,7 @@
 
 ## [Sin publicar]
 
-## [0.2.32] · 2026-11-14 · Hoy toca: tu hábito de grabar, editar y publicar
+## [0.2.33] · 2026-11-15 · Hoy toca: tu hábito de grabar, editar y publicar
 
 - Nuevo panel «Hoy toca» en Inicio: según tu rutina semanal te dice si hoy toca grabar, editar, programar, directo o descanso, y tú eliges qué vídeo trabajar.
 - Al pulsar «Hecho», Nexus marca el paso del proyecto (grabación, edición o programación) y suma la sesión a tu semana.
