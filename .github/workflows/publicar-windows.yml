@@ -7,7 +7,8 @@ permissions:
   contents: read
 concurrency:
   group: nexus-studio-publicacion
-  cancel-in-progress: false
+  # Por defecto serializa las publicaciones; la marca permite sustituir un build propio obsoleto.
+  cancel-in-progress: ${{ contains(github.event.head_commit.message, '[replace-pending-build]') }}
 jobs:
   build:
     runs-on: windows-latest
