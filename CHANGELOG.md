@@ -2,6 +2,11 @@
 
 ## [Sin publicar]
 
+## [0.2.31] · 2026-11-14 · Añadir varias ideas de golpe
+
+- Nuevo botón «Añadir varias» en Crear contenido → Ideas: pega una lista (una idea por línea: Título | descripción | etiquetas) y se crean todas a la vez.
+- Las ideas cuyo título ya existe se saltan, así que pegar la misma lista dos veces no duplica nada.
+
 ## [0.2.30] · 2026-11-14 · Spotify en el overlay de música
 
 - El overlay de música (/music) ahora muestra la canción de tu Spotify cuando no suena nada del reproductor local. Si ya lo tenías en OBS, empieza a funcionar sin tocar nada.

@@ -286,3 +286,11 @@ test('project board requires every unpublished version to be ready',()=>{
  assert.equal(projectStage([version([], '2026-11-14')]),'published');
  assert.equal(projectStage([version([], '2026-11-14'),version([step('script')])]),'prepare');
 });
+
+test('Bulk ideas: one per line, optional fields, no duplicates',()=>{
+  const mod=load('src/db/ideas.ts',{'./database':{getDb:async()=>null,newId:()=>'id',WORKSPACE_ID:'w'}});
+  const items=mod.parseBulkIdeas(`# comentario\n\n- Ep. 1 | Mundo nuevo | minecraft, serie\n2) Solo título\nep. 1 | repetida\n | sin título`);
+  assert.equal(items.length,2);
+  assert.deepEqual({...items[0]},{title:'Ep. 1',description:'Mundo nuevo',tags:'minecraft, serie'});
+  assert.deepEqual({...items[1]},{title:'Solo título',description:'',tags:''});
+});

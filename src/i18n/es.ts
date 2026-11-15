@@ -2,7 +2,7 @@
 export const es = {
   appName: "Nexus Studio",
   appTagline: "Tu espacio para crear",
-  version: "Alpha 0.2 · v0.2.30",
+  version: "Alpha 0.2 · v0.2.31",
   /** Marca de la versión de pruebas (D-019). */
   devBadge: "PRUEBAS",
   startup: {
@@ -601,6 +601,13 @@ export const es = {
   ideas: {
     subtitle: "Guarda todas tus ideas. Al aprobar una se crea su proyecto y empieza la producción.",
     add: "Nueva idea",
+    bulkAdd: "Añadir varias",
+    bulkTitle: "Añadir varias ideas",
+    bulkHint: "Una idea por línea: Título | descripción | etiquetas separadas por comas. Solo el título es obligatorio. Las ideas con un título que ya existe se saltan, así que pegar dos veces no duplica nada.",
+    bulkPlaceholder: "Minecraft ep. 1 · Empecé un survival técnico | Mundo nuevo y reglas | minecraft, serie\nLos dupes que siguen funcionando en 26.2 | Tutorial | minecraft, tutorial",
+    bulkCount: (n: number) => (n === 1 ? "1 idea lista para guardar" : `${n} ideas listas para guardar`),
+    bulkSave: (n: number) => (n === 1 ? "Guardar 1 idea" : `Guardar ${n} ideas`),
+    bulkDone: (added: number, skipped: number) => `${added === 1 ? "1 idea añadida" : `${added} ideas añadidas`}${skipped ? ` · ${skipped} ya existían` : ""}.`,
     newTitle: "Nueva idea",
     editTitle: "Editar idea",
     title: "Título",

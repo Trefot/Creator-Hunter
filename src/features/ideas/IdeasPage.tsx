@@ -1,17 +1,19 @@
 import { PageTitle } from "../../components/PageTitle";
 import { EmptyState } from "../../components/EmptyState";
-import { Archive, ArchiveRestore, Check, Lightbulb, Pencil, Plus, Trash2 } from "lucide-react";
+import { Archive, ArchiveRestore, Check, ListPlus, Lightbulb, Pencil, Plus, Trash2 } from "lucide-react";
 import { coverFor } from "../../components/cover";
 import { useEffect, useState } from "react";
 import {
   approveIdea,
   createIdea,
+  createIdeas,
   deleteIdea,
   Idea,
   IdeaInput,
   IDEA_STATUSES,
   IdeaStatus,
   listIdeas,
+  parseBulkIdeas,
   setIdeaStatus,
   splitTags,
   updateIdea,
@@ -39,6 +41,22 @@ export function IdeasPage({createSignal=0}:{createSignal?:number}={}) {
   const [editing, setEditing] = useState<Editing>(null);
   const [confirmingId, setConfirmingId] = useState<string | null>(null);
   const [error, setError] = useState("");
+  const [bulk, setBulk] = useState<string | null>(null);
+  const [bulkMessage, setBulkMessage] = useState("");
+  const bulkItems = parseBulkIdeas(bulk ?? "");
+
+  async function saveBulk() {
+    setError("");
+    try {
+      const { added, skipped } = await createIdeas(bulkItems);
+      setBulkMessage(t.bulkDone(added, skipped));
+      setBulk(null);
+      setFilter("new");
+    } catch (err) {
+      setError(`${t.errors.generic} ${err}`);
+    }
+    await refresh();
+  }
 
   useEffect(()=>{if(createSignal>0)setEditing("new")},[createSignal]);
 
@@ -82,7 +100,12 @@ export function IdeasPage({createSignal=0}:{createSignal?:number}={}) {
     <section className="page">
       <header className="page-header">
         <PageTitle section="ideas" subtitle={t.subtitle} />
-        {editing === null && <button onClick={() => setEditing("new")}><Plus size={16} />{t.add}</button>}
+        {editing === null && bulk === null && (
+          <div className="tools-actions">
+            <button className="ghost" onClick={() => { setBulk(""); setBulkMessage(""); }}><ListPlus size={16} />{t.bulkAdd}</button>
+            <button onClick={() => setEditing("new")}><Plus size={16} />{t.add}</button>
+          </div>
+        )}
       </header>
 
       {editing !== null && (
@@ -93,6 +116,20 @@ export function IdeasPage({createSignal=0}:{createSignal?:number}={}) {
           onCancel={() => setEditing(null)}
         />
       )}
+
+      {bulk !== null && (
+        <div className="card form">
+          <h2>{t.bulkTitle}</h2>
+          <p className="muted small">{t.bulkHint}</p>
+          <textarea rows={10} style={{ width: "100%", boxSizing: "border-box", resize: "vertical" }} value={bulk} placeholder={t.bulkPlaceholder} onChange={(e) => setBulk(e.target.value)} autoFocus />
+          <p className="muted small">{t.bulkCount(bulkItems.length)}</p>
+          <div className="tools-actions">
+            <button disabled={bulkItems.length === 0} onClick={saveBulk}><ListPlus size={16} />{t.bulkSave(bulkItems.length)}</button>
+            <button className="ghost" onClick={() => setBulk(null)}>{t.cancel}</button>
+          </div>
+        </div>
+      )}
+      {bulkMessage && <p className="status-on">{bulkMessage}</p>}
 
       <div className="tabs">
         {IDEA_STATUSES.map((s) => (

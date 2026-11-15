@@ -29,6 +29,38 @@ export function splitTags(tags: string | null): string[] {
   return tags ? tags.split(",").map((t) => t.trim()).filter(Boolean) : [];
 }
 
+/**
+ * Convierte texto pegado en ideas: una por línea, «Título | descripción | etiquetas».
+ * Ignora líneas vacías, las que empiezan por # y títulos repetidos (sin distinguir mayúsculas).
+ */
+export function parseBulkIdeas(text: string): IdeaInput[] {
+  const seen = new Set<string>();
+  const out: IdeaInput[] = [];
+  for (const raw of text.split(/\r?\n/)) {
+    const line = raw.trim().replace(/^[-*•]\s+|^\d+[.)]\s+/, "");
+    if (!line || line.startsWith("#")) continue;
+    const [title = "", description = "", ...rest] = line.split("|").map((p) => p.trim());
+    const key = title.toLowerCase();
+    if (!title || seen.has(key)) continue;
+    seen.add(key);
+    out.push({ title: title.slice(0, 200), description, tags: rest.join(",") });
+  }
+  return out;
+}
+
+/** Crea varias ideas de golpe; salta las que ya existen con el mismo título para no duplicar. */
+export async function createIdeas(inputs: IdeaInput[]): Promise<{ added: number; skipped: number }> {
+  const existing = new Set((await listIdeas()).map((i) => i.title.trim().toLowerCase()));
+  let added = 0;
+  for (const input of inputs) {
+    if (existing.has(input.title.trim().toLowerCase())) continue;
+    await createIdea(input);
+    existing.add(input.title.trim().toLowerCase());
+    added++;
+  }
+  return { added, skipped: inputs.length - added };
+}
+
 export async function listIdeas(): Promise<Idea[]> {
   const db = await getDb();
   return db.select<Idea[]>(
