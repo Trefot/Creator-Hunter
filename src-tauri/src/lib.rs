@@ -176,6 +176,12 @@ fn migrations() -> Vec<Migration> {
             sql: include_str!("../migrations/023_clip_exports.sql"),
             kind: MigrationKind::Up,
         },
+        Migration {
+            version: 24,
+            description: "habito de produccion",
+            sql: include_str!("../migrations/024_work_plan.sql"),
+            kind: MigrationKind::Up,
+        },
     ]
 }
 

@@ -26,6 +26,7 @@ import { computeProgress, daysUntil, formatGoalValue } from "../goals/progress";
 import { monthlyTotals, totalsByCurrency } from "../income/money";
 import { currentStep } from "../projects/status";
 import { Section } from "../../sections";
+import { HabitPanel } from "../habit/HabitPanel";
 
 const t = es.dashboard;
 const tp = es.projects;
@@ -199,6 +200,8 @@ export function DashboardPage({ onNavigate, onOpenProject, dataVersion = 0 }: Pr
         </div>
         <div className="studio-hero-companion"><img src={nexus} alt="Nexus con su farol"/></div>
       </div>
+
+      <HabitPanel onOpenProject={onOpenProject} onNavigate={onNavigate} />
 
       <div className="home-next-session">        <article className="studio-next-live">
           {nextLive?.thumbnail && <img className="studio-live-art" src={nextLive.thumbnail} alt="" />}

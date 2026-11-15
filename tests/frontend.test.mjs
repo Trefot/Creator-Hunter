@@ -294,3 +294,24 @@ test('Bulk ideas: one per line, optional fields, no duplicates',()=>{
   assert.deepEqual({...items[0]},{title:'Ep. 1',description:'Mundo nuevo',tags:'minecraft, serie'});
   assert.deepEqual({...items[1]},{title:'Solo título',description:'',tags:''});
 });
+
+test('Habit plan: routine, user-picked candidates, buffer and week progress',()=>{
+  const p=load('src/features/habit/plan.ts',{});
+  assert.equal(p.weekdayIndex('2026-11-16'),0); assert.equal(p.weekdayIndex('2026-11-22'),6);
+  assert.deepEqual([...p.routineFrom([{weekday:6,kind:'rest'},{weekday:1,kind:'bogus'}])],['record','record','edit','stream','edit','record','rest']);
+  const step=(s,done,enabled=true)=>({id:s,step:s,enabled,completed_at:done?'x':null});
+  const v=(id,format,doneSteps,extra={})=>({id,project_id:'p-'+id,project_title:'P '+id,title:'P '+id,format,published_at:null,
+    steps:['script','recording','editing','scheduling','publishing'].map(s=>step(s,doneSteps.includes(s))),...extra});
+  const versions=[v('a','long_video',[]),v('b','long_video',['script','recording']),v('c','short',['script','recording','editing']),
+    v('d','short',['script','recording','editing','scheduling','publishing']),v('e','long_video',['script','recording','editing'],{published_at:'2026-11-01'}),v('f','live',[])];
+  const projects=[{id:'p-a',title:'P a',adaptation_count:1},{id:'new',title:'Idea aprobada',adaptation_count:0}];
+  assert.deepEqual(p.candidates('record',projects,versions).map(c=>c.adaptationId),['a',null]);
+  assert.deepEqual(p.candidates('edit',projects,versions).map(c=>c.adaptationId),['b']);
+  assert.deepEqual(p.candidates('schedule',projects,versions).map(c=>c.adaptationId),['c']);
+  assert.equal(p.stepToComplete('edit'),'editing');
+  assert.deepEqual({...p.bufferStatus(versions)},{long:0,short:2,level:'low'});
+  assert.equal(p.bufferStatus([]).level,'empty');
+  const days=['2026-11-16','2026-11-17','2026-11-18','2026-11-19','2026-11-20','2026-11-21','2026-11-22'];
+  const w=p.weekProgress(p.DEFAULT_ROUTINE,[{day:'2026-11-16',done_at:'x'},{day:'2026-11-16',done_at:'y'},{day:'2026-11-18',done_at:null}],days);
+  assert.deepEqual({...w},{done:1,planned:6});
+});

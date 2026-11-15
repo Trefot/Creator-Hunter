@@ -283,6 +283,12 @@ Cuentan lo recibido en USD desde la fecha local de creación de la meta, filtrad
 - Formatos: horizontal, vertical recortado (centro 9:16) y vertical con fondo difuminado. Se vuelve a codificar (H.264 + AAC, `+faststart`) para que el corte sea exacto. Argumentos y cálculos en `shorts_core.rs` con tests.
 - Resultado en Vídeos → Nexus Shorts. Cada Short queda registrado en `clip_export` (migración 23, incluida en las copias); Nexus nunca borra ni mueve los vídeos.
 
+### D-032 · Hábito de producción: «Hoy toca» y colchón (2026-11-14)
+- **Rutina semanal** (`work_routine`, un tipo por día: grabar, editar, programar, directo, descanso) con valores iniciales del plan de colchón. **Sesiones** (`work_session`): qué proyecto (y versión, si existe) se trabaja un día concreto. Migración 24, aditiva e incluida en las copias.
+- **El usuario elige** qué trabajar: Nexus solo filtra los candidatos por el paso actual (grabar: guion o grabación pendientes y proyectos sin versiones; editar: edición; programar: programación o publicación). Igual que «Plan de hoy» de Juegos, sin sugerencias automáticas.
+- «Hecho» completa el paso correspondiente de la versión (`setStepDone`) y marca la sesión; «Deshacer» solo quita la marca de la sesión (el paso se cambia desde el proyecto, para no borrar trabajo por error).
+- **Colchón** = versiones sin publicar con todos los pasos hasta la edición hechos. Meta fija de 2 semanas: 4 largos y 10 Shorts (Short, TikTok o Reel). Menos de 4 piezas = aviso de semana de grabar. Lógica pura en `features/habit/plan.ts` con tests.
+
 ## Dependencias
 
 | Dependencia | Para qué |

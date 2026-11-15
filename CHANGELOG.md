@@ -2,6 +2,14 @@
 
 ## [Sin publicar]
 
+## [0.2.32] · 2026-11-14 · Hoy toca: tu hábito de grabar, editar y publicar
+
+- Nuevo panel «Hoy toca» en Inicio: según tu rutina semanal te dice si hoy toca grabar, editar, programar, directo o descanso, y tú eliges qué vídeo trabajar.
+- Al pulsar «Hecho», Nexus marca el paso del proyecto (grabación, edición o programación) y suma la sesión a tu semana.
+- Tira de 7 días para planificar la semana el domingo, y botón «Rutina» para cambiar qué toca cada día (empieza con el plan del colchón: lunes y martes grabar, miércoles editar, jueves directo, viernes editar, sábado grabar, domingo programar).
+- Medidor del colchón de contenido: vídeos largos y Shorts ya editados frente a la meta de 2 semanas (4 largos y 10 Shorts), con aviso cuando toca semana de grabar.
+- Migración 24 aditiva para la rutina y las sesiones, incluida en las copias de seguridad.
+
 ## [0.2.31] · 2026-11-14 · Añadir varias ideas de golpe
 
 - Nuevo botón «Añadir varias» en Crear contenido → Ideas: pega una lista (una idea por línea: Título | descripción | etiquetas) y se crean todas a la vez.

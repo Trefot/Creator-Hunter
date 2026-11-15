@@ -1,0 +1,49 @@
+/* «Hoy toca», semana y colchón en Inicio (D-032) */
+.habit-panel {
+  display: flex; flex-direction: column; gap: 14px; margin: 18px 0; padding: 18px;
+  border-radius: 16px; border: 1px solid var(--border);
+  background: linear-gradient(120deg, var(--accent-soft), transparent 55%), var(--surface);
+}
+.habit-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; }
+.habit-today { display: flex; align-items: center; gap: 14px; }
+.habit-today h2 { margin: 2px 0; font-size: 24px; }
+.habit-today p { margin: 0; }
+.habit-icon { display: grid; place-items: center; width: 54px; height: 54px; border-radius: 14px; background: var(--bg); border: 1px solid var(--accent); color: var(--accent); }
+.habit-icon.habit-rest { border-color: var(--border); color: var(--muted); }
+.habit-week-score { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+
+.habit-routine { padding: 10px 12px; border-radius: 12px; background: var(--bg); border: 1px solid var(--border); }
+.habit-routine p { margin: 0 0 8px; }
+.habit-routine-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 8px; }
+.habit-routine-grid label { display: flex; flex-direction: column; gap: 4px; text-transform: capitalize; font-size: 13px; }
+
+.habit-strip { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; }
+.habit-day, .habit-day:hover:not(:disabled) {
+  display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 4px;
+  border-radius: 10px; border: 1px solid var(--border); background: var(--bg); color: var(--text);
+}
+.habit-day.on { border-color: var(--accent); background: var(--accent-soft); }
+.habit-day.done { border-color: color-mix(in srgb, var(--success) 55%, transparent); }
+.habit-day.done .habit-day-count { color: var(--success); }
+.habit-day-name { font-size: 12px; text-transform: capitalize; }
+.habit-day-count { font-size: 12px; min-height: 14px; color: var(--muted); }
+
+.habit-work { display: flex; flex-direction: column; gap: 8px; }
+.habit-work > p { margin: 0; }
+.habit-sessions { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.habit-sessions li { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; padding: 10px 12px; border-radius: 10px; background: var(--bg); border: 1px solid var(--border); }
+.habit-sessions li.done { border-color: color-mix(in srgb, var(--success) 45%, transparent); }
+.habit-sessions li.done .habit-session-title { text-decoration: line-through; color: var(--muted); }
+.habit-session-title { font-weight: 600; flex: 1; min-width: 180px; }
+.habit-pick { display: flex; gap: 8px; flex-wrap: wrap; }
+.habit-pick select { flex: 1; min-width: 220px; }
+.link-button, .link-button:hover:not(:disabled) { padding: 0; border: 0; background: none; color: var(--accent); text-decoration: underline; font-size: inherit; }
+
+.habit-buffer { display: flex; flex-direction: column; gap: 6px; padding: 12px; border-radius: 12px; background: var(--bg); border: 1px solid var(--border); }
+.habit-buffer-head { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.habit-buffer.level-empty, .habit-buffer.level-low { border-color: color-mix(in srgb, var(--warning) 60%, transparent); }
+.habit-buffer.level-full { border-color: color-mix(in srgb, var(--success) 55%, transparent); }
+.habit-meter { display: grid; grid-template-columns: 70px 1fr 48px; align-items: center; gap: 10px; font-size: 13px; }
+.habit-meter-bar { height: 8px; border-radius: 99px; background: var(--surface-hover); overflow: hidden; }
+.habit-meter-bar span { display: block; height: 100%; border-radius: 99px; background: var(--accent); transition: width 0.3s; }
+.habit-buffer.level-full .habit-meter-bar span { background: var(--success); }
