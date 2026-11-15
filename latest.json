@@ -1,16 +1,13 @@
 {
-  "version": "0.2.29",
+  "version": "0.2.30",
   "notes": [
-    "Nuevo En directo → Estado: semáforos de todas tus conexiones (OBS, Twitch y sus permisos, YouTube, Discord, Spotify, PlayStation, comandos y ffmpeg) con un botón para arreglar cada una antes del directo.",
-    "«Empezar directo» en la Cabina: lista de preparación de unos dos minutos con conexiones, OBS, juego y objetivo, título de Twitch editable, comandos de chat y comprobaciones tuyas. Nexus nunca empieza la emisión.",
-    "Comandos de chat en En directo → Comandos: !platino, !juego, !redes, !discord y los que crees, con variables como {platinos}, {juego}, {progreso} y {contador:Nombre}, espera entre usos y vista previa. Responden en Twitch y YouTube.",
-    "Para que los comandos puedan contestar hay que renovar una vez los permisos de Twitch (Conexiones) y volver a conectar YouTube; Estado te avisa.",
-    "Clips para Shorts: «Crear Short» en cada momento o clip recorta la grabación alrededor de la marca en vertical con fondo difuminado, vertical recortado u horizontal, y lo guarda en Vídeos → Nexus Shorts. Necesita ffmpeg, que se instala con un clic mediante winget.",
-    "Migración 23 aditiva para el historial de Shorts, incluido en las copias de seguridad."
+    "El overlay de música (/music) ahora muestra la canción de tu Spotify cuando no suena nada del reproductor local. Si ya lo tenías en OBS, empieza a funcionar sin tocar nada.",
+    "Botones más claros en Sonido → Overlays: «overlay de música (local + Spotify)» y «tarjeta solo de Spotify».",
+    "El overlay de música se recarga solo en las próximas actualizaciones. Esta vez, en OBS pulsa una vez «Actualizar caché de la página actual» en esa fuente (o reinicia OBS)."
   ],
   "date": "2026-11-15",
   "installer": "TrophyHunter-setup.exe",
-  "source_commit": "841b365080a8bbdd90d9555c525fae7097c926a0",
-  "sha256": "7ca70ccbafc7b6a894deee31116f52d547fac0ae8ac3b0f3f615f51131ec5a7d",
-  "size": 20533610
+  "source_commit": "ffb0af2afc383241533f6fc0e87a0af4829dc312",
+  "sha256": "d5370c7823dce4be15b521ffc3f7807c82d649b09021c45ef1914586a23239c5",
+  "size": 20533729
 }
