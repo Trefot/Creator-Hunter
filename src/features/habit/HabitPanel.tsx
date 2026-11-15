@@ -208,7 +208,7 @@ export function HabitPanel({ onOpenProject, onNavigate }: Props) {
           {options.length > 0 ? (
             <div className="habit-pick">
               <select value={choice} onChange={(e) => setChoice(e.target.value)}>
-                {options.map((o) => <option key={`${o.projectId}|${o.adaptationId ?? ""}`} value={`${o.projectId}|${o.adaptationId ?? ""}`}>{o.label}</option>)}
+                {options.map((o) => <option key={`${o.projectId}|${o.adaptationId ?? ""}`} value={`${o.projectId}|${o.adaptationId ?? ""}`}>{o.early ? `${o.label} ${t.early[kind]}` : o.label}</option>)}
               </select>
               <button onClick={add}><Plus size={15} />{t.add}</button>
             </div>

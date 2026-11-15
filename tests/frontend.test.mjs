@@ -306,8 +306,8 @@ test('Habit plan: routine, user-picked candidates, buffer and week progress',()=
     v('d','short',['script','recording','editing','scheduling','publishing']),v('e','long_video',['script','recording','editing'],{published_at:'2026-11-01'}),v('f','live',[])];
   const projects=[{id:'p-a',title:'P a',adaptation_count:1},{id:'new',title:'Idea aprobada',adaptation_count:0}];
   assert.deepEqual(p.candidates('record',projects,versions).map(c=>c.adaptationId),['a',null]);
-  assert.deepEqual(p.candidates('edit',projects,versions).map(c=>c.adaptationId),['b']);
-  assert.deepEqual(p.candidates('schedule',projects,versions).map(c=>c.adaptationId),['c']);
+  assert.deepEqual(JSON.parse(JSON.stringify(p.candidates('edit',projects,versions).map(c=>[c.adaptationId,c.early]))),[['b',false],['a',true]]);
+  assert.deepEqual(JSON.parse(JSON.stringify(p.candidates('schedule',projects,versions).map(c=>[c.adaptationId,c.early]))),[['c',false],['b',true],['a',true]]);
   assert.equal(p.stepToComplete('edit'),'editing');
   assert.deepEqual({...p.bufferStatus(versions)},{long:0,short:2,level:'low'});
   assert.equal(p.bufferStatus([]).level,'empty');

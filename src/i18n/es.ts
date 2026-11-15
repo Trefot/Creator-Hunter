@@ -2,7 +2,7 @@
 export const es = {
   appName: "Nexus Studio",
   appTagline: "Tu espacio para crear",
-  version: "Alpha 0.2 · v0.2.35",
+  version: "Alpha 0.2 · v0.2.36",
   /** Marca de la versión de pruebas (D-019). */
   devBadge: "PRUEBAS",
   startup: {
@@ -625,6 +625,7 @@ export const es = {
       edit: "No hay vídeos esperando edición. Al marcar una grabación como hecha aparecerá aquí.",
       schedule: "No hay vídeos listos para programar todavía.",
     },
+    early: { record: "", edit: "(aún por grabar)", schedule: "(aún por editar)" },
     goIdeas: "Ir a Ideas",
     goProjects: "Ir a Proyectos",
     goLive: "Ir a la cabina",

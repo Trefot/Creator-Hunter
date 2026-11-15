@@ -2,6 +2,11 @@
 
 ## [Sin publicar]
 
+## [0.2.36] · 2026-11-15 · Planificar la semana entera el domingo
+
+- En «Hoy toca» ya puedes planificar días de editar y programar con vídeos que aún no has grabado o editado; aparecen al final de la lista marcados «(aún por grabar)» o «(aún por editar)».
+- Al marcar como hecha una edición o una programación, también se completan los pasos anteriores que faltaban (guion y grabación).
+
 ## [0.2.35] · 2026-11-15 · Hoy toca se actualiza solo
 
 - Al parar una grabación en OBS, Nexus te pregunta cuál de las grabaciones de hoy hiciste; con un clic se marca como hecha y el vídeo pasa a Edición.

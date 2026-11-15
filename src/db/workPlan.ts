@@ -1,5 +1,5 @@
 import { getDb, newId, WORKSPACE_ID } from "./database";
-import { Adaptation, setStepDone } from "./adaptations";
+import { Adaptation, setStepDone, STEPS } from "./adaptations";
 import { PlannedKind, routineFrom, stepToComplete, WorkKind } from "../features/habit/plan";
 
 export interface WorkSession {
@@ -62,10 +62,15 @@ export async function removeSession(id: string): Promise<void> {
   await db.execute("DELETE FROM work_session WHERE id = $1 AND workspace_id = $2", [id, WORKSPACE_ID]);
 }
 
-/** Marca la sesión como hecha y, si tiene versión, completa su paso (grabación, edición o programación). */
+/**
+ * Marca la sesión como hecha y, si tiene versión, completa su paso (grabación, edición o
+ * programación) y los anteriores que falten: no se edita sin haber grabado.
+ */
 export async function completeSession(session: WorkSession, version: Adaptation | undefined): Promise<void> {
-  const step = version?.steps.find((s) => s.step === stepToComplete(session.kind));
-  if (step && step.enabled && !step.completed_at) await setStepDone(step.id, true);
+  const target = STEPS.indexOf(stepToComplete(session.kind));
+  for (const step of version?.steps ?? []) {
+    if (STEPS.indexOf(step.step) <= target && step.enabled && !step.completed_at) await setStepDone(step.id, true);
+  }
   const db = await getDb();
   await db.execute(`UPDATE work_session SET done_at = ${NOW}, updated_at = ${NOW} WHERE id = $1 AND workspace_id = $2`, [
     session.id,

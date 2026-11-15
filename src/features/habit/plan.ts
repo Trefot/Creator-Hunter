@@ -37,31 +37,38 @@ export interface Candidate {
   projectId: string;
   adaptationId: string | null;
   label: string;
+  /** Aún le falta un paso anterior (por ejemplo, se edita lo que se grabará antes esa semana). */
+  early: boolean;
 }
 
 /**
  * Qué se puede trabajar en una sesión. Lo elige el usuario: Nexus no sugiere nada por su cuenta.
  * Grabar: versiones con el guion o la grabación pendientes, y proyectos que aún no tienen versiones.
- * Editar: versiones en edición. Programar: versiones listas para programar o publicar.
+ * Editar y programar: primero las versiones que ya están en ese paso y después las que aún tienen
+ * pasos anteriores, para poder planificar la semana entera el domingo.
  */
 export function candidates(
   kind: PlannedKind,
   projects: { id: string; title: string; adaptation_count: number }[],
   versions: Adaptation[],
 ): Candidate[] {
-  const wanted: Step[] = kind === "record" ? ["script", "recording"] : kind === "edit" ? ["editing"] : ["scheduling", "publishing"];
+  const ready: Step[] = kind === "record" ? ["script", "recording"] : kind === "edit" ? ["editing"] : ["scheduling", "publishing"];
+  const earlier: Step[] = kind === "record" ? [] : kind === "edit" ? ["recording", "script"] : ["editing", "recording", "script"];
+  const order = [...ready, ...earlier];
   const list: Candidate[] = versions
     .filter((a) => {
       const step = current(a);
-      return !a.published_at && a.format !== "live" && step !== null && wanted.includes(step);
+      return !a.published_at && a.format !== "live" && step !== null && order.includes(step);
     })
+    .sort((a, b) => order.indexOf(current(a)!) - order.indexOf(current(b)!))
     .map((a) => ({
       projectId: a.project_id,
       adaptationId: a.id,
       label: a.title === a.project_title ? a.title : `${a.project_title} · ${a.title}`,
+      early: earlier.includes(current(a)!),
     }));
   if (kind === "record") {
-    for (const p of projects) if (p.adaptation_count === 0) list.push({ projectId: p.id, adaptationId: null, label: p.title });
+    for (const p of projects) if (p.adaptation_count === 0) list.push({ projectId: p.id, adaptationId: null, label: p.title, early: false });
   }
   return list;
 }
