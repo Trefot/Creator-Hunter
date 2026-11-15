@@ -98,8 +98,8 @@ pub(crate) async fn source(
             let path: Option<String> = r.get("output_path");
             match (record, path) {
                 (Some(ms), Some(p)) => Ok((r.get("title"), p, Some(ms))),
-                (None, _) => Err("Ese momento se marcó sin grabación local: activa la grabación en OBS (o usa el Replay Buffer) para poder recortarlo.".into()),
-                (_, None) => Err("OBS aún no confirmó el archivo de esa grabación. Detén la grabación y vuelve a intentarlo.".into()),
+                (None, _) => Err("Esta marca no tiene una grabación asociada. Tus otros vídeos no se han borrado.".into()),
+                (_, None) => Err("OBS todavía está grabando. Cuando termines la grabación, podrás recortar este momento.".into()),
             }
         }
         "clip" => {
@@ -201,22 +201,118 @@ pub async fn media_inspect(app: AppHandle, kind: String, id: String) -> Result<V
     .await
     .map_err(|e| e.to_string())?
 }
+/// Un mismo cálculo para el resumen, la primera imagen y el archivo exportado.
+async fn planned_cut(
+    app: &AppHandle,
+    kind: &str,
+    id: &str,
+    mark: Option<i64>,
+    duration: f64,
+    before: Option<i64>,
+    after: Option<i64>,
+) -> Result<(Option<(f64, f64)>, Option<String>), String> {
+    if kind == "clip" {
+        let handle = app.clone();
+        let identity = id.to_string();
+        let candidate = tauri::async_runtime::spawn_blocking(move || {
+            crate::auto_moments::candidates(&handle)
+                .map(|items| items.into_iter().find(|c| c.id == identity))
+        })
+        .await
+        .map_err(|e| e.to_string())??;
+        if let Some(c) = candidate {
+            if c.state != "kept" {
+                return Err("Conserva este candidato antes de crear su Short.".into());
+            }
+            let (cut, warning) = crate::auto_moments_core::clip_window(
+                duration,
+                c.tail_ms,
+                before.unwrap_or(c.before as i64).clamp(0, 120) as u32,
+                after.unwrap_or(c.after as i64).clamp(0, 30) as u32,
+            )?;
+            return Ok((Some(cut), warning));
+        }
+    }
+    match mark {
+        Some(ms) => {
+            let (cut, warning) = core::recording_window(
+                ms,
+                duration,
+                before.unwrap_or(core::DEFAULT_BEFORE),
+                after.unwrap_or(core::DEFAULT_AFTER),
+            )?;
+            Ok((Some(cut), warning))
+        }
+        None => Ok((None, None)),
+    }
+}
+#[tauri::command]
+pub async fn shorts_plan(
+    app: AppHandle,
+    kind: String,
+    id: String,
+    before: Option<i64>,
+    after: Option<i64>,
+) -> Result<Value, String> {
+    let pool = crate::backup::pool(&app).await?;
+    let (_, input, mark) = source(&pool, &kind, &id).await?;
+    let handle = app.clone();
+    let data = tauri::async_runtime::spawn_blocking(move || {
+        let f = find_ffmpeg(&handle)
+            .ok_or("Instala ffmpeg desde Clips para Shorts para preparar el vídeo.")?;
+        probe(&f, &input)
+    })
+    .await
+    .map_err(|e| e.to_string())??;
+    let duration = data["format"]["duration"]
+        .as_str()
+        .and_then(|s| s.parse::<f64>().ok())
+        .filter(|n| n.is_finite() && *n > 0.)
+        .ok_or("No se pudo leer la duración del vídeo.")?;
+    let (cut, warning) = planned_cut(&app, &kind, &id, mark, duration, before, after).await?;
+    let (start, length) = cut.unwrap_or((0., duration));
+    let audio: Vec<Value> = data["streams"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .filter(|s| s["codec_type"] == "audio")
+        .enumerate()
+        .map(
+            |(index, s)| json!({"index":index,"title":s["tags"]["title"],"channels":s["channels"]}),
+        )
+        .collect();
+    Ok(
+        json!({"start":start,"end":start+length,"duration":length,"warning":warning,"audio":audio,"has_window":cut.is_some()}),
+    )
+}
+
 #[tauri::command]
 pub async fn shorts_preview(
     app: AppHandle,
     kind: String,
     id: String,
     format: String,
+    before: Option<i64>,
+    after: Option<i64>,
 ) -> Result<String, String> {
     use base64::Engine;
     let pool = crate::backup::pool(&app).await?;
     let (_, input, mark) = source(&pool, &kind, &id).await?;
+    let handle = app.clone();
+    let file = input.clone();
+    let duration = tauri::async_runtime::spawn_blocking(move || {
+        let f = find_ffmpeg(&handle).ok_or("Falta ffmpeg.")?;
+        probe_duration(&f, &file)
+    })
+    .await
+    .map_err(|e| e.to_string())??;
+    let (cut, _) = planned_cut(&app, &kind, &id, mark, duration, before, after).await?;
     tauri::async_runtime::spawn_blocking(move || {
         let f = find_ffmpeg(&app).ok_or("Falta ffmpeg.")?;
         let mut args = core::args_audio(
             &input,
             "pipe:1",
-            Some((mark.unwrap_or(0).max(0) as f64 / 1000., 1.)),
+            Some((cut.map(|c| c.0).unwrap_or(0.), 1.)),
             Format::parse(&format)?,
             &[],
             2,
@@ -308,21 +404,6 @@ pub async fn shorts_render(
     let pool = crate::backup::pool(&app).await?;
     let (title, input, mark) = source(&pool, &kind, &id).await?;
     ticket.title(&format!("Short · {title}"));
-    let candidate = if kind == "clip" {
-        let handle = app.clone();
-        let identity = id.clone();
-        tauri::async_runtime::spawn_blocking(move || {
-            crate::auto_moments::candidates(&handle)
-                .map(|items| items.into_iter().find(|c| c.id == identity))
-        })
-        .await
-        .map_err(|e| e.to_string())??
-    } else {
-        None
-    };
-    if candidate.as_ref().is_some_and(|c| c.state != "kept") {
-        return Err("Revisa y conserva el candidato antes de crear su Short.".into());
-    }
     if !Path::new(&input).is_file() {
         return Err(format!("No se encuentra el archivo de vídeo: {input}"));
     }
@@ -348,30 +429,17 @@ pub async fn shorts_render(
         format!("{}-{:08x}", format.key(), rand::random::<u128>())
     ));
     let mut output_guard = OwnedOutput::reserve(&output)?;
-    let (cut, warning) = if let Some(c) = candidate {
-        let binary = ffmpeg.clone();
-        let file = input.clone();
-        let duration = tauri::async_runtime::spawn_blocking(move || probe_duration(&binary, &file))
-            .await
-            .map_err(|e| e.to_string())??;
-        let (cut, warning) = crate::auto_moments_core::clip_window(
-            duration,
-            c.tail_ms,
-            before.unwrap_or(c.before as i64).clamp(0, 120) as u32,
-            after.unwrap_or(c.after as i64).clamp(0, 30) as u32,
-        )?;
-        (Some(cut), warning)
-    } else {
-        (
-            mark.map(|ms| core::window(ms, before.unwrap_or(20), after.unwrap_or(10))),
-            None,
-        )
-    };
     let binary = ffmpeg.clone();
     let file = input.clone();
     let metadata = tauri::async_runtime::spawn_blocking(move || probe(&binary, &file))
         .await
         .map_err(|e| e.to_string())??;
+    let duration = metadata["format"]["duration"]
+        .as_str()
+        .and_then(|s| s.parse::<f64>().ok())
+        .filter(|n| n.is_finite() && *n > 0.)
+        .ok_or("No se pudo leer la duración del vídeo.")?;
+    let (cut, warning) = planned_cut(&app, &kind, &id, mark, duration, before, after).await?;
     let audio = tracks(&metadata, audio)?;
     let mut arguments = core::args_audio(
         &input,

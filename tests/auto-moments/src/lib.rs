@@ -184,6 +184,7 @@ mod tests {
     use auto_moments::*;
     use serde_json::{Value, json};
     use std::time::{Duration, SystemTime, UNIX_EPOCH};
+    static MEDIA_TEST_LOCK: std::sync::Mutex<()> = std::sync::Mutex::new(());
     async fn app() -> tauri::AppHandle {
         let pool = sqlx::sqlite::SqlitePoolOptions::new()
             .max_connections(1)
@@ -216,6 +217,7 @@ mod tests {
     }
     #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
     async fn media_queue_serializes_cancels_and_blocks_restore() {
+        let _guard = MEDIA_TEST_LOCK.lock().unwrap();
         let a = app().await;
         let first = media_jobs::Ticket::enqueue("first")
             .unwrap()
@@ -432,6 +434,137 @@ mod tests {
                 .await
                 .unwrap()
                 .is_empty()
+        );
+        std::fs::remove_dir_all(&a.env.dir).unwrap();
+    }
+    #[cfg(unix)]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+    async fn preview_and_export_recover_the_same_thirty_seconds_before_the_button() {
+        use base64::Engine;
+        use std::io::Write;
+        use std::process::{Command, Stdio};
+        if !std::path::Path::new("/usr/bin/ffmpeg").is_file() {
+            return;
+        }
+        let _guard = MEDIA_TEST_LOCK.lock().unwrap();
+        let a = app().await;
+        let tools = a.env.dir.join("tools");
+        std::fs::create_dir_all(&tools).unwrap();
+        std::os::unix::fs::symlink("/usr/bin/ffmpeg", tools.join("ffmpeg.exe")).unwrap();
+        std::os::unix::fs::symlink("/usr/bin/ffprobe", tools.join("ffprobe.exe")).unwrap();
+        let input = a.env.dir.join("recording.mkv");
+        let out = Command::new("ffmpeg")
+            .args([
+                "-v",
+                "error",
+                "-f",
+                "lavfi",
+                "-i",
+                "color=c=red:s=160x90:r=1:d=80",
+                "-vf",
+                "drawbox=x=0:y=0:w=iw:h=ih:color=lime:t=fill:enable='between(t,40,69)'",
+                "-c:v",
+                "libx264",
+                "-preset",
+                "ultrafast",
+            ])
+            .arg(&input)
+            .output()
+            .unwrap();
+        assert!(
+            out.status.success(),
+            "{}",
+            String::from_utf8_lossy(&out.stderr)
+        );
+        sqlx::raw_sql("CREATE TABLE obs_session(id TEXT PRIMARY KEY,output_path TEXT);CREATE TABLE obs_marker(id TEXT PRIMARY KEY,workspace_id TEXT,session_id TEXT,title TEXT,record_ms INTEGER);CREATE TABLE clip_export(id TEXT,workspace_id TEXT,source_kind TEXT,source_id TEXT,title TEXT,format TEXT,path TEXT);").execute(&a.env.pool).await.unwrap();
+        sqlx::query("INSERT INTO obs_session VALUES('session',?)")
+            .bind(input.display().to_string())
+            .execute(&a.env.pool)
+            .await
+            .unwrap();
+        sqlx::query("INSERT INTO obs_marker VALUES('moment',?,'session','Jugada buena',70000)")
+            .bind(obs_store::WORKSPACE)
+            .execute(&a.env.pool)
+            .await
+            .unwrap();
+        let plan = shorts::shorts_plan(a.clone(), "moment".into(), "moment".into(), None, None)
+            .await
+            .unwrap();
+        assert_eq!(plan["start"], 40.);
+        assert_eq!(plan["end"], 75.);
+        let preview = shorts::shorts_preview(
+            a.clone(),
+            "moment".into(),
+            "moment".into(),
+            "original".into(),
+            None,
+            None,
+        )
+        .await
+        .unwrap();
+        let bytes = base64::engine::general_purpose::STANDARD
+            .decode(preview.split_once(',').unwrap().1)
+            .unwrap();
+        let mut child = Command::new("ffmpeg")
+            .args([
+                "-v",
+                "error",
+                "-i",
+                "pipe:0",
+                "-vf",
+                "format=rgb24,crop=1:1:40:40",
+                "-frames:v",
+                "1",
+                "-f",
+                "rawvideo",
+                "-",
+            ])
+            .stdin(Stdio::piped())
+            .stdout(Stdio::piped())
+            .spawn()
+            .unwrap();
+        child.stdin.take().unwrap().write_all(&bytes).unwrap();
+        let pixel = child.wait_with_output().unwrap().stdout;
+        assert!(
+            pixel[1] > 150 && pixel[0] < 100,
+            "preview must show the green BEFORE section"
+        );
+        let result = shorts::shorts_render(
+            a.clone(),
+            "moment".into(),
+            "moment".into(),
+            "original".into(),
+            None,
+            None,
+            Some(vec![]),
+            None,
+        )
+        .await
+        .unwrap();
+        let path = result["path"].as_str().unwrap();
+        let pixel = Command::new("ffmpeg")
+            .args([
+                "-v",
+                "error",
+                "-i",
+                path,
+                "-vf",
+                "format=rgb24,crop=1:1:40:40",
+                "-frames:v",
+                "1",
+                "-f",
+                "rawvideo",
+                "-",
+            ])
+            .output()
+            .unwrap()
+            .stdout;
+        assert!(
+            pixel[1] > 150 && pixel[0] < 100,
+            "export must start at the same BEFORE section"
+        );
+        assert!(
+            (shorts::probe_duration(&tools.join("ffmpeg.exe"), path).unwrap() - 35.).abs() < 0.2
         );
         std::fs::remove_dir_all(&a.env.dir).unwrap();
     }

@@ -2,6 +2,13 @@
 
 ## [Sin publicar]
 
+## [0.2.39] · 2026-11-15 · Recuperar la jugada anterior
+
+- MOMENTO se usa después de la jugada: el recorte normal recupera 30 segundos anteriores y 5 posteriores. Se muestra el tiempo disponible antes de guardar.
+- La vista previa muestra el inicio real del mismo tramo que se exportará; ya no muestra directamente el instante de pulsación.
+- Pantalla de Shorts simplificada: Recuperar la jugada, Ver cómo empieza y Guardar Short. Imagen, audio y GPU quedan en opciones aparte.
+- Las marcas sin grabación asociada muestran una explicación y ocultan opciones que no pueden usarse. Si falta vídeo anterior, se avisa sin inventarlo ni borrar otros archivos.
+
 ## [0.2.38] · 2026-11-15 · Estudio integrado y correcciones
 
 - Elige o mezcla las pistas de audio para Shorts y subtítulos. Corregidos los formatos verticales y añadido Original, horizontal 16:9 y vista previa.

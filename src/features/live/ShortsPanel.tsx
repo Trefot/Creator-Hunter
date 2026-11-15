@@ -1,6 +1,6 @@
 import {invoke} from "@tauri-apps/api/core";
-import {AudioPicker,ExportNextSteps} from "./MediaTools";
-import { useEffect, useState } from "react";
+import {ExportNextSteps} from "./MediaTools";
+import { useEffect, useState, useRef } from "react";
 import { revealItemInDir } from "@tauri-apps/plugin-opener";
 import { Download, FolderOpen, RefreshCw, Scissors } from "lucide-react";
 import { ShortExport, ShortFormat, shortsInstallFfmpeg, shortsList, shortsRender, shortsStatus } from "../../db/streamTools";
@@ -13,91 +13,49 @@ const FORMATS: { id: ShortFormat; label: string; hint: string }[] = [
   { id: "original", label: "Original", hint: "Conserva la proporción y resolución de la grabación" },
 ];
 
-/** Botón «✂️ Short» de cada momento o clip de la bandeja. */
+interface ShortPlan {start:number;end:number;duration:number;has_window:boolean;warning:string|null;audio:{index:number;title:string|null;channels:number}[]}
+
+/** MOMENTO se pulsa después de la jugada. Primero muestra lo necesario para recuperarla. */
 export function ShortMaker({ kind, id, captureWindow }: { kind: "moment" | "clip"; id: string; captureWindow?:{before:number;after:number} }) {
-  const [open, setOpen] = useState(false);
-  const [format, setFormat] = useState<ShortFormat>("vertical_blur");
-  const [before, setBefore] = useState(captureWindow?.before??20);
-  const [after, setAfter] = useState(captureWindow?.after??10);
-  const [state, setState] = useState<"idle" | "busy">("idle");
-  const [exportId,setExportId]=useState<string|undefined>(undefined);
-  const [result, setResult] = useState<string | null>(null);
-  const [error, setError] = useState("");
-  const [encoder,setEncoder]=useState("cpu");
-  const [audio,setAudio]=useState<number[]|undefined>(undefined);
-  const [preview,setPreview]=useState("");
-  const [previewBusy,setPreviewBusy]=useState(false);
-  const [warning,setWarning]=useState<string|null>(null);
-
-  async function render() {
-    setState("busy");
-    setError("");
-    setResult(null);
-    setWarning(null);
-    try {
-      const result=await shortsRender(kind,id,format,before,after,audio,encoder);setResult(result.path);setExportId(result.id);setWarning(result.warning??null);
-    } catch (e) {
-      setError(String(e));
-    } finally {
-      setState("idle");
-    }
-  }
-
-  if (!open)
-    return (
-      <button className="ghost small-button" onClick={() => setOpen(true)}>
-        <Scissors size={14} /> Crear Short
-      </button>
-    );
-  return (
-    <div className="short-maker">
-      <div className="short-formats">
-        {FORMATS.map((f) => (
-          <label key={f.id} className={`short-format${format === f.id ? " on" : ""}`}>
-            <input type="radio" name={`fmt-${id}`} checked={format === f.id} onChange={() => setFormat(f.id)} />
-            <strong>{f.label}</strong>
-            <span className="muted small">{f.hint}</span>
-          </label>
-        ))}
-      </div>
-      {kind === "moment" || captureWindow ? (
-        <div className="short-window small">
-          <label>
-            Segundos antes <input type="number" min={0} max={captureWindow?120:180} value={before} onChange={(e) => setBefore(Number(e.target.value))} />
-          </label>
-          <label>
-            Segundos después <input type="number" min={0} max={captureWindow?30:180} value={after} onChange={(e) => setAfter(Number(e.target.value))} />
-          </label>
-        </div>
-      ) : (
-        <p className="muted small">El clip del Replay Buffer se convierte entero al formato elegido.</p>
-      )}
-      <label>Procesar con<select value={encoder} onChange={e=>setEncoder(e.target.value)}><option value="cpu">CPU · compatible</option><option value="nvenc">GPU NVIDIA · requiere prueba de NVENC</option></select></label><p className="muted small">Comprueba la GPU desde «Procesamiento local» antes de elegirla. La prueba debe repetirse al abrir Nexus. Los subtítulos usan CPU.</p>
-      <AudioPicker kind={kind} id={id} value={audio} onChange={setAudio}/>
-      <p className="muted small">1. Revisa la imagen y el audio · 2. Exporta · 3. Desde la bandeja, crea el proyecto y programa su publicación. Los subtítulos se generan en el panel de grabaciones; todavía no se incrustan en el Short.</p>
-      <button className="ghost small-button" disabled={previewBusy} onClick={async()=>{setPreviewBusy(true);setError('');try{setPreview(await invoke<string>('shorts_preview',{kind,id,format}))}catch(e){setError(String(e))}finally{setPreviewBusy(false)}}}>{previewBusy?'Generando vista…':'Vista previa del formato'}</button>
-      {preview&&<img src={preview} alt="Vista previa del formato elegido" style={{maxWidth:'100%',maxHeight:300,objectFit:'contain',display:'block'}}/>}
-      <div className="tools-actions">
-        <button className="small-button" disabled={state === "busy" || audio===undefined} onClick={render}>
-          {state === "busy" ? <RefreshCw size={14} className="spin" /> : <Scissors size={14} />} {state === "busy" ? "Creando… (puede tardar)" : "Crear"}
-        </button>
-        <button className="ghost small-button" onClick={() => setOpen(false)}>
-          Cerrar
-        </button>
-      </div>
-      {result && (
-        <p className="status-on small">
-          ✓ Listo: {result}{" "}
-          <button className="link-button small" onClick={() => revealItemInDir(result)}>
-            Mostrar en la carpeta
-          </button>
-        </p>
-      )}
-      {result&&<ExportNextSteps path={result} exportId={exportId}/>}
-      {warning&&<p role="status" className="small">{warning}</p>}
-      {error && <p role="alert" className="error small">{error}</p>}
-    </div>
-  );
+ const [open,setOpen]=useState(false),[format,setFormat]=useState<ShortFormat>('vertical_blur');
+ const [before,setBefore]=useState(captureWindow?.before??30),[after,setAfter]=useState(captureWindow?.after??5);
+ const [plan,setPlan]=useState<ShortPlan|null>(null),[checking,setChecking]=useState(false),[planError,setPlanError]=useState('');
+ const [busy,setBusy]=useState(false),[result,setResult]=useState<string|null>(null),[exportId,setExportId]=useState<string|undefined>();
+ const [audio,setAudio]=useState<number[]|undefined>(),[encoder,setEncoder]=useState('cpu'),[preview,setPreview]=useState(''),[previewBusy,setPreviewBusy]=useState(false);
+ const previewRequest=useRef(0);
+ const [error,setError]=useState(''),[warning,setWarning]=useState<string|null>(null);
+ useEffect(()=>{if(!open)return;let cancelled=false;setChecking(true);setPlanError('');setPreview('');previewRequest.current++;
+  const timer=setTimeout(()=>{invoke<ShortPlan>('shorts_plan',{kind,id,before,after}).then(p=>{if(!cancelled){setPlan(p);setAudio(previous=>previous??(p.audio.length?[0]:[]))}}).catch(e=>{if(!cancelled){setPlanError(String(e));setPlan(null)}}).finally(()=>{if(!cancelled)setChecking(false)})},200);
+  return()=>{cancelled=true;clearTimeout(timer)};
+ },[open,kind,id,before,after]);
+ useEffect(()=>{setPreview('');previewRequest.current++},[format]);
+ async function render(){setBusy(true);setError('');setResult(null);setWarning(null);try{const r=await shortsRender(kind,id,format,before,after,audio,encoder);setResult(r.path);setExportId(r.id);setWarning(r.warning??null)}catch(e){setError(String(e))}finally{setBusy(false)}}
+ if(!open)return <button className="ghost small-button" onClick={()=>setOpen(true)}><Scissors size={14}/>Crear Short</button>;
+ return <div className="short-maker">
+  <h3>Recuperar la jugada</h3>
+  <p>Pulsa MOMENTO después de que pase algo bueno. El Short recupera lo que ocurrió antes del botón.</p>
+  {checking&&<p className="muted small" role="status">Buscando el tramo de la grabación…</p>}
+  {planError?<p role="alert" className="error">{planError}</p>:plan&&<>
+   {plan.has_window?<label>Recuperar segundos anteriores al botón<input aria-label="Recuperar segundos anteriores al botón" type="number" min={1} max={captureWindow?120:180} value={before} onChange={e=>setBefore(Math.max(1,Math.min(captureWindow?120:180,Number(e.target.value)||1)))}/></label>:<p>Este clip ya contiene lo que guardó OBS. Se conservará completo.</p>}
+   <p className="small">{plan.has_window?`Incluye hasta ${before} segundos de la jugada anterior y ${after} segundos después. `:''}Duración del Short: {Math.round(plan.duration)} segundos.</p>
+   {plan.warning&&<p role="status" className="small">{plan.warning}</p>}
+   <p className="muted small">Formato: {FORMATS.find(f=>f.id===format)?.label}. Puedes cambiarlo en las opciones.</p>
+   <button className="ghost small-button" disabled={previewBusy||checking} onClick={async()=>{const request=++previewRequest.current;setPreviewBusy(true);setError('');try{const image=await invoke<string>('shorts_preview',{kind,id,format,before,after});if(request===previewRequest.current)setPreview(image)}catch(e){setError(String(e))}finally{setPreviewBusy(false)}}}>{previewBusy?'Preparando imagen…':'Ver cómo empieza'}</button>
+   {preview&&<img src={preview} alt="Primer fotograma del Short" style={{maxWidth:'100%',maxHeight:300,objectFit:'contain',display:'block'}}/>}
+   <details><summary>Opciones de imagen y audio</summary>
+    <div className="short-formats">{FORMATS.map(f=><label key={f.id} className={`short-format${format===f.id?' on':''}`}><input type="radio" name={`fmt-${id}`} checked={format===f.id} onChange={()=>setFormat(f.id)}/><strong>{f.label}</strong><span className="muted small">{f.hint}</span></label>)}</div>
+    {plan.has_window&&<label>Segundos después del botón<input type="number" min={0} max={captureWindow?30:180} value={after} onChange={e=>setAfter(Math.max(0,Math.min(captureWindow?30:180,Number(e.target.value)||0)))}/></label>}
+    <fieldset><legend>Audio de la grabación</legend>{plan.audio.map(t=><label key={t.index} style={{display:'flex',gap:8}}><input type="checkbox" checked={audio?.includes(t.index)??false} onChange={e=>setAudio(e.target.checked?[...(audio??[]),t.index]:(audio??[]).filter(n=>n!==t.index))}/>{t.title||`Pista ${t.index+1}`} · {t.channels} canales</label>)}<p className="muted small">Se usa la primera pista por defecto. Elige varias solo si voz y juego están separados. Sin selección se guarda sin audio.</p></fieldset>
+    <label>Procesamiento<select value={encoder} onChange={e=>setEncoder(e.target.value)}><option value="cpu">Normal</option><option value="nvenc">NVIDIA · requiere prueba de GPU</option></select></label>
+    {encoder==='nvenc'&&<p className="muted small">Ejecuta primero la prueba en Procesamiento local. Si prefieres continuar directamente, elige Normal.</p>}
+   </details>
+   <div className="tools-actions"><button disabled={busy||checking||audio===undefined} onClick={render}><Scissors size={14}/>{busy?'Guardando… consulta Procesamiento local':'Guardar Short'}</button></div>
+  </>}
+  <button className="ghost small-button" onClick={()=>setOpen(false)}>Cerrar</button>
+  {result&&<><p role="status" className="status-on small">Short guardado. <button className="link-button small" onClick={()=>revealItemInDir(result)}>Mostrar archivo</button></p><ExportNextSteps path={result} exportId={exportId}/></>}
+  {warning&&warning!==plan?.warning&&<p role="status" className="small">{warning}</p>}
+  {error&&<p role="alert" className="error small">{error}</p>}
+ </div>;
 }
 
 /** Estado de ffmpeg y los últimos Shorts creados (En directo → Momentos). */

@@ -244,6 +244,7 @@ pub fn run() {
             shorts::shorts_render,
             shorts::studio_export_project,
             shorts::shorts_preview,
+            shorts::shorts_plan,
             shorts::media_inspect,
             media_jobs::media_jobs_status,
             media_jobs::media_jobs_cancel,

@@ -43,6 +43,44 @@ pub fn window(mark_ms: i64, before_s: i64, after_s: i64) -> (f64, f64) {
     (start, duration)
 }
 
+pub const DEFAULT_BEFORE: i64 = 30;
+pub const DEFAULT_AFTER: i64 = 5;
+
+/// El botón se pulsa después de la jugada. Nunca inventa vídeo anterior al inicio del archivo.
+pub fn recording_window(
+    mark_ms: i64,
+    duration: f64,
+    before: i64,
+    after: i64,
+) -> Result<((f64, f64), Option<String>), String> {
+    if !duration.is_finite() || duration <= 0.0 {
+        return Err("No se pudo leer la duración de la grabación.".into());
+    }
+    let mark = mark_ms.max(0) as f64 / 1000.;
+    if mark > duration + 0.5 {
+        return Err("La marca no coincide con la duración de este vídeo. No se recortó para evitar guardar otra jugada.".into());
+    }
+    let mark = mark.min(duration);
+    let before = before.clamp(0, 180) as f64;
+    let after = after.clamp(0, 180) as f64;
+    let start = (mark - before).max(0.);
+    let end = (mark + after).min(duration);
+    if end - start < 0.5 {
+        return Err("No hay suficiente vídeo alrededor de esta marca.".into());
+    }
+    let warning = if mark + 0.1 < before {
+        Some(format!(
+            "La grabación solo conserva {:.0} segundos antes del botón. Se guardará todo lo disponible.",
+            mark
+        ))
+    } else if duration - mark + 0.1 < after {
+        Some("La grabación terminó antes del final solicitado. Se guardará hasta donde llegue el vídeo.".into())
+    } else {
+        None
+    };
+    Ok(((start, end - start), warning))
+}
+
 /// Nombre de archivo seguro a partir del título (sin caracteres prohibidos en Windows).
 pub fn file_stem(title: &str) -> String {
     let clean: String = title
@@ -183,6 +221,20 @@ mod tests {
         assert_eq!(window(5_000, 20, 10), (0.0, 15.0));
         assert_eq!(window(60_000, 9999, 9999), (0.0, 240.0));
         assert_eq!(window(10_000, 0, 0), (10.0, 3.0));
+    }
+
+    #[test]
+    fn recording_window_is_retroactive_and_does_not_invent_history() {
+        assert_eq!(
+            recording_window(70000, 80., DEFAULT_BEFORE, DEFAULT_AFTER)
+                .unwrap()
+                .0,
+            (40., 35.)
+        );
+        let (cut, warning) = recording_window(5000, 80., 30, 5).unwrap();
+        assert_eq!(cut, (0., 10.));
+        assert!(warning.unwrap().contains("5 segundos"));
+        assert!(recording_window(90000, 80., 30, 5).is_err());
     }
 
     #[test]
