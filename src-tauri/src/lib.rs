@@ -21,6 +21,8 @@ mod obs;
 mod obs_protocol;
 mod obs_store;
 mod premigrate;
+mod recap;
+mod recap_core;
 mod data_safety;
 mod updater;
 mod psn;
@@ -157,6 +159,12 @@ fn migrations() -> Vec<Migration> {
             kind: MigrationKind::Up,
         },
         Migration {version:21,description:"Audio personalizado y eventos sociales",sql:include_str!("../migrations/021_alert_media_events.sql"),kind:MigrationKind::Up},
+        Migration {
+            version: 22,
+            description: "resumen del directo",
+            sql: include_str!("../migrations/022_stream_recap.sql"),
+            kind: MigrationKind::Up,
+        },
     ]
 }
 
@@ -200,6 +208,11 @@ pub fn run() {
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
+            recap::stream_recaps,
+            recap::stream_recap,
+            recap::stream_recap_seen,
+            recap::stream_recap_discord_preview,
+            recap::stream_recap_discord,
             premigrate::prepare_database,
             backup::export_backup,
             backup::import_backup,

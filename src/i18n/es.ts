@@ -2,7 +2,7 @@
 export const es = {
   appName: "Nexus Studio",
   appTagline: "Tu espacio para crear",
-  version: "Alpha 0.2 · v0.2.27",
+  version: "Alpha 0.2 · v0.2.28",
   /** Marca de la versión de pruebas (D-019). */
   devBadge: "PRUEBAS",
   startup: {
@@ -218,6 +218,55 @@ export const es = {
     localUnavailable: "El servidor local de Nexus debe estar disponible para copiar la URL.",
     moments: "Últimos 200 momentos", copyMoments: "Copiar lista", empty: "Todavía no hay momentos guardados.",
     recordingTime: "Grabación", streamTime: "Directo", filePending: "Archivo sin confirmar por OBS; la marca conserva su tiempo. La ruta puede llegar al detener la grabación mientras Nexus siga conectado.",
+  },
+  recap: {
+    eyebrow: "RESUMEN DEL DIRECTO",
+    noGame: "Directo",
+    live: "en directo",
+    loading: "Cargando resúmenes…",
+    tiles: {
+      newPeople: "personas nuevas",
+      subs: "subs y miembros",
+      bits: "bits",
+      raids: "raids",
+      superChats: "Super Chats",
+    },
+    raidViewers: (n: number) => `${n.toLocaleString("es-MX")} espectadores`,
+    noEvents: "Durante este directo no llegó ningún evento de Twitch ni de YouTube (o las conexiones estaban apagadas).",
+    counters: "Contadores",
+    thanks: "Gracias a",
+    supportLine: (kind: string, amount: number, detail: string) =>
+      ({
+        bits: `${amount} bits`,
+        gift_subs: `${amount} ${amount === 1 ? "sub regalada" : "subs regaladas"}`,
+        gift_members: `${amount} ${amount === 1 ? "membresía regalada" : "membresías regaladas"}`,
+        raid: `raid con ${amount} espectadores`,
+        subscribe: "se suscribió",
+        resub: "renovó su suscripción",
+        member: "se hizo miembro",
+        super_chat: `Super Chat ${detail}`.trim(),
+        super_sticker: `Super Sticker ${detail}`.trim(),
+      })[kind] ?? kind,
+    captures: (moments: number, clips: number) =>
+      [clips ? `${clips} ${clips === 1 ? "clip" : "clips"}` : "", moments ? `${moments} ${moments === 1 ? "momento" : "momentos"}` : ""]
+        .filter(Boolean)
+        .join(" y "),
+    capturesHint: "Los tienes en En directo → Momentos para convertirlos en proyectos.",
+    trophies: (n: number) => (n === 1 ? "1 trofeo conseguido" : `${n} trofeos conseguidos`),
+    discordPreview: "Agradecer en Discord",
+    discordWillSend: "Esto se publicará en tu canal de directos de Discord:",
+    discordTitle: "¡Gracias por el directo!",
+    discordPublish: "Publicar",
+    discordSent: "Publicado en Discord ✓",
+    discordAlready: "Este resumen ya se había publicado en Discord.",
+    cancel: "Cancelar",
+    close: "Cerrar",
+    done: "¡Genial!",
+    emptyTitle: "Aún no hay directos registrados",
+    emptyHint: "Con OBS conectado a Nexus, cada directo genera su resumen al terminar: seguidores, apoyos, contadores, momentos y trofeos.",
+    historyHint: "Tus últimos 30 directos registrados por OBS.",
+    rowSummary: (people: number, events: number, captures: number) =>
+      `${people} nuevas · ${events} eventos · ${captures} capturas`,
   },
   live: {
     subtitle: "Contadores para tu stream: muertes, jefes, cofres… Súmalos con el Stream Deck y muéstralos en OBS.",

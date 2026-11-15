@@ -1,5 +1,6 @@
 import { startGameDetector } from "./features/games/gameDetector";
 import { UpdateLayer } from "./features/update/UpdateLayer";
+import { StreamRecapLayer } from "./features/live/StreamRecap";
 import { invoke } from "@tauri-apps/api/core";
 import { LivePage } from "./features/live/LivePage";
 import { useEffect, useState } from "react";
@@ -136,6 +137,7 @@ function App() {
         )}
       </main>
       <UpdateLayer />
+      <StreamRecapLayer />
       {notice && (
         <div className={`toast${notice.error ? " toast-error" : ""}`} role="status">
           {notice.text}

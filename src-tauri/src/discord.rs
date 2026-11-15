@@ -158,7 +158,7 @@ async fn claim(pool: &sqlx::SqlitePool, id: &str) -> Result<bool, String> {
         .map_err(|e| e.to_string())?;
     Ok(result.rows_affected() == 1)
 }
-async fn post(app: &AppHandle, kind: &str, body: Value, event_key: &str) -> Result<bool, String> {
+pub(crate) async fn post(app: &AppHandle, kind: &str, body: Value, event_key: &str) -> Result<bool, String> {
     let url = webhook_url(
         &entry(kind)?
             .get_password()

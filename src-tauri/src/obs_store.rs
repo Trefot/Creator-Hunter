@@ -11,6 +11,18 @@ pub async fn open_session(
 ) -> Result<(), String> {
     sqlx::query("INSERT INTO obs_session(id,workspace_id,kind,game_id) VALUES($1,$2,$3,(SELECT id FROM game WHERE id=$4 AND workspace_id=$2))")
         .bind(id).bind(WORKSPACE).bind(kind).bind(game).execute(pool).await.map_err(|e|e.to_string())?;
+    if kind == "stream" {
+        // Resumen del directo (D-029): valor de cada contador al empezar.
+        sqlx::query("INSERT OR IGNORE INTO obs_session_counter(session_id,counter_id,workspace_id,start_value) SELECT $1,id,workspace_id,value FROM counter WHERE workspace_id=$2")
+            .bind(id).bind(WORKSPACE).execute(pool).await.map_err(|e|e.to_string())?;
+    }
+    Ok(())
+}
+
+/// Anota el valor final de los contadores de las emisiones ya cerradas que aún no lo tienen.
+pub async fn finish_counters(pool: &SqlitePool) -> Result<(), String> {
+    sqlx::query("UPDATE obs_session_counter SET end_value=(SELECT c.value FROM counter c WHERE c.id=counter_id) WHERE end_value IS NULL AND workspace_id=$1 AND session_id IN (SELECT id FROM obs_session WHERE ended_at IS NOT NULL AND workspace_id=$1)")
+        .bind(WORKSPACE).execute(pool).await.map_err(|e|e.to_string())?;
     Ok(())
 }
 pub async fn close_session(
@@ -21,7 +33,7 @@ pub async fn close_session(
 ) -> Result<(), String> {
     sqlx::query("UPDATE obs_session SET ended_at=strftime('%Y-%m-%dT%H:%M:%fZ','now'),end_reason=$1,output_path=COALESCE($2,output_path) WHERE id=$3 AND workspace_id=$4 AND ended_at IS NULL")
         .bind(reason).bind(path).bind(id).bind(WORKSPACE).execute(pool).await.map_err(|e|e.to_string())?;
-    Ok(())
+    finish_counters(pool).await
 }
 pub async fn insert_marker(
     pool: &SqlitePool,

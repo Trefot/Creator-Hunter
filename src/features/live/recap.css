@@ -1,0 +1,63 @@
+/* Resumen del directo (D-029) */
+.recap-card { display: flex; flex-direction: column; gap: 14px; }
+.recap-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.recap-head h2 { margin: 2px 0 4px; font-size: 26px; }
+.recap-head p { margin: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }
+.recap-head-icon { color: var(--accent); flex-shrink: 0; }
+.recap-live { color: var(--danger); font-weight: 700; }
+
+.recap-tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; }
+.recap-tile {
+  display: flex; flex-direction: column; gap: 2px; padding: 14px; border-radius: 14px;
+  border: 1px solid var(--border);
+  background: linear-gradient(160deg, var(--accent-soft), transparent 70%), var(--surface);
+}
+.recap-tile strong { font-size: 30px; line-height: 1.05; font-variant-numeric: tabular-nums; }
+.recap-tile-icon { color: var(--accent); }
+
+.recap-section h3 { display: flex; align-items: center; gap: 6px; margin: 0 0 8px; font-size: 14px; }
+.recap-chips, .recap-trophies { display: flex; flex-wrap: wrap; gap: 8px; }
+.recap-chip {
+  --c: var(--accent);
+  display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--c) 60%, transparent);
+  background: color-mix(in srgb, var(--c) 14%, transparent);
+}
+.recap-chip strong { color: color-mix(in srgb, var(--c) 40%, #fff); }
+
+.recap-supporters, .recap-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.recap-supporters li { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.recap-platform { font-size: 11px; font-weight: 700; padding: 1px 8px; border-radius: 999px; color: #fff; }
+.recap-platform.twitch { background: #9146ff; }
+.recap-platform.youtube { background: #ff0033; }
+.recap-platform.tiktok { background: #111; border: 1px solid #25f4ee; }
+
+.recap-trophy { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px 4px 4px; border-radius: 10px; background: var(--surface-hover); }
+.recap-trophy img { width: 28px; height: 28px; border-radius: 6px; object-fit: cover; }
+
+.recap-actions { display: flex; flex-direction: column; gap: 8px; padding-top: 12px; border-top: 1px solid var(--border); }
+.recap-discord blockquote {
+  margin: 6px 0; padding: 10px 12px; border-left: 4px solid #8b5cf6; border-radius: 6px;
+  background: var(--surface-hover); font-size: 13px;
+}
+.recap-discord-buttons { display: flex; gap: 8px; }
+
+.recap-backdrop { position: fixed; inset: 0; z-index: 80; display: grid; place-items: center; padding: 20px; background: rgba(5, 4, 9, 0.65); backdrop-filter: blur(3px); }
+.recap-modal {
+  position: relative; width: min(720px, 100%); max-height: 90vh; overflow-y: auto; padding: 24px;
+  border-radius: 18px; border: 1px solid var(--accent); background: var(--surface);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5); animation: recap-in 260ms ease-out;
+}
+@keyframes recap-in { from { opacity: 0; transform: translateY(14px) scale(0.98); } }
+.recap-close { position: absolute; top: 12px; right: 12px; }
+.recap-done { margin-top: 16px; width: 100%; }
+
+.recap-history { display: flex; flex-direction: column; gap: 10px; }
+.recap-row { padding: 0; overflow: hidden; }
+.recap-row-head, .recap-row-head:hover:not(:disabled) {
+  width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 14px 16px; text-align: left; color: var(--text); background: transparent; border: 0;
+}
+.recap-row.open .recap-card { padding: 0 16px 16px; }
+.recap-empty { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 30px; text-align: center; }
+.recap-empty > svg { color: var(--accent); }

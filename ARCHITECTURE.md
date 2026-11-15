@@ -264,6 +264,13 @@ Cuentan lo recibido en USD desde la fecha local de creación de la meta, filtrad
 - El archivo BAT permite preparar el instalador en el PC del usuario con las herramientas del proyecto, sin instalar ni publicar por sí mismo. No añade dependencias.
 - Publicación desbloqueada al instalar ChatGPT Codex Connector en GitHub. La ejecución 43046894264 compiló, probó y publicó 0.2.10 desde d6694f2. Se verificaron descarga y canal `releases` con instaladores idénticos por SHA-256. `upload-artifact` requiere `include-hidden-files: true` para recoger `.release`. Instrucciones vigentes en ACTUALIZACION.md.
 
+### D-029 · Resumen del directo (2026-11-14)
+- **Fuente de verdad:** la sesión `obs_session` de tipo `stream` marca el inicio y el fin. Momentos (`obs_marker`), clips (`obs_clip`) y trofeos (`trophy.earned_at`) se cuentan dentro de ese intervalo al leer; no se guardan copias.
+- **Lo único nuevo que se guarda (migración 22):** `stream_event`, el registro de cada evento social que llega por Twitch EventSub o YouTube (antes solo se mostraba como alerta y se perdía), y `obs_session_counter`, el valor de cada contador al empezar y al terminar la emisión. `obs_session.recap_seen` evita volver a mostrar un resumen ya visto.
+- El registro se hace en `social_alerts::deliver`, antes de la alerta, y nunca la bloquea si falla. Las pruebas de alertas no pasan por ahí, así que no ensucian los resúmenes.
+- El aviso (`stream-recap-ready`) solo sale cuando OBS **detiene** la emisión, no al reiniciarla ni al perder la conexión. Una conexión perdida a mitad de directo parte la emisión en dos sesiones; ambas aparecen en el historial.
+- Los cálculos (totales, apoyos destacados, texto para Discord) viven en `recap_core.rs`, sin base de datos ni red, con tests. El agradecimiento en Discord reutiliza el envío protegido contra duplicados (clave `stream-recap:<id>`) y no permite menciones.
+
 ## Dependencias
 
 | Dependencia | Para qué |

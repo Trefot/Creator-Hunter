@@ -293,7 +293,7 @@ Objetivos con progreso (nivel, XP farmeada…) y proyectos del Creator Studio en
 - Celebraciones por hitos: cada 100/1.000, confeti, sonido especial y mensaje («¡10.000 COFRES!»).
 - Camino al platino en pantalla: % al platino, trofeo actual y su progreso; se actualiza solo con PSN.
 - Botón «¡Clip!» en el Stream Deck: apunta el minuto del directo para cortar Shorts después (va a Ideas/Proyectos).
-- Resumen al terminar el directo: duración, contadores, trofeos y seguidores nuevos.
+- [x] Resumen al terminar el directo: duración, contadores, trofeos, seguidores nuevos y agradecimiento en Discord (0.2.28).
 - Escenas automáticas en OBS según el juego detectado en la PS5 (OBS WebSocket).
 - ~~Contador «de hoy» + total~~ (descartada por el usuario).
 

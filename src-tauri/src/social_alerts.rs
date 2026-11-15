@@ -103,6 +103,7 @@ async fn deliver(app: &AppHandle, p: &str, e: Incoming) -> Result<(), String> {
     if load(app, "social-settings").await?[p] != true {
         return Ok(());
     }
+    crate::recap::log_event(app, p, e.kind, &e.name, &e.amount, &e.note).await;
     crate::alerts::receive(app, p, e.kind, &e.name, &e.amount, &e.note).await?;
     let state = app.state::<SocialState>();
     let mut s = state.status.lock().unwrap();

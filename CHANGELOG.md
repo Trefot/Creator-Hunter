@@ -2,6 +2,15 @@
 
 ## [Sin publicar]
 
+## [0.2.28] · 2026-11-14 · Resumen del directo
+
+- Al detener la emisión en OBS aparece el resumen del directo: duración, juego, personas nuevas, subs y miembros, bits, raids y Super Chats.
+- Agradece por nombre a quienes apoyaron (bits, subs, regalos, raids y Super Chats) y muestra cuánto subió cada contador.
+- Incluye los momentos y clips guardados durante el directo y los trofeos conseguidos mientras emitías.
+- Nuevo apartado En directo → Resúmenes con el historial de tus últimos 30 directos.
+- Botón para agradecer en tu canal de directos de Discord, con vista previa antes de publicar y sin menciones masivas. Cada resumen se publica una sola vez.
+- Migración 22 aditiva: registro de eventos recibidos y valor de los contadores al empezar y terminar cada emisión, incluidos en las copias de seguridad.
+
 ## [0.2.27] · 2026-11-14 · El taller de Nexus
 
 - Nueva identidad visual V2 en tinta, violeta y latón, con el taller ilustrado y el Nexus original. Inicio conserva tus datos reales y permite reducir el detalle con Modo enfoque.

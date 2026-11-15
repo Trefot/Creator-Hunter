@@ -29,7 +29,8 @@ import { ObsPanel } from "./ObsPanel";
 import {SectionTabs} from "../../components/SectionTabs";
 import {LiveCockpit} from "./LiveCockpit";
 import {SocialAlerts} from "./SocialAlerts";
-const liveTabs=[{id:'cabina',label:'Cabina'},{id:'chat',label:'Chat'},{id:'sound',label:'Sonido'},{id:'alerts',label:'Alertas'},{id:'overlays',label:'Overlays'},{id:'counters',label:'Contadores'},{id:'category',label:'Categoría'},{id:'obs',label:'OBS'},{id:'connections',label:'Conexiones'},{id:'moments',label:'Momentos'}] as const;
+import {RecapHistory} from "./StreamRecap";
+const liveTabs=[{id:'cabina',label:'Cabina'},{id:'chat',label:'Chat'},{id:'sound',label:'Sonido'},{id:'alerts',label:'Alertas'},{id:'overlays',label:'Overlays'},{id:'counters',label:'Contadores'},{id:'category',label:'Categoría'},{id:'obs',label:'OBS'},{id:'connections',label:'Conexiones'},{id:'moments',label:'Momentos'},{id:'recaps',label:'Resúmenes'}] as const;
 type LiveTab=typeof liveTabs[number]['id'];
 const asTab=(value:string):LiveTab=>liveTabs.find(t=>t.id===value)?.id??'cabina';
 const t = es.live;
@@ -451,6 +452,7 @@ export function LivePage({onOpenProject,initialTab='cabina',navigationRevision=0
        <StreamingPanel view={tab==='category'?'category':tab==='overlays'?'overlays':'chat'}/>
       </div>
       <div hidden={tab!=='sound'} role="tabpanel" aria-label="Sonido"><TtsPanel base={base} keyValue={info?.key??""}/><MusicPanel base={base} keyValue={info?.key??""}/></div>
+      <div hidden={tab!=='recaps'} role="tabpanel" aria-label="Resúmenes"><RecapHistory active={tab==='recaps'}/></div>
       <div hidden={tab!=='moments'} role="tabpanel" aria-label="Momentos"><CaptureInbox expanded onOpenProject={onOpenProject}/></div>
       <div hidden={tab!=='alerts'} role="tabpanel" aria-label="Alertas"><AlertsPanel showConnections={false}/></div>
       <div hidden={tab!=='connections'} role="tabpanel" aria-label="Conexiones"><SocialAlerts/><DiscordPanel/></div>

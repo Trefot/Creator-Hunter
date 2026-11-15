@@ -158,6 +158,7 @@ fn initialize(app: &AppHandle) -> Result<(), String> {
     };
     let pool = pool(app)?;
     tauri::async_runtime::block_on(sqlx::query("UPDATE obs_session SET ended_at=strftime('%Y-%m-%dT%H:%M:%fZ','now'),end_reason='app_restarted' WHERE ended_at IS NULL AND workspace_id=$1").bind(obs_store::WORKSPACE).execute(&pool)).map_err(|e|e.to_string())?;
+    tauri::async_runtime::block_on(obs_store::finish_counters(&pool))?;
     {
         let mut inner = state.inner.lock().map_err(|e| e.to_string())?;
         inner.view.enabled = config.enabled;
@@ -299,6 +300,10 @@ fn poll(app: &AppHandle, client: &mut Client) -> Result<(), String> {
                     None
                 },
             ))?;
+            // Resumen del directo (D-029): solo cuando la emisión se detiene en OBS.
+            if kind == "stream" && !restarted {
+                let _ = app.emit("stream-recap-ready", current.clone());
+            }
             *current = None;
         }
         if elapsed.is_some() && current.is_none() {

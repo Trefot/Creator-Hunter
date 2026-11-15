@@ -1,6 +1,6 @@
 [package]
 name = "studio"
-version = "0.2.27"
+version = "0.2.28"
 description = "Nexus Studio: estudio personal de creación de contenido"
 authors = ["TrefotG"]
 edition = "2024"
