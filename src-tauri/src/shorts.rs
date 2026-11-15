@@ -104,6 +104,18 @@ async fn source(pool: &sqlx::SqlitePool, kind: &str, id: &str) -> Result<(String
     }
 }
 
+/// ffprobe mide el archivo realmente guardado; no suponemos que el buffer conserve todo.
+fn probe_duration(ffmpeg:&Path,input:&str)->Result<f64,String>{
+ let mut probes=vec![ffmpeg.with_file_name("ffprobe.exe")];
+ if let Ok(real)=ffmpeg.canonicalize(){probes.push(real.with_file_name("ffprobe.exe"));}
+ if let Ok(out)=hidden(Command::new("where").arg("ffprobe")).output(){probes.extend(String::from_utf8_lossy(&out.stdout).lines().map(PathBuf::from));}
+ let probe=probes.into_iter().find(|p|p.is_file()).ok_or("Falta ffprobe, incluido en el paquete completo de ffmpeg. Instálalo para recortar candidatos con seguridad.")?;
+ let out=hidden(Command::new(probe).args(["-v","error","-show_entries","format=duration","-of","json",input])).output().map_err(|e|format!("No se pudo medir el clip: {e}"))?;
+ if !out.status.success(){return Err("No se pudo medir el clip de OBS. Comprueba que el archivo esté completo.".into());}
+ let value:Value=serde_json::from_slice(&out.stdout).map_err(|_|"ffprobe no devolvió una duración válida.")?;
+ value["format"]["duration"].as_str().and_then(|s|s.parse().ok()).ok_or("No se pudo leer la duración real del clip.".into())
+}
+
 /// Crea el Short y devuelve la ruta del archivo. Tarda lo que ffmpeg tarde en codificar.
 #[tauri::command]
 pub async fn shorts_render(
@@ -117,6 +129,8 @@ pub async fn shorts_render(
     let format = Format::parse(&format)?;
     let pool = crate::backup::pool(&app).await?;
     let (title, input, mark) = source(&pool, &kind, &id).await?;
+    let candidate=if kind=="clip"{let handle=app.clone();let identity=id.clone();tauri::async_runtime::spawn_blocking(move||crate::auto_moments::candidates(&handle).map(|items|items.into_iter().find(|c|c.id==identity))).await.map_err(|e|e.to_string())??}else{None};
+    if candidate.as_ref().is_some_and(|c|c.state!="kept"){return Err("Revisa y conserva el candidato antes de crear su Short.".into());}
     if !Path::new(&input).is_file() {
         return Err(format!("No se encuentra el archivo de vídeo: {input}"));
     }
@@ -131,8 +145,12 @@ pub async fn shorts_render(
         .duration_since(std::time::UNIX_EPOCH)
         .map(|d| d.as_secs())
         .unwrap_or(0);
-    let output = dir.join(format!("{} {stamp} {}.mp4", core::file_stem(&title), format.key()));
-    let cut = mark.map(|ms| core::window(ms, before.unwrap_or(20), after.unwrap_or(10)));
+    let output = dir.join(format!("{} {stamp} {}.mp4", core::file_stem(&title), format!("{}-{:08x}",format.key(),rand::random::<u32>())));
+    let (cut,warning)=if let Some(c)=candidate{
+        let binary=ffmpeg.clone();let file=input.clone();let duration=tauri::async_runtime::spawn_blocking(move||probe_duration(&binary,&file)).await.map_err(|e|e.to_string())??;
+        let (cut,warning)=crate::auto_moments_core::clip_window(duration,c.tail_ms,before.unwrap_or(c.before as i64).clamp(0,120) as u32,after.unwrap_or(c.after as i64).clamp(0,30) as u32)?;
+        (Some(cut),warning)
+    }else{(mark.map(|ms| core::window(ms, before.unwrap_or(20), after.unwrap_or(10))),None)};
     let arguments = core::args(&input, &output.display().to_string(), cut, format);
     let result = tauri::async_runtime::spawn_blocking(move || hidden(Command::new(&ffmpeg).args(&arguments)).output())
         .await
@@ -155,7 +173,7 @@ pub async fn shorts_render(
         .execute(&pool)
         .await
         .map_err(|e| e.to_string())?;
-    Ok(json!({"path": path}))
+    Ok(json!({"path": path,"warning":warning}))
 }
 
 /// Últimos 50 Shorts creados, indicando si el archivo sigue existiendo.

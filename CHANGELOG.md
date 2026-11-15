@@ -2,6 +2,17 @@
 
 ## [Sin publicar]
 
+## [0.2.32] · 2026-11-15 · Momentos por voz y Shorts
+
+- Captura voluntaria por frase local de Windows («Nexus guarda esto») y por botón. Se activa en cada sesión; el micrófono tiene indicador global y controles de detener. Requiere un reconocedor local compatible y el micrófono predeterminado de Windows.
+- Espera configurable para incluir lo posterior al momento y guardado confirmado del Replay Buffer de OBS. No inicia OBS, grabaciones, emisiones ni el buffer. Ajustes iniciales: 30 s antes, 15 s después y buffer declarado de 60 s.
+- Bandeja de candidatos pendientes, conservados y descartados, con acceso al vídeo original. Solo los conservados se exportan como Shorts; descartar no elimina vídeos.
+- Recorte de candidatos sobre la duración real medida por ffprobe, con aviso si falta parte del tramo. Exportación vertical con fondo, recorte central u horizontal; nunca publica automáticamente.
+- Límites: una captura pendiente, 90 s entre solicitudes, seis solicitudes por hora, veinte pendientes y pausa de nuevas capturas al alcanzar 2 GB de archivos registrados. Un último archivo puede superar el umbral. Cancelación de la espera y limpieza explícita de fichas descartadas sin archivo.
+- Nuevo enlace privado de Stream Deck para capturar con solo Replay Buffer; el botón Momento anterior conserva su marcado y también solicita clip si la captura está activada.
+- La detección de juegos actualiza el aviso sin navegar automáticamente ni descartar formularios. Búsqueda directa de Momentos y Shorts y pestaña seleccionada visible en su fila desplazable.
+- Guía y límites en docs/MOMENTOS.md. La detección de victorias, trofeos y reacciones visuales queda para siguientes detectores; la voz y el audio reales deben probarse en el PC.
+
 ## [0.2.31] · 2026-11-14 · Añadir varias ideas de golpe
 
 - Nuevo botón «Añadir varias» en Crear contenido → Ideas: pega una lista (una idea por línea: Título | descripción | etiquetas) y se crean todas a la vez.

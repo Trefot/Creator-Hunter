@@ -11,21 +11,23 @@ const FORMATS: { id: ShortFormat; label: string; hint: string }[] = [
 ];
 
 /** Botón «✂️ Short» de cada momento o clip de la bandeja. */
-export function ShortMaker({ kind, id }: { kind: "moment" | "clip"; id: string }) {
+export function ShortMaker({ kind, id, captureWindow }: { kind: "moment" | "clip"; id: string; captureWindow?:{before:number;after:number} }) {
   const [open, setOpen] = useState(false);
   const [format, setFormat] = useState<ShortFormat>("vertical_blur");
-  const [before, setBefore] = useState(20);
-  const [after, setAfter] = useState(10);
+  const [before, setBefore] = useState(captureWindow?.before??20);
+  const [after, setAfter] = useState(captureWindow?.after??10);
   const [state, setState] = useState<"idle" | "busy">("idle");
   const [result, setResult] = useState<string | null>(null);
   const [error, setError] = useState("");
+  const [warning,setWarning]=useState<string|null>(null);
 
   async function render() {
     setState("busy");
     setError("");
     setResult(null);
+    setWarning(null);
     try {
-      setResult((await shortsRender(kind, id, format, before, after)).path);
+      const result=await shortsRender(kind,id,format,before,after);setResult(result.path);setWarning(result.warning??null);
     } catch (e) {
       setError(String(e));
     } finally {
@@ -50,13 +52,13 @@ export function ShortMaker({ kind, id }: { kind: "moment" | "clip"; id: string }
           </label>
         ))}
       </div>
-      {kind === "moment" ? (
+      {kind === "moment" || captureWindow ? (
         <div className="short-window small">
           <label>
-            Segundos antes <input type="number" min={0} max={180} value={before} onChange={(e) => setBefore(Number(e.target.value))} />
+            Segundos antes <input type="number" min={0} max={captureWindow?120:180} value={before} onChange={(e) => setBefore(Number(e.target.value))} />
           </label>
           <label>
-            Segundos después <input type="number" min={0} max={180} value={after} onChange={(e) => setAfter(Number(e.target.value))} />
+            Segundos después <input type="number" min={0} max={captureWindow?30:180} value={after} onChange={(e) => setAfter(Number(e.target.value))} />
           </label>
         </div>
       ) : (
@@ -78,6 +80,7 @@ export function ShortMaker({ kind, id }: { kind: "moment" | "clip"; id: string }
           </button>
         </p>
       )}
+      {warning&&<p role="status" className="small">{warning}</p>}
       {error && <p role="alert" className="error small">{error}</p>}
     </div>
   );

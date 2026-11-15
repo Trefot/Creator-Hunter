@@ -3,6 +3,7 @@ import {ArrowRight,HelpCircle,Search,X} from 'lucide-react';
 import {Section} from '../sections';
 export const workspaceNames:Record<Section,string>={dashboard:'Inicio',projects:'Crear contenido',ideas:'Crear contenido · Ideas',live:'En directo',games:'Juegos',calendar:'Calendario',profiles:'Cuentas y perfiles',goals:'Metas',income:'Ingresos',backups:'Copias de seguridad'};
 const destinations:{label:string;hint:string;section:Section;tab?:string}[]=[
+ {label:'Momentos y Shorts',hint:'Captura automática por voz clips micrófono replay',section:'live',tab:'moments'},
  {label:'Inicio',hint:'Tu siguiente acción y resumen',section:'dashboard'},
  {label:'Mis proyectos',hint:'Crear contenido, edición y publicación',section:'projects'},
  {label:'Ideas',hint:'Capturar y desarrollar ideas',section:'ideas'},
