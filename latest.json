@@ -1,12 +1,14 @@
 {
-  "version": "0.2.36",
+  "version": "0.2.37",
   "notes": [
-    "En «Hoy toca» ya puedes planificar días de editar y programar con vídeos que aún no has grabado o editado; aparecen al final de la lista marcados «(aún por grabar)» o «(aún por editar)».",
-    "Al marcar como hecha una edición o una programación, también se completan los pasos anteriores que faltaban (guion y grabación)."
+    "Nuevo panel en En directo → Momentos: «Subtítulos y capítulos» con tus grabaciones de OBS.",
+    "«Capítulos» convierte los momentos que marcaste con «¡Clip!» en capítulos listos para pegar en la descripción de YouTube (empiezan en 00:00 y cumplen la regla de 10 s); te avisa si faltan momentos.",
+    "«Crear subtítulos» transcribe la grabación en tu PC con Whisper y guarda un .srt junto al vídeo para subirlo en YouTube Studio. El audio nunca sale de tu ordenador.",
+    "La primera vez se instala la transcripción con un botón (unos 500 MB, una sola vez); Nexus comprueba la huella de cada descarga antes de usarla."
   ],
   "date": "2026-11-15",
   "installer": "TrophyHunter-setup.exe",
-  "source_commit": "813358ae49fdffef56c5eddbd62dca9f2c028636",
-  "sha256": "6dada36c6c242956f62491b3545cb4a8516c1b21f1b2911c8c5d3c31066ad707",
-  "size": 20601960
+  "source_commit": "f3846592cd2d55c0bc3dfa3626c11c6970c12d5a",
+  "sha256": "eb085463d98517f6c9084a580b7b981fca84b26763d553a7de6664ac90ff801d",
+  "size": 20633425
 }
