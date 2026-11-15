@@ -2,6 +2,12 @@
 
 ## [Sin publicar]
 
+## [0.2.30] · 2026-11-14 · Spotify en el overlay de música
+
+- El overlay de música (/music) ahora muestra la canción de tu Spotify cuando no suena nada del reproductor local. Si ya lo tenías en OBS, empieza a funcionar sin tocar nada.
+- Botones más claros en Sonido → Overlays: «overlay de música (local + Spotify)» y «tarjeta solo de Spotify».
+- El overlay de música se recarga solo en las próximas actualizaciones. Esta vez, en OBS pulsa una vez «Actualizar caché de la página actual» en esa fuente (o reinicia OBS).
+
 ## [0.2.29] · 2026-11-14 · Preparar, responder y recortar
 
 - Nuevo En directo → Estado: semáforos de todas tus conexiones (OBS, Twitch y sus permisos, YouTube, Discord, Spotify, PlayStation, comandos y ffmpeg) con un botón para arreglar cada una antes del directo.
