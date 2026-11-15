@@ -1,16 +1,16 @@
 {
-  "version": "0.2.28",
+  "version": "0.2.29",
   "notes": [
-    "Al detener la emisión en OBS aparece el resumen del directo: duración, juego, personas nuevas, subs y miembros, bits, raids y Super Chats.",
-    "Agradece por nombre a quienes apoyaron (bits, subs, regalos, raids y Super Chats) y muestra cuánto subió cada contador.",
-    "Incluye los momentos y clips guardados durante el directo y los trofeos conseguidos mientras emitías.",
-    "Nuevo apartado En directo → Resúmenes con el historial de tus últimos 30 directos.",
-    "Botón para agradecer en tu canal de directos de Discord, con vista previa antes de publicar y sin menciones masivas. Cada resumen se publica una sola vez.",
-    "Migración 22 aditiva: registro de eventos recibidos y valor de los contadores al empezar y terminar cada emisión, incluidos en las copias de seguridad."
+    "Nuevo En directo → Estado: semáforos de todas tus conexiones (OBS, Twitch y sus permisos, YouTube, Discord, Spotify, PlayStation, comandos y ffmpeg) con un botón para arreglar cada una antes del directo.",
+    "«Empezar directo» en la Cabina: lista de preparación de unos dos minutos con conexiones, OBS, juego y objetivo, título de Twitch editable, comandos de chat y comprobaciones tuyas. Nexus nunca empieza la emisión.",
+    "Comandos de chat en En directo → Comandos: !platino, !juego, !redes, !discord y los que crees, con variables como {platinos}, {juego}, {progreso} y {contador:Nombre}, espera entre usos y vista previa. Responden en Twitch y YouTube.",
+    "Para que los comandos puedan contestar hay que renovar una vez los permisos de Twitch (Conexiones) y volver a conectar YouTube; Estado te avisa.",
+    "Clips para Shorts: «Crear Short» en cada momento o clip recorta la grabación alrededor de la marca en vertical con fondo difuminado, vertical recortado u horizontal, y lo guarda en Vídeos → Nexus Shorts. Necesita ffmpeg, que se instala con un clic mediante winget.",
+    "Migración 23 aditiva para el historial de Shorts, incluido en las copias de seguridad."
   ],
   "date": "2026-11-15",
   "installer": "TrophyHunter-setup.exe",
-  "source_commit": "9f064a13862f26c6dffc4bd59fac8b5406ffceaa",
-  "sha256": "b7522d3b3ae5159eb48002352e1fc2aabb00489c874621ce5cf0214e15fa0cfb",
-  "size": 20478082
+  "source_commit": "841b365080a8bbdd90d9555c525fae7097c926a0",
+  "sha256": "7ca70ccbafc7b6a894deee31116f52d547fac0ae8ac3b0f3f615f51131ec5a7d",
+  "size": 20533610
 }
