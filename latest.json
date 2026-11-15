@@ -1,12 +1,15 @@
 {
-  "version": "0.2.31",
+  "version": "0.2.33",
   "notes": [
-    "Nuevo botón «Añadir varias» en Crear contenido → Ideas: pega una lista (una idea por línea: Título | descripción | etiquetas) y se crean todas a la vez.",
-    "Las ideas cuyo título ya existe se saltan, así que pegar la misma lista dos veces no duplica nada."
+    "Nuevo panel «Hoy toca» en Inicio: según tu rutina semanal te dice si hoy toca grabar, editar, programar, directo o descanso, y tú eliges qué vídeo trabajar.",
+    "Al pulsar «Hecho», Nexus marca el paso del proyecto (grabación, edición o programación) y suma la sesión a tu semana.",
+    "Tira de 7 días para planificar la semana el domingo, y botón «Rutina» para cambiar qué toca cada día (empieza con el plan del colchón: lunes y martes grabar, miércoles editar, jueves directo, viernes editar, sábado grabar, domingo programar).",
+    "Medidor del colchón de contenido: vídeos largos y Shorts ya editados frente a la meta de 2 semanas (4 largos y 10 Shorts), con aviso cuando toca semana de grabar.",
+    "Migración 24 aditiva para la rutina y las sesiones, incluida en las copias de seguridad."
   ],
   "date": "2026-11-15",
   "installer": "TrophyHunter-setup.exe",
-  "source_commit": "76eade9d4c9c9b200e637e59b9a608b8fe37d1e1",
-  "sha256": "f2998003880a292ad1f3f74308df977f750a78e069f97eae6545eacb15baa631",
-  "size": 20534017
+  "source_commit": "bdce6849c89b12f79a8b1614499b4e2208a55b86",
+  "sha256": "e07d43c9b6512fad0a383bb743f20f2ef03af58914d62f9512d6ed36efbcf8f5",
+  "size": 20536438
 }
