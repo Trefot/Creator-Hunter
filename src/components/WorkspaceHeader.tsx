@@ -4,8 +4,8 @@ import {Section} from '../sections';
 export const workspaceNames:Record<Section,string>={connections:'Conexiones',dashboard:'Inicio',projects:'Crear contenido',ideas:'Crear contenido · Ideas',live:'En directo',games:'Juegos',calendar:'Calendario',profiles:'Cuentas y perfiles',goals:'Metas',income:'Ingresos',backups:'Copias de seguridad'};
 const destinations:{label:string;hint:string;section:Section;tab?:string}[]=[
  {label:'Momentos y Shorts',hint:'Captura automática por voz clips micrófono replay',section:'projects',tab:'moments'},
- {label:'Inicio',hint:'Tu siguiente acción y resumen',section:'dashboard'},
- {label:'Mis proyectos',hint:'Crear contenido, edición y publicación',section:'projects'},
+ {label:'Inicio',hint:'Tus redes sociales, crecimiento y metas',section:'dashboard'},
+ {label:'Mis proyectos',hint:'Crear contenido, edición y publicación',section:'projects',tab:'projects'},
  {label:'Ideas',hint:'Capturar y desarrollar ideas',section:'ideas'},
  {label:'En directo',hint:'Cabina, OBS y controles',section:'live',tab:'cabina'},
  {label:'Chat',hint:'Twitch y YouTube',section:'live',tab:'chat'},

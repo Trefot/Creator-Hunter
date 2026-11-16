@@ -51,7 +51,7 @@ interface Props {
 /** Ficha de un juego: progreso hacia el platino y lista de trofeos. */
 export function GameDetail(props: Props) {
   if (!props.game.np_communication_id && !props.game.trophy_count) return <CreativeGameDetail {...props}/>;
-  return <><TrophyGameDetail {...props}/><details className="card"><summary>Detección en PC</summary><PcDetection game={props.game}/></details></>;
+  return <><TrophyGameDetail {...props}/><PcDetection game={props.game}/></>;
 }
 function TrophyGameDetail({ game, psnConnected, initialView = "route", onBack, onChanged, onOpenProject, onOpenIdeas }: Props) {
   const [trophies, setTrophies] = useState<Trophy[] | null>(null);
