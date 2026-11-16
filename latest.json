@@ -1,14 +1,14 @@
 {
-  "version": "0.2.39",
+  "version": "0.2.40",
   "notes": [
-    "MOMENTO se usa después de la jugada: el recorte normal recupera 30 segundos anteriores y 5 posteriores. Se muestra el tiempo disponible antes de guardar.",
-    "La vista previa muestra el inicio real del mismo tramo que se exportará; ya no muestra directamente el instante de pulsación.",
-    "Pantalla de Shorts simplificada: Recuperar la jugada, Ver cómo empieza y Guardar Short. Imagen, audio y GPU quedan en opciones aparte.",
-    "Las marcas sin grabación asociada muestran una explicación y ocultan opciones que no pueden usarse. Si falta vídeo anterior, se avisa sin inventarlo ni borrar otros archivos."
+    "En directo → Contadores permite activar el conteo de cofres a partir de las repeticiones locales de Fortnite. Al terminar una partida suma los cofres abiertos y destruidos atribuidos a tu jugador.",
+    "Conserva el total existente y registra cada partida una sola vez. Las repeticiones anteriores a la activación y los cofres de compañeros no se añaden.",
+    "Incluye un lector local para Windows: no requiere instalar .NET, iniciar sesión ni subir las repeticiones. Debes activar Guardar repeticiones en Fortnite y mantener Nexus abierto.",
+    "El conteo se actualiza después de cada partida, no durante ella. Los casos sin atribución segura se excluyen; algunas destrucciones desde vehículos pueden faltar. Una actualización de Fortnite podría requerir actualizar el lector."
   ],
-  "date": "2026-11-15",
+  "date": "2026-11-16",
   "installer": "TrophyHunter-setup.exe",
-  "source_commit": "74a9660bca3b415a0a86e409f87b317bf24fa08b",
-  "sha256": "d674bdfd394af4dd890b5b50ca162f70ed2c36ebe313563358e060b7c7b52785",
-  "size": 20717439
+  "source_commit": "6fb0324b08ab53821c48dc68726add0a8a5f5937",
+  "sha256": "e442a83850489a64a0b571c18e2e5df8f88d370074caa67cdf0b5e9cca381941",
+  "size": 44847948
 }
