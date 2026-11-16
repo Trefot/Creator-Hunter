@@ -18,7 +18,7 @@ export function CreativeGameDetail({game,onBack,onChanged,onOpenProject,onOpenId
   return <section className="page game-creative-detail">
     <button className="link back-link" onClick={onBack}>{es.games.back}</button>
     <header className="game-creative-hero"><GameArtwork game={game}/><div className="game-creative-hero-content"><span className="game-platform-pill">{es.games.platforms[game.platform]}</span><h1>{game.title}</h1><p>{t.heroHint}</p></div></header>
-    <PcDetection game={game}/>
+    <details className="card"><summary>Detección en PC</summary><PcDetection game={game}/></details>
     <GameResume gameId={game.id}/>
     <div className="game-detail-toolbar"><label>{t.status}<select aria-label={t.status} disabled={busy} value={game.status} onChange={e=>status(e.target.value as GameStatus)}>{GAME_STATUSES.map(s=><option key={s} value={s}>{es.games.statuses[s]}</option>)}</select></label><span className="muted small">{t.yourSpace}</span></div>
     {error&&<p role="alert" className="error">{error}</p>}

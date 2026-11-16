@@ -10,7 +10,7 @@ import { ComingSoon } from "./components/ComingSoon";
 import { Sidebar } from "./components/Sidebar";
 import { BackupsPage } from "./features/backups/BackupsPage";
 import { CalendarPage } from "./features/calendar/CalendarPage";
-import { DashboardPage } from "./features/dashboard/DashboardPage";
+import { DashboardPage } from "./features/dashboard/DashboardHome";
 const GamesPage=lazy(()=>import("./features/games/GamesPage").then(m=>({default:m.GamesPage})));
 import { useGameMode } from "./features/games/useGameMode";
 import { selectManualGame } from "./features/games/gameMode";
@@ -21,6 +21,8 @@ import { GoalsPage } from "./features/goals/GoalsPage";
 import { IncomePage } from "./features/income/IncomePage";
 
 const ProfilesPage=lazy(()=>import("./features/profiles/ProfilesPage").then(m=>({default:m.ProfilesPage})));
+import {ConnectionsHub} from "./features/setup/ConnectionsHub";
+import {startSocialSync} from "./features/profiles/socialSync";
 import { startYouTubeAutoSync } from "./features/profiles/youtubeSync";
 import { es } from "./i18n/es";
 import { Section } from "./sections";
@@ -35,6 +37,8 @@ import {AutoMomentsIndicator} from "./features/live/AutoMoments";
 function App() {
   const [focus,setFocus]=useState(()=>{try{return localStorage.getItem("nexus-focus")==="true"}catch{return false}});
   const [liveTab,setLiveTab]=useState({value:"cabina",revision:0});
+  const [contentTab,setContentTab]=useState<"projects"|"ideas"|"moments">("moments");
+  useEffect(()=>startSocialSync(()=>setDataVersion(v=>v+1)),[]);
   const [section, setSection] = useState<Section>("dashboard");
   /** Proyecto que Proyectos debe abrir al entrar (por ejemplo, desde el calendario). */
   const [projectToOpen, setProjectToOpen] = useState<string | null>(null);
@@ -80,6 +84,7 @@ function App() {
   }, [notice]);
 
   function select(next: Section,tab?:string) {
+    if(next==="projects")setContentTab(tab==="projects"?"projects":tab==="ideas"?"ideas":"moments");
     if(next==="live")setLiveTab(v=>({value:tab??"cabina",revision:v.revision+1}));
     setProjectToOpen(null);
     setGameToOpen(null);
@@ -127,7 +132,7 @@ function App() {
         ) : section === "ideas" ? (
           <ContentHub initialTab="ideas" onOpenProject={openProject}/>
         ) : section === "projects" ? (
-          <ContentHub key={projectToOpen ?? "list"} initialOpenId={projectToOpen} initialTab="projects" onOpenProject={openProject}/>
+          <ContentHub key={projectToOpen ?? "list"} initialOpenId={projectToOpen} initialTab={projectToOpen?"projects":contentTab} onOpenProject={openProject}/>
         ) : section === "calendar" ? (
           <CalendarPage onOpenProject={openProject} />
         ) : section === "income" ? (
@@ -135,7 +140,9 @@ function App() {
         ) : section === "games" ? (
           <GamesPage key={gameToOpen ?? "list"} initialOpenId={gameToOpen} initialView={gameView} gameMode={gameMode} onOpenProject={openProject} onOpenIdeas={()=>select("ideas")} />
         ) : section === "live" ? (
-          <LivePage onNavigate={setSection} onOpenProject={openProject} initialTab={liveTab.value} navigationRevision={liveTab.revision}/>
+          <LivePage onNavigate={select} onOpenProject={openProject} initialTab={liveTab.value} navigationRevision={liveTab.revision}/>
+        ) : section === "connections" ? (
+          <ConnectionsHub onNavigate={select}/>
         ) : section === "backups" ? (
           <BackupsPage />
         ) : (

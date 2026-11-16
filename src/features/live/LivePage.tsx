@@ -1,5 +1,4 @@
 import {FortniteCounterPanel} from "./FortniteCounterPanel";
-import {ConnectionsPage} from "../setup/ConnectionsPage";
 import type {Section} from "../../sections";
 import { ChangeEvent, FormEvent, useEffect, useRef, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
@@ -21,24 +20,18 @@ import {
 } from "../../db/counters";
 import { Game, listGames } from "../../db/games";
 import { es } from "../../i18n/es";
-import { DiscordPanel } from "./DiscordPanel";
 import { AlertsPanel } from "./AlertsPanel";
 import { TtsPanel,ObsAssistant } from "./StudioModules";
 import { MusicPanel } from "./MusicPanel";
-import { CaptureInbox } from "./CaptureInbox";
 import { StreamingPanel } from "./StreamingPanel";
 import { ObsPanel } from "./ObsPanel";
 
 import {SectionTabs} from "../../components/SectionTabs";
 import {LiveCockpit} from "./LiveCockpit";
-import {SocialAlerts} from "./SocialAlerts";
 import {RecapHistory} from "./StreamRecap";
 import {ConnectionsStatus} from "./ConnectionsStatus";
 import {GoLivePanel} from "./GoLivePanel";
 import {ChatCommandsPanel} from "./ChatCommandsPanel";
-import {ShortsPanel} from "./ShortsPanel";
-import {SubtitlesPanel} from "./SubtitlesPanel";
-import {AutoMomentsPanel} from "./AutoMoments";
 const liveTabs=[{id:'setup',label:'Conectar servicios'},{id:'cabina',label:'Cabina'},{id:'estado',label:'Estado'},{id:'chat',label:'Chat'},{id:'commands',label:'Comandos'},{id:'sound',label:'Sonido'},{id:'alerts',label:'Alertas'},{id:'overlays',label:'Overlays'},{id:'counters',label:'Contadores'},{id:'category',label:'Categoría'},{id:'obs',label:'OBS'},{id:'connections',label:'Conexiones'},{id:'moments',label:'Momentos'},{id:'recaps',label:'Resúmenes'}] as const;
 type LiveTab=typeof liveTabs[number]['id'];
 const asTab=(value:string):LiveTab=>liveTabs.find(t=>t.id===value)?.id??'cabina';
@@ -397,7 +390,7 @@ function CounterForm({
 }
 
 /** Live Studio · fase 1: contadores para el stream, con overlay de OBS y botones del Stream Deck. */
-export function LivePage({onOpenProject,initialTab='cabina',navigationRevision=0,onNavigate}:{onNavigate?:(section:Section)=>void;onOpenProject:(id:string)=>void;initialTab?:string;navigationRevision?:number}) {
+export function LivePage({initialTab='cabina',navigationRevision=0,onNavigate}:{onNavigate?:(section:Section,tab?:string)=>void;onOpenProject:(id:string)=>void;initialTab?:string;navigationRevision?:number}) {
  const [tab,setTab]=useState<LiveTab>(asTab(initialTab));
  useEffect(()=>setTab(asTab(initialTab)),[initialTab,navigationRevision]);
   const [counters, setCounters] = useState<Counter[] | null>(null);
@@ -448,17 +441,17 @@ export function LivePage({onOpenProject,initialTab='cabina',navigationRevision=0
     <section className="page page-wide live-workspace">
       <header className="page-header">
         <div><span className="nexus-eyebrow">TODO A MANO, DURANTE TU DIRECTO</span><h1>Tu cabina. Tu ritmo.</h1><p className="muted">Emisión, comunidad y momentos que merecen guardarse.</p></div>
-        {!creating && (
+        {!creating && tab==='counters' && (
           <button onClick={() => {setTab("counters");setCreating(true)}}>
             <Plus size={16} /> {t.new}
           </button>
         )}
       </header>
 
-      <button className="ghost small-button" onClick={()=>setTab("setup")}>¿Cómo conecto mis servicios?</button>
-      <SectionTabs tabs={liveTabs.filter(t=>['cabina','chat','sound','moments','counters','recaps'].includes(t.id))} value={tab} onChange={setTab} label="Durante el directo"/>
-      <details open={['setup','estado','alerts','overlays','category','obs','connections','commands'].includes(tab)}><summary>Configurar y revisar</summary><SectionTabs tabs={liveTabs.filter(t=>!['cabina','chat','sound','moments','counters','recaps'].includes(t.id))} value={tab} onChange={setTab} label="Configuración del estudio"/></details>
-      {tab==='setup'&&<ConnectionsPage onNavigate={(section,target)=>{if(section==='live')setTab(asTab(target??'connections'));else onNavigate?.(section)}}/>}
+      <button className="ghost small-button" onClick={()=>onNavigate?.("connections")}>¿Cómo conecto mis servicios?</button>
+      <SectionTabs tabs={liveTabs.filter(t=>['cabina','chat','sound','moments','recaps'].includes(t.id))} value={tab} onChange={setTab} label="Durante el directo"/>
+      <details open={['setup','estado','alerts','overlays','category','obs','connections','commands','counters'].includes(tab)}><summary>Configurar y revisar</summary><SectionTabs tabs={liveTabs.filter(t=>!['cabina','chat','sound','moments','recaps'].includes(t.id))} value={tab} onChange={setTab} label="Configuración del estudio"/></details>
+      {tab==='setup'&&<div className="card"><h2>Conecta tu estudio</h2><p>Las cuentas y sus pasos de conexión están reunidos en un solo lugar.</p><button onClick={()=>onNavigate?.('connections')}>Abrir Conexiones</button></div>}
       <div className={tab==='cabina'?'live-cabina-grid':''} hidden={!['cabina','chat','category','overlays'].includes(tab)}>
        <div hidden={tab!=='cabina'}><GoLivePanel onNavigate={value=>setTab(asTab(value))}/><LiveCockpit active={tab==='cabina'} onNavigate={value=>setTab(asTab(value))}/></div>
        <StreamingPanel view={tab==='category'?'category':tab==='overlays'?'overlays':'chat'}/>
@@ -467,9 +460,9 @@ export function LivePage({onOpenProject,initialTab='cabina',navigationRevision=0
       <div hidden={tab!=='recaps'} role="tabpanel" aria-label="Resúmenes"><RecapHistory active={tab==='recaps'}/></div>
       <div hidden={tab!=='estado'} role="tabpanel" aria-label="Estado"><ConnectionsStatus active={tab==='estado'} onNavigate={value=>setTab(asTab(value))}/></div>
       <div hidden={tab!=='commands'} role="tabpanel" aria-label="Comandos"><ChatCommandsPanel active={tab==='commands'}/></div>
-      <div hidden={tab!=='moments'} role="tabpanel" aria-label="Momentos"><AutoMomentsPanel active={tab==='moments'}/><ShortsPanel active={tab==='moments'}/><SubtitlesPanel active={tab==='moments'}/><CaptureInbox expanded onOpenProject={onOpenProject}/></div>
+      <div hidden={tab!=='moments'} role="tabpanel" aria-label="Momentos"><div className="card"><h2>De la jugada al Short</h2><p>Pulsa MOMENTO después de la jugada. Revisa tus capturas, ajusta el recorte y exporta desde Crear contenido.</p><button onClick={()=>onNavigate?.('projects','moments')}>Abrir mis capturas y Shorts</button></div></div>
       <div hidden={tab!=='alerts'} role="tabpanel" aria-label="Alertas"><AlertsPanel showConnections={false}/></div>
-      <div hidden={tab!=='connections'} role="tabpanel" aria-label="Conexiones"><SocialAlerts/><DiscordPanel/></div>
+      <div hidden={tab!=='connections'} role="tabpanel" aria-label="Conexiones"><div className="card"><h2>Tus cuentas y servicios</h2><p>Continúa la configuración desde el centro de Conexiones.</p><button onClick={()=>onNavigate?.('connections')}>Abrir Conexiones</button></div></div>
       <div hidden={tab!=='obs'} role="tabpanel" aria-label="OBS"><ObsAssistant/>
 
       {/* Conexión con OBS y el Stream Deck */}

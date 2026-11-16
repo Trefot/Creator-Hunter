@@ -1,9 +1,9 @@
 import {useEffect,useRef,useState} from 'react';
 import {ArrowRight,HelpCircle,Search,X} from 'lucide-react';
 import {Section} from '../sections';
-export const workspaceNames:Record<Section,string>={dashboard:'Inicio',projects:'Crear contenido',ideas:'Crear contenido · Ideas',live:'En directo',games:'Juegos',calendar:'Calendario',profiles:'Cuentas y perfiles',goals:'Metas',income:'Ingresos',backups:'Copias de seguridad'};
+export const workspaceNames:Record<Section,string>={connections:'Conexiones',dashboard:'Inicio',projects:'Crear contenido',ideas:'Crear contenido · Ideas',live:'En directo',games:'Juegos',calendar:'Calendario',profiles:'Cuentas y perfiles',goals:'Metas',income:'Ingresos',backups:'Copias de seguridad'};
 const destinations:{label:string;hint:string;section:Section;tab?:string}[]=[
- {label:'Momentos y Shorts',hint:'Captura automática por voz clips micrófono replay',section:'live',tab:'moments'},
+ {label:'Momentos y Shorts',hint:'Captura automática por voz clips micrófono replay',section:'projects',tab:'moments'},
  {label:'Inicio',hint:'Tu siguiente acción y resumen',section:'dashboard'},
  {label:'Mis proyectos',hint:'Crear contenido, edición y publicación',section:'projects'},
  {label:'Ideas',hint:'Capturar y desarrollar ideas',section:'ideas'},
@@ -11,7 +11,7 @@ const destinations:{label:string;hint:string;section:Section;tab?:string}[]=[
  {label:'Chat',hint:'Twitch y YouTube',section:'live',tab:'chat'},
  {label:'Voz y música',hint:'TTS, Spotify y peticiones',section:'live',tab:'sound'},
  {label:'Alertas',hint:'Diseños y eventos por plataforma',section:'live',tab:'alerts'},
- {label:'Conexiones',hint:'Cuentas de emisión y Discord',section:'live',tab:'connections'},
+ {label:'Conexiones',hint:'Cuentas de emisión y Discord',section:'connections'},
  {label:'OBS',hint:'Rendimiento y actividades',section:'live',tab:'obs'},
  {label:'Contadores y overlays',hint:'Cofres y enlaces para OBS',section:'live',tab:'counters'},
  {label:'Categoría de Twitch',hint:'Asociar juegos y categorías',section:'live',tab:'category'},

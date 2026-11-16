@@ -9,6 +9,7 @@ export const SECTIONS = [
   "income",
   "games",
   "live",
+  "connections",
   "backups",
 ] as const;
 export type Section = (typeof SECTIONS)[number];
@@ -24,5 +25,6 @@ export const READY_SECTIONS: readonly Section[] = [
   "income",
   "games",
   "live",
+  "connections",
   "backups",
 ];

@@ -12,6 +12,7 @@ fn main() {
         "subtitles_core",
         "media_jobs",
         "fortnite_counter",
+        "metrics_core",
     ] {
         let file = source.join(format!("{name}.rs"));
         println!("cargo:rerun-if-changed={}", file.display());

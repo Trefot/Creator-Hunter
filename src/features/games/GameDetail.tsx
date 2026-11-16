@@ -51,7 +51,7 @@ interface Props {
 /** Ficha de un juego: progreso hacia el platino y lista de trofeos. */
 export function GameDetail(props: Props) {
   if (!props.game.np_communication_id && !props.game.trophy_count) return <CreativeGameDetail {...props}/>;
-  return <><PcDetection game={props.game}/><TrophyGameDetail {...props}/></>;
+  return <><TrophyGameDetail {...props}/><details className="card"><summary>Detección en PC</summary><PcDetection game={props.game}/></details></>;
 }
 function TrophyGameDetail({ game, psnConnected, initialView = "route", onBack, onChanged, onOpenProject, onOpenIdeas }: Props) {
   const [trophies, setTrophies] = useState<Trophy[] | null>(null);
@@ -175,7 +175,7 @@ function TrophyGameDetail({ game, psnConnected, initialView = "route", onBack, o
       {error && <p className="error">{error}</p>}
 
       <GameResume gameId={game.id}/>
-      <GameAppearance game={game} onChanged={onChanged}/>
+      <details className="card"><summary>Personalizar portada y ficha</summary><GameAppearance game={game} onChanged={onChanged}/></details>
       <GameContextProvider value={gameState}>
       <div className="tabs">
         {(["today", "route", "guide", "list", "studio", "live"] as GameView[]).map((v) => (

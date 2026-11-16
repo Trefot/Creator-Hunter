@@ -27,6 +27,8 @@ mod recap;
 mod shorts;
 mod media_jobs;
 mod fortnite_counter;
+mod metrics_core;
+mod social_metrics;
 mod shorts_core;
 mod subtitles;
 mod subtitles_core;
@@ -213,6 +215,7 @@ pub fn run() {
         .manage(obs::ObsState::default())
         .manage(auto_moments::AutoMomentsState::default())
         .manage(fortnite_counter::FortniteCounterState::default())
+        .manage(social_metrics::MetricsState::default())
         .manage(premigrate::Preparation::default())
         .setup(|app| {
             if let Some(window) = tauri::Manager::get_webview_window(app, "main") {
@@ -249,6 +252,11 @@ pub fn run() {
             shorts::shorts_preview,
             shorts::shorts_plan,
             shorts::media_inspect,
+            social_metrics::metrics_status,
+            social_metrics::metrics_connect_meta,
+            social_metrics::metrics_connect_tiktok,
+            social_metrics::metrics_sync,
+            social_metrics::metrics_control,
             fortnite_counter::fortnite_counter_status,
             fortnite_counter::fortnite_counter_configure,
             media_jobs::media_jobs_status,

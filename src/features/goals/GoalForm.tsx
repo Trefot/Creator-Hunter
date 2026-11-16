@@ -8,14 +8,15 @@ const t = es.goals;
 interface Props {
   /** Meta a editar; sin ella, el formulario crea una nueva. */
   goal?: Goal;
+  initialProfileId?: string;
   profiles: Profile[];
   onSave: (input: GoalInput) => Promise<void>;
   onCancel: () => void;
 }
 
-export function GoalForm({ goal, profiles, onSave, onCancel }: Props) {
+export function GoalForm({ goal, profiles, onSave, onCancel, initialProfileId }: Props) {
   const [metric, setMetric] = useState<GoalMetric>(goal?.metric ?? "followers");
-  const [profileId, setProfileId] = useState(goal?.profile_id ?? "");
+  const [profileId, setProfileId] = useState(goal?.profile_id ?? initialProfileId ?? "");
   const [target, setTarget] = useState(goal ? String(goal.target_value) : "");
   const [deadline, setDeadline] = useState(goal?.deadline ?? "");
   const [error, setError] = useState("");
@@ -55,7 +56,7 @@ export function GoalForm({ goal, profiles, onSave, onCancel }: Props) {
 
         <label>
           {t.profile}
-          <select value={profileId} onChange={(e) => setProfileId(e.target.value)}>
+          <select aria-label={t.profile} value={profileId} onChange={(e) => setProfileId(e.target.value)}>
             <option value="">{t.allProfiles}</option>
             {profiles.map((p) => (
               <option key={p.id} value={p.id}>

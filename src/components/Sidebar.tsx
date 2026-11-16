@@ -1,4 +1,5 @@
 import {
+  PlugZap,
   CalendarDays,
   DatabaseBackup,
   FolderKanban,
@@ -31,6 +32,7 @@ export const SECTION_ICONS: Record<Section, LucideIcon> = {
   games: Gamepad2,
   live: Radio,
   backups: DatabaseBackup,
+  connections: PlugZap,
 };
 
 interface Props {
@@ -43,7 +45,7 @@ interface Props {
 export function Sidebar({ current, onSelect,focus,onFocus }: Props) {
   const [expanded,setExpanded]=useState(['profiles','goals','income'].includes(current));
   useEffect(()=>{if(['profiles','goals','income'].includes(current))setExpanded(true)},[current]);
-  const labels:Partial<Record<Section,[string,string]>>={dashboard:['Inicio','Tu siguiente paso'],projects:['Crear contenido','Ideas, proyectos y clips'],live:['En directo','Tu cabina de control'],games:['Juegos','Biblioteca y progreso']};
+  const labels:Partial<Record<Section,[string,string]>>={dashboard:['Inicio','Tu crecimiento en redes'],projects:['Crear contenido','Ideas, proyectos y clips'],live:['En directo','Tu cabina de control'],games:['Juegos','Biblioteca y progreso']};
   function item(section: Section) {
     const Icon = SECTION_ICONS[section];
     return (
@@ -70,7 +72,7 @@ export function Sidebar({ current, onSelect,focus,onFocus }: Props) {
         <div className="nav-group-label">TU ESPACIO</div>
         <ul>{(["dashboard","projects","live","games"] as Section[]).map(item)}</ul>
         <div className="nav-group-label">ORGANIZAR</div>
-        <ul>{item("calendar")}</ul>
+        <ul>{item("connections")}{item("calendar")}</ul>
         <details className="nav-studio" open={expanded} onToggle={e=>setExpanded(e.currentTarget.open)}><summary><LayoutDashboard size={18}/>Mi estudio<ChevronRight size={14}/></summary><ul>{(["profiles","goals","income"] as Section[]).map(item)}</ul></details>
       </div>
       <button className="focus-toggle ghost" aria-pressed={focus} onClick={onFocus}><Sparkles size={17}/><span>Modo enfoque<small>Reducir detalle en Inicio</small></span><span className={`focus-switch${focus?" on":""}`} aria-hidden="true"/></button>

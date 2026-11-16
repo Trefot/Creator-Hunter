@@ -357,3 +357,14 @@ test('production readiness agrees with buffer and completed unscheduled content 
  const full={...version,steps:version.steps.map(s=>({...s,completed_at:'done'}))};assert.equal(p.candidates('schedule',[],[full]).length,1);
  const week=p.weekProgress(Array(7).fill('rest'),[{day:'2026-11-16',done_at:'done'}],['2026-11-16']);assert.deepEqual({...week},{done:1,planned:1});
 });
+
+
+test('social progress uses real dated baselines and never invents growth',()=>{
+ const {socialProgress}=load('src/features/dashboard/socialProgress.ts',{});
+ const record=(id,date,followers,profile_id='yt')=>({id,recorded_on:date,followers,profile_id});
+ const rows=[record('old','2026-10-01',300),record('now','2026-11-16',347),record('future','2026-11-17',900),record('other','2026-11-16',1000,'tw')];
+ const p=socialProgress(rows,'yt','2026-11-16',28);assert.equal(p.delta,47);assert.equal(p.baseline.recorded_on,'2026-10-01');assert.equal(p.latest.id,'now');
+ assert.equal(socialProgress([record('only','2026-11-16',347)],'yt','2026-11-16',28).delta,null);
+ assert.equal(socialProgress([record('null','2026-10-01',null),record('zero','2026-11-16',0)],'yt','2026-11-16',28).latest.followers,0);
+ assert.equal(socialProgress(rows,'none','2026-11-16',28).latest,null);
+});

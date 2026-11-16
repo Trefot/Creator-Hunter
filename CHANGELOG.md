@@ -2,6 +2,14 @@
 
 ## [Sin publicar]
 
+## [0.2.41] · 2026-11-16 · Tus redes al frente
+
+- Inicio renovado con tarjetas de YouTube, Twitch, TikTok, Instagram y Facebook: cifras, fecha, origen, comparación con registros reales y metas de cada cuenta. No se inventa crecimiento cuando falta historial.
+- Nuevo centro de Conexiones con pasos para cada servicio, perfiles existentes y actualización de seguidores de Twitch. Instagram de creador y su página de Facebook se configuran juntos con autorización de Meta; TikTok dispone de configuración personal mediante su API oficial. Meta y TikTok requieren credenciales y permisos del proveedor, no quedan conectados al instalar.
+- Las credenciales nuevas se guardan en Windows. Las actualizaciones conservan el último registro válido, no duplican el registro automático diario ni modifican los manuales; Facebook e Instagram se guardan juntos o no se guarda ninguno.
+- Capturas, revisión y Shorts reunidos en Crear contenido. La cabina muestra las acciones diarias; contadores y configuración quedan en herramientas secundarias. Se conservan los enlaces de OBS y Stream Deck.
+- Las fichas de juegos separan los controles de detección y apariencia del progreso habitual. Se conserva el contador de cofres al terminar la partida; esta versión no incluye detección visual experimental.
+
 ## [0.2.40] · 2026-11-15 · Cofres de Fortnite sin pulsar botones
 
 - En directo → Contadores permite activar el conteo de cofres a partir de las repeticiones locales de Fortnite. Al terminar una partida suma los cofres abiertos y destruidos atribuidos a tu jugador.

@@ -97,6 +97,8 @@ pub async fn import_backup(
     stamp: String,
 ) -> Result<ImportResult, String> {
     tauri::async_runtime::spawn_blocking(move || {
+        let metrics_state=app.state::<crate::social_metrics::MetricsState>();
+        let _metrics_guard=tauri::async_runtime::block_on(metrics_state.operation.lock());
         let chest_state=app.state::<crate::fortnite_counter::FortniteCounterState>();
         let _chest_guard=chest_state.operation.lock().map_err(|e|e.to_string())?;
         let _media_guard=crate::media_jobs::pause_for_restore()?;
@@ -116,6 +118,7 @@ pub async fn import_backup(
                     .map_err(|e| format!("No se pudo crear la copia previa: {e}"))?;
                 let total = data_safety::restore(&pool, &content).await?;
                 crate::fortnite_counter::reset_after_restore(&app).await?;
+                crate::social_metrics::reset_after_restore(&app).await?;
                 crate::obs::reset_after_restore(&app);
                 crate::engagement::reset_after_restore(&app);
                 crate::music::reset_after_restore(&app);
