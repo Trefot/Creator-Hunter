@@ -27,3 +27,11 @@ $entry = Get-ItemProperty 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Unins
 if ($entry.DisplayName -ne 'Nexus Studio') { throw 'Nombre visible incorrecto' }
 if ($entry.DisplayVersion -ne (Get-Content '.release/latest.json' | ConvertFrom-Json).version) { throw 'Versión instalada incorrecta' }
 Write-Host 'Actualización desde 0.2.19: ejecutable, accesos, iconos y nombre verificados.'
+# The replay reader must survive bundling and an upgrade, including its runtime and notices.
+foreach ($resource in @('nexus-fortnite-reader.exe','fortnite-reader-COPYING.txt','fortnite-reader-NOTICE.md','fortnite-reader-LICENSE-LED-N.txt','fortnite-reader-LICENSE-Shiqan.txt')) {
+  if (!(Test-Path (Join-Path $installDir $resource))) { throw "Falta recurso instalado: $resource" }
+}
+$readerError = Join-Path $env:RUNNER_TEMP 'nexus-installed-reader-stderr.txt'
+$reader = Start-Process -FilePath (Join-Path $installDir 'nexus-fortnite-reader.exe') -Wait -PassThru -NoNewWindow -RedirectStandardError $readerError
+if ($reader.ExitCode -ne 1 -or (Get-Content $readerError -Raw) -notmatch 'Indica una repetici') { throw 'El lector instalado no inicia correctamente' }
+Write-Host 'Lector local instalado: ejecución autónoma y avisos de licencia verificados.'
