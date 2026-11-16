@@ -1,13 +1,14 @@
 {
-  "version": "0.2.42",
+  "version": "0.2.43",
   "notes": [
-    "Instagram + Facebook permite indicar el ID de la página cuando Meta devuelve vacía la lista de páginas, aunque la autorización sí permite leer sus métricas.",
-    "Verifica la identidad y los seguidores de la página y de su Instagram vinculado antes de guardar la autorización. Conserva el acceso anterior si la comprobación falla.",
-    "Explica el caso de lista vacía sin atribuirlo automáticamente a permisos faltantes. El token sigue en el almacén de Windows y se elimina del formulario tras conectar; las autorizaciones que caduquen requieren renovación en Meta."
+    "Conexiones → TikTok permite autorizar la cuenta en el navegador con las credenciales de tu Sandbox, sin copiar manualmente un access token. Muestra la dirección de retorno que debes registrar en Login Kit → Desktop.",
+    "Comprueba la sesión de autorización, usa PKCE según el protocolo de TikTok y valida la identidad y sus seguidores antes de guardar la cuenta. Client secret y tokens permanecen en el almacén de Windows; no se incluyen en las copias de la base de datos.",
+    "Renueva el acceso al consultar las cifras cuando haga falta y conserva el refresh token rotado. Si el proveedor revoca el acceso o vence la renovación, solicita volver a autorizar. Mantiene el token manual como alternativa avanzada.",
+    "La autorización exige la configuración y permisos de TikTok; las pruebas no equivalen a una aprobación para producción. No añade TikTok LIVE ni publicación de vídeos."
   ],
   "date": "2026-11-16",
   "installer": "TrophyHunter-setup.exe",
-  "source_commit": "864349c079a4fa6c8412281beef097dce661a785",
-  "sha256": "91d39b37193b9300187a340a7de62d24269b793808bcab0c74f4ed3369c1ddec",
-  "size": 42967786
+  "source_commit": "19f8687d3cc4a75dd81185641ab661086e50b346",
+  "sha256": "826968ede9508b362c9ab918c4f9f5a2b91f06863a5148fa38b395a1554e93d4",
+  "size": 42967778
 }
