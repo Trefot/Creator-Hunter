@@ -1,15 +1,13 @@
 {
-  "version": "0.2.41",
+  "version": "0.2.42",
   "notes": [
-    "Inicio renovado con tarjetas de YouTube, Twitch, TikTok, Instagram y Facebook: cifras, fecha, origen, comparación con registros reales y metas de cada cuenta. No se inventa crecimiento cuando falta historial.",
-    "Nuevo centro de Conexiones con pasos para cada servicio, perfiles existentes y actualización de seguidores de Twitch. Instagram de creador y su página de Facebook se configuran juntos con autorización de Meta; TikTok dispone de configuración personal mediante su API oficial. Meta y TikTok requieren credenciales y permisos del proveedor, no quedan conectados al instalar.",
-    "Las credenciales nuevas se guardan en Windows. Las actualizaciones conservan el último registro válido, no duplican el registro automático diario ni modifican los manuales; Facebook e Instagram se guardan juntos o no se guarda ninguno.",
-    "Capturas, revisión y Shorts reunidos en Crear contenido. La cabina muestra las acciones diarias; contadores y configuración quedan en herramientas secundarias. Se conservan los enlaces de OBS y Stream Deck.",
-    "Las fichas de juegos separan los controles de detección y apariencia del progreso habitual. Se conserva el contador de cofres al terminar la partida; esta versión no incluye detección visual experimental."
+    "Instagram + Facebook permite indicar el ID de la página cuando Meta devuelve vacía la lista de páginas, aunque la autorización sí permite leer sus métricas.",
+    "Verifica la identidad y los seguidores de la página y de su Instagram vinculado antes de guardar la autorización. Conserva el acceso anterior si la comprobación falla.",
+    "Explica el caso de lista vacía sin atribuirlo automáticamente a permisos faltantes. El token sigue en el almacén de Windows y se elimina del formulario tras conectar; las autorizaciones que caduquen requieren renovación en Meta."
   ],
   "date": "2026-11-16",
   "installer": "TrophyHunter-setup.exe",
-  "source_commit": "0eae996eadc0c7e2291fccdc017b9467185b4365",
-  "sha256": "1ab2a759a8bfda6a3bd1a53cd6ca7b6c93da936635986a8a3cca22d66caf3fd3",
-  "size": 42932779
+  "source_commit": "864349c079a4fa6c8412281beef097dce661a785",
+  "sha256": "91d39b37193b9300187a340a7de62d24269b793808bcab0c74f4ed3369c1ddec",
+  "size": 42967786
 }
