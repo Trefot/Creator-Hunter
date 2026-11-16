@@ -1,14 +1,15 @@
 {
-  "version": "0.2.40",
+  "version": "0.2.41",
   "notes": [
-    "En directo → Contadores permite activar el conteo de cofres a partir de las repeticiones locales de Fortnite. Al terminar una partida suma los cofres abiertos y destruidos atribuidos a tu jugador.",
-    "Conserva el total existente y registra cada partida una sola vez. Las repeticiones anteriores a la activación y los cofres de compañeros no se añaden.",
-    "Incluye un lector local para Windows: no requiere instalar .NET, iniciar sesión ni subir las repeticiones. Debes activar Guardar repeticiones en Fortnite y mantener Nexus abierto.",
-    "El conteo se actualiza después de cada partida, no durante ella. Los casos sin atribución segura se excluyen; algunas destrucciones desde vehículos pueden faltar. Una actualización de Fortnite podría requerir actualizar el lector."
+    "Inicio renovado con tarjetas de YouTube, Twitch, TikTok, Instagram y Facebook: cifras, fecha, origen, comparación con registros reales y metas de cada cuenta. No se inventa crecimiento cuando falta historial.",
+    "Nuevo centro de Conexiones con pasos para cada servicio, perfiles existentes y actualización de seguidores de Twitch. Instagram de creador y su página de Facebook se configuran juntos con autorización de Meta; TikTok dispone de configuración personal mediante su API oficial. Meta y TikTok requieren credenciales y permisos del proveedor, no quedan conectados al instalar.",
+    "Las credenciales nuevas se guardan en Windows. Las actualizaciones conservan el último registro válido, no duplican el registro automático diario ni modifican los manuales; Facebook e Instagram se guardan juntos o no se guarda ninguno.",
+    "Capturas, revisión y Shorts reunidos en Crear contenido. La cabina muestra las acciones diarias; contadores y configuración quedan en herramientas secundarias. Se conservan los enlaces de OBS y Stream Deck.",
+    "Las fichas de juegos separan los controles de detección y apariencia del progreso habitual. Se conserva el contador de cofres al terminar la partida; esta versión no incluye detección visual experimental."
   ],
   "date": "2026-11-16",
   "installer": "TrophyHunter-setup.exe",
-  "source_commit": "6fb0324b08ab53821c48dc68726add0a8a5f5937",
-  "sha256": "e442a83850489a64a0b571c18e2e5df8f88d370074caa67cdf0b5e9cca381941",
-  "size": 44847948
+  "source_commit": "0eae996eadc0c7e2291fccdc017b9467185b4365",
+  "sha256": "1ab2a759a8bfda6a3bd1a53cd6ca7b6c93da936635986a8a3cca22d66caf3fd3",
+  "size": 42932779
 }
