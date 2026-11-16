@@ -30,6 +30,8 @@ mod fortnite_counter;
 mod metrics_core;
 mod tiktok_auth_core;
 mod social_metrics;
+mod content_performance;
+mod content_core;
 mod shorts_core;
 mod subtitles;
 mod subtitles_core;
@@ -191,6 +193,7 @@ fn migrations() -> Vec<Migration> {
             sql: include_str!("../migrations/024_work_plan.sql"),
             kind: MigrationKind::Up,
         },
+        Migration {version:25,description:"publicaciones, métricas históricas y preferencias respaldadas",sql:include_str!("../migrations/025_content_performance.sql"),kind:MigrationKind::Up},
     ]
 }
 
@@ -217,6 +220,7 @@ pub fn run() {
         .manage(auto_moments::AutoMomentsState::default())
         .manage(fortnite_counter::FortniteCounterState::default())
         .manage(social_metrics::MetricsState::default())
+        .manage(content_performance::ContentState::default())
         .manage(premigrate::Preparation::default())
         .setup(|app| {
             if let Some(window) = tauri::Manager::get_webview_window(app, "main") {
@@ -251,9 +255,11 @@ pub fn run() {
             shorts::shorts_render,
             shorts::studio_export_project,
             shorts::shorts_preview,
+            shorts::shorts_video_preview,
             shorts::shorts_plan,
             shorts::media_inspect,
             social_metrics::metrics_status,
+            content_performance::content_sync,
             social_metrics::metrics_tiktok_begin,
             social_metrics::metrics_tiktok_cancel,
             social_metrics::metrics_connect_meta,
@@ -272,6 +278,9 @@ pub fn run() {
             subtitles::subtitles_recordings,
             subtitles::subtitles_chapters,
             subtitles::subtitles_generate,
+            subtitles::choose_video_file,
+            subtitles::subtitles_relink,
+            subtitles::subtitles_burn,
             subtitles::subtitles_import,
             chat_commands::chat_commands_get,
             chat_commands::chat_commands_save,
@@ -286,6 +295,8 @@ pub fn run() {
             recap::stream_recap_discord,
             premigrate::prepare_database,
             backup::export_backup,
+            backup::automatic_backup,
+            backup::export_diagnostics,
             backup::import_backup,
             youtube::youtube_import_client,
             youtube::youtube_status,
@@ -302,6 +313,7 @@ pub fn run() {
             psn::psn_download_image,
             psn::psn_now_playing,
             pc_games::pc_now_playing,
+            pc_games::pc_installed_games,
             pc_games::pc_running_apps,
             youtube::youtube_disconnect,
             obs::obs_initialize,
@@ -349,6 +361,7 @@ pub fn run() {
             music::music_request_resolve,
             music::music_play,
             music::music_volume,
+            music::music_duck,
             streaming::stream_chat,
             streaming::stream_chat_enable,
             streaming::stream_chat_clear,

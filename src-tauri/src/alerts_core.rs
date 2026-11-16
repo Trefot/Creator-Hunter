@@ -499,6 +499,8 @@ pub struct Playback {
 }
 #[derive(Default)]
 struct Channel {
+    received:u64,
+    skipped:u64,
     queue: VecDeque<Event>,
     current: Option<Playback>,
     last: Option<Event>,
@@ -553,6 +555,7 @@ impl Engine {
         cfg.muted = false;
         cfg.paused = false;
         self.sequence += 1;
+        self.channels[i].received+=1;
         self.channels[i].queue.push_back(Event {
             id: self.sequence,
             title,
@@ -606,6 +609,7 @@ impl Engine {
     ) -> Result<(), String> {
         let cfg = self.settings.template(platform, kind)?;
         if !cfg.enabled {
+            self.channels[index(platform)?].skipped+=1;
             return Ok(());
         }
         let mut values = cfg.clone();
@@ -719,7 +723,8 @@ impl Engine {
             let rows:Vec<_>=CATALOG.iter().filter(|d|d.platform==platform).map(|d|serde_json::json!({"kind":d.kind,"name":d.name,"config":self.settings.template(platform,d.kind).unwrap(),"defaults":self.settings.defaults(platform,d.kind).unwrap()})).collect();
             events.insert(platform.into(), serde_json::json!(rows));
         }
-        serde_json::json!({"settings":self.settings,"events":events,"twitch_pending":self.channels[0].queue.len(),"youtube_pending":self.channels[1].queue.len(),"tiktok_pending":self.channels[2].queue.len(),"connected":false})
+        let diagnostics:Vec<_>=["twitch","youtube","tiktok"].iter().enumerate().map(|(i,name)|{let c=&self.channels[i];serde_json::json!({"platform":name,"received":c.received,"skipped":c.skipped,"pending":c.queue.len(),"viewer_seen_ms":c.seen,"last_kind":c.last.as_ref().map(|v|&v.kind),"last_test":c.last.as_ref().map(|v|v.test),"started_ms":c.current.as_ref().map(|v|v.started_at),"ends_ms":c.current.as_ref().map(|v|v.ends_at)})}).collect();
+        serde_json::json!({"diagnostics":diagnostics,"settings":self.settings,"events":events,"twitch_pending":self.channels[0].queue.len(),"youtube_pending":self.channels[1].queue.len(),"tiktok_pending":self.channels[2].queue.len(),"connected":false})
     }
 }
 #[cfg(test)]

@@ -1,3 +1,4 @@
+import {useDraftState,clearDraft} from "../../hooks/useDraftState";
 import { FormEvent, useState } from "react";
 import { Goal, GOAL_METRICS, GoalInput, GoalMetric } from "../../db/goals";
 import { Profile } from "../../db/profiles";
@@ -15,10 +16,11 @@ interface Props {
 }
 
 export function GoalForm({ goal, profiles, onSave, onCancel, initialProfileId }: Props) {
-  const [metric, setMetric] = useState<GoalMetric>(goal?.metric ?? "followers");
-  const [profileId, setProfileId] = useState(goal?.profile_id ?? initialProfileId ?? "");
-  const [target, setTarget] = useState(goal ? String(goal.target_value) : "");
-  const [deadline, setDeadline] = useState(goal?.deadline ?? "");
+  const draftKey="GoalForm:"+(goal?.id??initialProfileId??'new');
+  const [metric, setMetric] = useDraftState<GoalMetric>(draftKey+":metric",goal?.metric ?? "followers");
+  const [profileId, setProfileId] = useDraftState(draftKey+":profileId",goal?.profile_id ?? initialProfileId ?? "");
+  const [target, setTarget] = useDraftState(draftKey+":target",goal ? String(goal.target_value) : "");
+  const [deadline, setDeadline] = useDraftState(draftKey+":deadline",goal?.deadline ?? "");
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
 
@@ -31,6 +33,7 @@ export function GoalForm({ goal, profiles, onSave, onCancel, initialProfileId }:
     setSaving(true);
     try {
       await onSave({ metric, profile_id: profileId || null, target_value: value, deadline: deadline || null });
+      clearDraft(draftKey);
     } catch (err) {
       setError(`${t.errors.generic} ${err}`);
     } finally {
@@ -39,7 +42,7 @@ export function GoalForm({ goal, profiles, onSave, onCancel, initialProfileId }:
   }
 
   return (
-    <form className="card form" onSubmit={onSubmit}>
+    <form className="card form" onSubmit={onSubmit}><p className="small muted">El borrador se conserva en este equipo al cambiar de apartado. Guarda para confirmar los cambios.</p>
       <h2>{goal ? t.editTitle : t.newTitle}</h2>
 
       <div className="form-grid">

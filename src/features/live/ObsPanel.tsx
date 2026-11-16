@@ -3,7 +3,7 @@ import { obsStatus,obsConfigure,obsDisconnect,obsMark,obsMarkers,obsTime,moments
 import { es } from "../../i18n/es";
 const t=es.obs;
 
-export function ObsPanel({markUrl,clipUrl}:{markUrl:string|null;clipUrl:string|null}) {
+export function ObsPanel({markUrl,clipUrl,active:panelActive=true}:{markUrl:string|null;clipUrl:string|null;active?:boolean}) {
   const [status,setStatus]=useState<ObsStatus|null>(null);
   const [clips,setClips]=useState<ObsClip[]>([]);
   const [markers,setMarkers]=useState<ObsMarker[]>([]);
@@ -15,6 +15,7 @@ export function ObsPanel({markUrl,clipUrl}:{markUrl:string|null;clipUrl:string|n
   const [error,setError]=useState("");
   const [setup,setSetup]=useState(false);
   useEffect(()=>{
+    if(!panelActive)return;
     let cancelled=false;
     let hydrated=false;
     let timer:ReturnType<typeof setTimeout>;
@@ -27,7 +28,7 @@ export function ObsPanel({markUrl,clipUrl}:{markUrl:string|null;clipUrl:string|n
     }
     void refresh();
     return ()=>{cancelled=true;clearTimeout(timer);};
-  },[]);
+  },[panelActive]);
   async function connect(e:FormEvent){
     e.preventDefault();setBusy(true);setError("");setMessage("");
     try{await obsConfigure(port,password||null);setPassword("");setMessage(t.connecting);}

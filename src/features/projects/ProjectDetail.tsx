@@ -1,3 +1,4 @@
+import {useDraftState,clearDraft} from "../../hooks/useDraftState";
 import { EmptyState } from "../../components/EmptyState";
 import { Plus } from "lucide-react";
 import { FormEvent, useEffect, useState } from "react";
@@ -33,8 +34,8 @@ export function ProjectDetail({ project, onBack, onChanged }: Props) {
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [editing, setEditing] = useState<Editing>(null);
   const [editingProject, setEditingProject] = useState(false);
-  const [title, setTitle] = useState(project.title);
-  const [summary, setSummary] = useState(project.summary ?? "");
+  const [title, setTitle] = useDraftState("project:"+project.id+":title",project.title);
+  const [summary, setSummary] = useDraftState("project:"+project.id+":summary",project.summary ?? "");
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [error, setError] = useState("");
 
@@ -66,6 +67,7 @@ export function ProjectDetail({ project, onBack, onChanged }: Props) {
     setError("");
     try {
       await updateProject(project.id, { title, summary });
+      clearDraft("project:"+project.id);
       setEditingProject(false);
       await onChanged();
     } catch (err) {

@@ -492,3 +492,5 @@ pub fn reset_after_restore(app: &AppHandle) {
         .queue
         .clear();
 }
+
+pub(crate) fn speaking(app:&AppHandle)->bool {app.state::<EngagementState>().inner.lock().map(|i|i.current.is_some()).unwrap_or(false)}

@@ -78,6 +78,7 @@ export function RecapCard({ recap: r }: { recap: StreamRecap }) {
         <Gamepad2 size={34} className="recap-head-icon" />
       </header>
 
+      <button className="ghost small-button" onClick={()=>window.dispatchEvent(new CustomEvent("nexus-open-content",{detail:"moments"}))}>Revisar capturas y preparar el siguiente contenido</button>
       <div className="recap-tiles">
         {tiles(r).map((x) => (
           <div key={x.label} className="recap-tile">

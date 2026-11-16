@@ -1,3 +1,4 @@
+import {useDraftState,clearDraft} from "../../hooks/useDraftState";
 import { useEffect, useState } from "react";
 import {
   addSections,
@@ -28,9 +29,11 @@ interface SectionProps {
 /** Una sección del guion. Se guarda sola al salir de cada campo. */
 function SectionEditor({ section, isFirst, isLast, onSaved, onMove, onDelete, onError }: SectionProps) {
   const [kind, setKind] = useState<SectionKind>(section.kind);
-  const [content, setContent] = useState(section.content);
+  const [content, setContent] = useDraftState("script:"+section.id,section.content);
   const [seconds, setSeconds] = useState(section.est_seconds === null ? "" : String(section.est_seconds));
   const [saved, setSaved] = useState(false);
+
+  useEffect(()=>{if(content===section.content)return;const timer=setTimeout(()=>void save(),900);return()=>clearTimeout(timer)},[content,seconds,kind]);
 
   async function save(next: { kind?: SectionKind } = {}) {
     const trimmed = seconds.trim();
@@ -41,6 +44,7 @@ function SectionEditor({ section, isFirst, isLast, onSaved, onMove, onDelete, on
     if (input.kind === section.kind && input.content === section.content && input.est_seconds === section.est_seconds) return;
     try {
       await updateSection(section.id, input);
+      clearDraft("script:"+section.id);
       onSaved({ ...section, ...input });
       setSaved(true);
       setTimeout(() => setSaved(false), 1500);

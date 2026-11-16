@@ -1,3 +1,4 @@
+import {useDraftState,clearDraft} from "../../hooks/useDraftState";
 import { FormEvent, useState } from "react";
 import { Adaptation, AdaptationInput, DEFAULT_DISABLED_STEPS, Format, FORMATS, Step, STEPS } from "../../db/adaptations";
 import { Profile } from "../../db/profiles";
@@ -26,13 +27,14 @@ interface Props {
 }
 
 export function AdaptationForm({ adaptation, profiles, defaultTitle, onSave, onCancel }: Props) {
+  const draftKey="AdaptationForm:"+(adaptation?.id??defaultTitle);
   const suggestProfile = (f: Format) => profiles.find((p) => p.platform === SUGGESTED_PLATFORM[f])?.id ?? profiles[0]?.id ?? "";
 
-  const [format, setFormat] = useState<Format>(adaptation?.format ?? "long_video");
-  const [profileId, setProfileId] = useState(adaptation?.profile_id ?? suggestProfile("long_video"));
-  const [title, setTitle] = useState(adaptation?.title ?? defaultTitle);
-  const [scheduledAt, setScheduledAt] = useState(adaptation?.scheduled_at ?? "");
-  const [disabled, setDisabled] = useState<Step[]>(DEFAULT_DISABLED_STEPS.long_video);
+  const [format, setFormat] = useDraftState<Format>(draftKey+":format",adaptation?.format ?? "long_video");
+  const [profileId, setProfileId] = useDraftState(draftKey+":profileId",adaptation?.profile_id ?? suggestProfile("long_video"));
+  const [title, setTitle] = useDraftState(draftKey+":title",adaptation?.title ?? defaultTitle);
+  const [scheduledAt, setScheduledAt] = useDraftState(draftKey+":scheduledAt",adaptation?.scheduled_at ?? "");
+  const [disabled, setDisabled] = useDraftState<Step[]>(draftKey+":disabled",DEFAULT_DISABLED_STEPS.long_video);
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
 
@@ -56,6 +58,7 @@ export function AdaptationForm({ adaptation, profiles, defaultTitle, onSave, onC
     setSaving(true);
     try {
       await onSave({ format, profile_id: profileId, title, scheduled_at: scheduledAt || null }, disabled);
+      clearDraft(draftKey);
     } catch (err) {
       setError(`${t.errors.generic} ${err}`);
     } finally {
@@ -64,7 +67,7 @@ export function AdaptationForm({ adaptation, profiles, defaultTitle, onSave, onC
   }
 
   return (
-    <form className="card form" onSubmit={onSubmit}>
+    <form className="card form" onSubmit={onSubmit}><p className="small muted">El borrador se conserva en este equipo al cambiar de apartado. Guarda para confirmar los cambios.</p>
       <h2>{adaptation ? t.editAdaptation : t.newAdaptation}</h2>
 
       <div className="form-grid">

@@ -219,11 +219,20 @@ pub async fn update_apply(app: AppHandle) -> Result<(), String> {
         .compare_exchange(false, true, Ordering::AcqRel, Ordering::Acquire)
         .map_err(|_| "Ya hay una actualización en curso.".to_string())?;
     let _guard = ApplyGuard;
+    if crate::obs::media_busy(&app) { return Err("Termina la grabación o emisión antes de instalar. La actualización queda disponible.".into()); }
+    let jobs=crate::media_jobs::media_jobs_status(app.clone());
+    if jobs["jobs"].as_array().is_some_and(|jobs|jobs.iter().any(|j|j["state"]=="running"||j["state"]=="queued")){return Err("Espera a que termine el procesamiento antes de actualizar.".into())}
     let setup = match pending(&app)
         .await?
         .ok_or("No hay ninguna actualización pendiente.")?
     {
-        Found::Folder { setup, .. } => setup,
+        Found::Folder { setup, info } => {
+            let current=parse_version(&app.package_info().version.to_string()).ok_or("Versión instalada no válida.")?;
+            let trusted=check_github(current).await?;
+            let Some(Found::GitHub {info:remote_info,sha,size})=trusted else {return Err("No se pudo verificar el instalador local con el canal oficial. Descarga la actualización oficial.".into())};
+            if remote_info.version!=info.version{return Err("El instalador local no coincide con la versión oficial disponible.".into())}
+            let bytes=fs::read(&setup).map_err(|_|"No se pudo leer el instalador local.")?;verify(&bytes,&sha,size)?;setup
+        },
         Found::GitHub { info, sha, size } => {
             let url = format!(
                 "https://github.com/Trefot/Creator-Hunter/releases/download/v{}/Nexus-Studio_{}_x64-setup.exe",

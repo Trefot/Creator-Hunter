@@ -7,4 +7,4 @@ export interface AlertConfig {
  duration:number;volume:number;muted:boolean;paused:boolean;sound:boolean;
 }
 export interface AlertEvent {kind:string;name:string;config:AlertConfig;defaults:AlertConfig}
-export interface AlertStatus {settings:{twitch:AlertConfig;youtube:AlertConfig;tiktok:AlertConfig;coordinate_audio:boolean};events:Record<Platform,AlertEvent[]>;twitch_pending:number;youtube_pending:number;tiktok_pending:number;connected:boolean}
+export interface AlertStatus {diagnostics?:{platform:string;received:number;skipped:number;pending:number;viewer_seen_ms:number;last_kind:string|null;last_test:boolean|null;ends_ms:number|null}[];settings:{twitch:AlertConfig;youtube:AlertConfig;tiktok:AlertConfig;coordinate_audio:boolean};events:Record<Platform,AlertEvent[]>;twitch_pending:number;youtube_pending:number;tiktok_pending:number;connected:boolean}

@@ -132,3 +132,31 @@ pub async fn import_backup(
     .await
     .map_err(|e| e.to_string())?
 }
+
+/// One consistent automatic copy per local day, seven retained; manual copies are never removed.
+#[tauri::command]
+pub async fn automatic_backup(app:AppHandle,day:String)->Result<String,String>{
+ if day.len()!=8||!day.bytes().all(|b|b.is_ascii_digit()){return Err("Fecha de copia no válida.".into())}
+ let dir=backup_dir(&app)?;let target=dir.join(format!("nexus-auto-{day}.json"));
+ if target.is_file(){return Ok(target.to_string_lossy().into())}
+ let stamp=format!("{day}-{}",rand::random::<u64>());
+ let result=export_backup(app,stamp).await?;
+ std::fs::rename(&result.path,&target).map_err(|_|"La copia se creó pero no se pudo organizar; revisa la carpeta de copias.")?;
+ let mut copies:Vec<_>=std::fs::read_dir(&dir).map_err(|e|e.to_string())?.filter_map(Result::ok).filter(|e|{let n=e.file_name().to_string_lossy().into_owned();n.starts_with("nexus-auto-")&&n.ends_with(".json")&&n.len()==24&&n[11..19].bytes().all(|b|b.is_ascii_digit())}).collect();
+ copies.sort_by_key(|e|e.file_name());let remove=copies.len().saturating_sub(7);
+ for entry in copies.into_iter().take(remove){let _=std::fs::remove_file(entry.path());}
+ Ok(target.to_string_lossy().into())
+}
+
+/// Counts and capability flags only: no credentials, titles, messages, account names or media paths.
+#[tauri::command]
+pub async fn export_diagnostics(app:AppHandle)->Result<String,String>{
+ let pool=pool(&app).await?;let mut counts=serde_json::Map::new();
+ for table in data_safety::TABLES{let n:i64=sqlx::query_scalar(&format!("SELECT COUNT(*) FROM \"{table}\"" )).fetch_one(&pool).await.map_err(|e|e.to_string())?;counts.insert(table.into(),serde_json::json!(n));}
+ let obs=serde_json::to_value(crate::obs::obs_status(app.state())).unwrap_or_default();
+ let mut flags=serde_json::Map::new();for key in ["enabled","connected","recording","streaming","replay_active"]{flags.insert(key.into(),obs[key].clone());}
+ let output=serde_json::json!({"version":app.package_info().version.to_string(),"os":std::env::consts::OS,"test_environment":cfg!(debug_assertions),"table_counts":counts,"obs":flags,"privacy":"Sin credenciales, nombres, mensajes ni rutas de medios"});
+ let dir=backup_dir(&app)?;let path=dir.join(format!("nexus-diagnostico-{:016x}.json",rand::random::<u64>()));
+ std::fs::write(&path,serde_json::to_vec_pretty(&output).map_err(|e|e.to_string())?).map_err(|e|e.to_string())?;
+ Ok(path.to_string_lossy().into())
+}

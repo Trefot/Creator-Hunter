@@ -1,3 +1,4 @@
+import {useDraftState,clearDraft} from "../../hooks/useDraftState";
 import { FormEvent, useState } from "react";
 import { Idea, IdeaInput } from "../../db/ideas";
 import { es } from "../../i18n/es";
@@ -12,7 +13,8 @@ interface Props {
 }
 
 export function IdeaForm({ idea, onSave, onCancel }: Props) {
-  const [input, setInput] = useState<IdeaInput>({
+  const draftKey="IdeaForm:"+(idea?.id??'new');
+  const [input, setInput] = useDraftState<IdeaInput>(draftKey+":input",{
     title: idea?.title ?? "",
     description: idea?.description ?? "",
     tags: idea?.tags ?? "",
@@ -32,6 +34,7 @@ export function IdeaForm({ idea, onSave, onCancel }: Props) {
     setSaving(true);
     try {
       await onSave(input);
+      clearDraft(draftKey);
     } catch (err) {
       setError(`${t.errors.generic} ${err}`);
     } finally {
@@ -40,7 +43,7 @@ export function IdeaForm({ idea, onSave, onCancel }: Props) {
   }
 
   return (
-    <form className="card form" onSubmit={onSubmit}>
+    <form className="card form" onSubmit={onSubmit}><p className="small muted">El borrador se conserva en este equipo al cambiar de apartado. Guarda para confirmar los cambios.</p>
       <h2>{idea ? t.editTitle : t.newTitle}</h2>
 
       <label>

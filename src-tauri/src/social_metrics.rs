@@ -297,7 +297,7 @@ async fn sync(
                 return Err("El @usuario del perfil no coincide con la cuenta de Twitch autorizada. Corrige el perfil o cambia la cuenta.".into());
             }
             crate::metrics_core::snapshot(&pool, id, "twitch", date, Some(count), None).await?;
-            c = json!({"configured":true,"auto":c["auto"].as_bool().unwrap_or(true),"profile_id":id,"account_id":user,"name":identity["data"][0]["display_name"]});
+            c = json!({"configured":true,"auto":if c["configured"]==true {c["auto"].as_bool().unwrap_or(true)} else {true},"profile_id":id,"account_id":user,"name":identity["data"][0]["display_name"]});
             rows.push(json!({"platform":"twitch","followers":count}));
         }
         "meta" => {
@@ -429,7 +429,7 @@ pub async fn metrics_control(
                 .map_err(|_| "No se pudo cerrar TikTok.")? = None;
         }
         if platform != "twitch" {
-            let _ = vault(&platform)?.delete_credential();
+            match vault(&platform)?.delete_credential(){Ok(())|Err(keyring::Error::NoEntry)=>{},Err(_)=>return Err("Windows no pudo borrar la credencial local. Vuelve a intentar desconectar.".into())}
         }
         c = json!({"configured":false,"auto":false});
     } else if c.is_object() && ["auto_on", "auto_off"].contains(&action.as_str()) {
@@ -463,6 +463,7 @@ pub async fn metrics_tiktok_begin(
     client_key: String,
     client_secret: String,
     profile_id: String,
+    publications: Option<bool>,
 ) -> Result<(), String> {
     let state = app.state::<MetricsState>();
     let _gate = state.operation.lock().await;
@@ -490,12 +491,17 @@ pub async fn metrics_tiktok_begin(
         profile: profile_id,
         started: now(),
     };
-    let url = crate::tiktok_auth_core::authorize_url(
+    let mut url = crate::tiktok_auth_core::authorize_url(
         &pending.key,
         &pending.state,
         &pending.verifier,
         &tiktok_redirect(),
     )?;
+    if publications.unwrap_or(false) {
+        let mut parsed=reqwest::Url::parse(&url).map_err(|_|"No se pudo preparar la autorización.")?;
+        let pairs:Vec<(String,String)>=parsed.query_pairs().filter(|(k,_)|k!="scope").map(|(k,v)|(k.into_owned(),v.into_owned())).collect();
+        parsed.set_query(None);parsed.query_pairs_mut().extend_pairs(pairs).append_pair("scope","user.info.basic,user.info.stats,video.list");url=parsed.into();
+    }
     *state
         .tiktok_pending
         .lock()
@@ -618,4 +624,72 @@ async fn tiktok_secret() -> Result<Value, String> {
         |_| "Windows no pudo guardar la renovación de TikTok. Vuelve a autorizar la cuenta.",
     )?;
     Ok(fresh)
+}
+
+/// Publication reads share the metrics gate: refreshing/disconnecting cannot race credentials.
+pub(crate) async fn content_feed(app:&AppHandle,platform:&str)->Result<(String,Vec<crate::content_performance::Post>,Option<String>),String>{
+ use crate::content_performance::{Post,count};
+ let shared=app.state::<MetricsState>();let _gate=shared.operation.lock().await;
+ let provider=if matches!(platform,"instagram"|"facebook"){"meta"}else{platform};
+ let c=cfg(app,provider).await?;
+ if c["configured"]!=true{return Err(format!("Conecta {platform} y comprueba sus métricas en Conexiones."))}
+ let profile=c[match platform{"facebook"=>"facebook_profile","instagram"=>"instagram_profile",_=>"profile_id"}].as_str().ok_or("Selecciona el perfil de esta red en Conexiones.")?.to_string();
+ let mut out=Vec::new();let mut warning=None;
+ match platform{
+ "tiktok"=>{
+  let secret=tiktok_secret().await?;
+  if !secret["scope"].as_str().unwrap_or_default().split(',').any(|s|s.trim()=="video.list"){return Err("TikTok necesita el permiso video.list: añádelo en tu Sandbox, activa Publicaciones al autorizar y vuelve a conectar. Tus cifras de seguidores siguen disponibles.".into())}
+  let token=secret["token"].as_str().ok_or("Vuelve a conectar TikTok.")?;
+  let fields="id,title,video_description,create_time,cover_image_url,share_url,like_count,comment_count,share_count,view_count";
+  let v=api(client()?.post("https://open.tiktokapis.com/v2/video/list/").bearer_auth(token).query(&[("fields",fields)]).json(&json!({"max_count":20})),"TikTok").await?;
+  let mut videos=v["data"]["videos"].as_array().cloned().ok_or("TikTok no devolvió la lista de vídeos.")?;
+  let known=crate::content_performance::known(app,&profile).await?;
+  for ids in known.chunks(20){
+   let v=api(client()?.post("https://open.tiktokapis.com/v2/video/query/").bearer_auth(token).query(&[("fields",fields)]).json(&json!({"filters":{"video_ids":ids}})),"TikTok").await?;
+   if let Some(items)=v["data"]["videos"].as_array(){for v in items{if !videos.iter().any(|x|x["id"]==v["id"]){videos.push(v.clone())}}}
+  }
+  let pool=crate::backup::pool(app).await?;
+  for v in videos{
+   let Some(id)=v["id"].as_str().filter(|s|crate::metrics_core::safe_id(s)) else{continue};
+   let date:Option<String>=sqlx::query_scalar("SELECT strftime('%Y-%m-%dT%H:%M:%SZ',$1,'unixepoch')").bind(v["create_time"].as_i64()).fetch_one(&pool).await.map_err(|e|e.to_string())?;
+   let Some(date)=date else{continue};
+   let mut p=Post::new(&v["cover_image_url"],id,v["title"].as_str().or_else(||v["video_description"].as_str()).unwrap_or("Vídeo"),v["share_url"].as_str().unwrap_or_default().into(),date,"short");
+   p.views=count(&v["view_count"]);p.likes=count(&v["like_count"]);p.comments=count(&v["comment_count"]);p.shares=count(&v["share_count"]);out.push(p);
+  }
+  warning=Some("Descubre los 20 vídeos públicos más recientes y actualiza hasta 200 ya registrados. Los contadores pueden llegar con retraso.".into());
+ },
+ "instagram"|"facebook"=>{
+  let secret=read_secret("meta")?;let token=secret["token"].as_str().ok_or("Renueva la autorización de Meta.")?;
+  let owner=text(&secret,if platform=="instagram"{"instagram_id"}else{"page_id"})?;
+  let fields=if platform=="instagram"{"id,caption,media_type,media_product_type,permalink,thumbnail_url,media_url,timestamp,like_count,comments_count"}else{"id,message,created_time,permalink_url,full_picture,likes.limit(0).summary(true),comments.limit(0).summary(true),shares"};
+  let path=if platform=="instagram"{"media"}else{"published_posts"};
+  let v=api(client()?.get(format!("https://graph.facebook.com/v27.0/{owner}/{path}")).bearer_auth(token).query(&[("fields",fields),("limit","50")]),"Meta").await?;
+  let items=v["data"].as_array().ok_or("Meta no devolvió publicaciones. Revisa los permisos de contenido de la cuenta.")?;
+  let mut missing_insights=false;
+  for v in items{
+   let Some(id)=v["id"].as_str().filter(|s|crate::metrics_core::safe_id(s)) else{continue};
+   let ig=platform=="instagram";
+   let format=if ig {if v["media_product_type"]=="REELS"{"reel"}else{"post"}}else{"post"};
+   let mut p=Post::new(if ig{if v["thumbnail_url"].is_string(){&v["thumbnail_url"]}else{&v["media_url"]}}else{&v["full_picture"]},id,v[if ig{"caption"}else{"message"}].as_str().unwrap_or("Publicación"),v[if ig{"permalink"}else{"permalink_url"}].as_str().unwrap_or_default().into(),v[if ig{"timestamp"}else{"created_time"}].as_str().unwrap_or_default().into(),format);
+   p.likes=count(if ig{&v["like_count"]}else{&v["likes"]["summary"]["total_count"]});p.comments=count(if ig{&v["comments_count"]}else{&v["comments"]["summary"]["total_count"]});p.shares=count(&v["shares"]["count"]);
+   if !missing_insights{
+    match api(client()?.get(format!("https://graph.facebook.com/v27.0/{id}/insights")).bearer_auth(token).query(&[("metric",if ig{"views"}else{"post_media_view"})]),"Meta").await{
+     Ok(insights)=>{p.views=count(&insights["data"][0]["values"][0]["value"]).or_else(||count(&insights["data"][0]["total_value"]["value"]));},Err(_)=>missing_insights=true,
+    }
+   }
+   out.push(p);
+  }
+  warning=Some(if platform=="facebook"&&missing_insights{"Últimas 50 publicaciones. Las vistas requieren read_insights y pages_read_engagement; renueva la autorización con esos permisos. Los datos no disponibles quedan vacíos."}else if platform=="facebook"{"Últimas 50 publicaciones. Vistas de contenido mostrado o reproducido (post_media_view), likes, comentarios y compartidos según disponibilidad de Meta."}else if missing_insights{"Últimas 50 publicaciones. Para vistas se necesita instagram_manage_insights; los valores no disponibles quedan vacíos. Comprueba el permiso en Meta y renueva la autorización."}else{"Últimas 50 publicaciones; las estadísticas de Meta pueden tener retraso."}.into());
+ },
+ "twitch"=>{
+  let (client_id,token,user)=crate::social_alerts::twitch_token().await?;
+  if c["account_id"].as_str()!=Some(user.as_str()){return Err("La cuenta de Twitch cambió. Revisa el perfil antes de consultar contenido.".into())}
+  let v=api(client()?.get("https://api.twitch.tv/helix/videos").bearer_auth(&token).header("Client-Id",client_id).query(&[("user_id",user.as_str()),("first","50")]),"Twitch").await?;
+  for v in v["data"].as_array().into_iter().flatten(){
+   let Some(id)=v["id"].as_str() else{continue};let mut p=Post::new(&v["thumbnail_url"],id,v["title"].as_str().unwrap_or("Directo"),v["url"].as_str().unwrap_or_default().into(),v["published_at"].as_str().unwrap_or_default().into(),"live");p.views=count(&v["view_count"]);out.push(p);
+  }
+  warning=Some("Últimos 50 vídeos y repeticiones. Twitch no ofrece aquí likes ni comentarios comparables a otras redes. Los clips se gestionan por separado.".into());
+ },_=>return Err("Esta red no admite consultas de publicaciones.".into())
+ }
+ Ok((profile,out,warning))
 }

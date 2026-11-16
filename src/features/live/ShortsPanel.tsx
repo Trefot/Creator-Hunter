@@ -21,14 +21,15 @@ export function ShortMaker({ kind, id, captureWindow }: { kind: "moment" | "clip
  const [before,setBefore]=useState(captureWindow?.before??30),[after,setAfter]=useState(captureWindow?.after??5);
  const [plan,setPlan]=useState<ShortPlan|null>(null),[checking,setChecking]=useState(false),[planError,setPlanError]=useState('');
  const [busy,setBusy]=useState(false),[result,setResult]=useState<string|null>(null),[exportId,setExportId]=useState<string|undefined>();
- const [audio,setAudio]=useState<number[]|undefined>(),[encoder,setEncoder]=useState('cpu'),[preview,setPreview]=useState(''),[previewBusy,setPreviewBusy]=useState(false);
+ const [audio,setAudio]=useState<number[]|undefined>(),[encoder,setEncoder]=useState('cpu'),[preview,setPreview]=useState(''),[videoPreview,setVideoPreview]=useState(''),[previewBusy,setPreviewBusy]=useState(false);
  const previewRequest=useRef(0);
  const [error,setError]=useState(''),[warning,setWarning]=useState<string|null>(null);
- useEffect(()=>{if(!open)return;let cancelled=false;setChecking(true);setPlanError('');setPreview('');previewRequest.current++;
-  const timer=setTimeout(()=>{invoke<ShortPlan>('shorts_plan',{kind,id,before,after}).then(p=>{if(!cancelled){setPlan(p);setAudio(previous=>previous??(p.audio.length?[0]:[]))}}).catch(e=>{if(!cancelled){setPlanError(String(e));setPlan(null)}}).finally(()=>{if(!cancelled)setChecking(false)})},200);
+ useEffect(()=>{if(!open)return;let cancelled=false;setChecking(true);setPlanError('');setPreview('');setVideoPreview('');previewRequest.current++;
+  const timer=setTimeout(()=>{invoke<ShortPlan>('shorts_plan',{kind,id,before,after}).then(p=>{if(!cancelled){setPlan(p);setAudio(previous=>{if(previous)return previous;try{const saved=JSON.parse(localStorage.getItem('nexus-pref:short-audio')??'null');if(Array.isArray(saved)&&saved.every(n=>Number.isInteger(n)&&p.audio.some(t=>t.index===n)))return saved}catch{}return p.audio.length?[p.audio[0].index]:[]})}}).catch(e=>{if(!cancelled){setPlanError(String(e));setPlan(null)}}).finally(()=>{if(!cancelled)setChecking(false)})},200);
   return()=>{cancelled=true;clearTimeout(timer)};
  },[open,kind,id,before,after]);
- useEffect(()=>{setPreview('');previewRequest.current++},[format]);
+ useEffect(()=>{setPreview('');setVideoPreview('');previewRequest.current++},[format,audio]);
+ useEffect(()=>{if(audio!==undefined)localStorage.setItem('nexus-pref:short-audio',JSON.stringify(audio))},[audio]);
  async function render(){setBusy(true);setError('');setResult(null);setWarning(null);try{const r=await shortsRender(kind,id,format,before,after,audio,encoder);setResult(r.path);setExportId(r.id);setWarning(r.warning??null)}catch(e){setError(String(e))}finally{setBusy(false)}}
  if(!open)return <button className="ghost small-button" onClick={()=>setOpen(true)}><Scissors size={14}/>Crear Short</button>;
  return <div className="short-maker">
@@ -41,6 +42,8 @@ export function ShortMaker({ kind, id, captureWindow }: { kind: "moment" | "clip
    {plan.warning&&<p role="status" className="small">{plan.warning}</p>}
    <p className="muted small">Formato: {FORMATS.find(f=>f.id===format)?.label}. Puedes cambiarlo en las opciones.</p>
    <button className="ghost small-button" disabled={previewBusy||checking} onClick={async()=>{const request=++previewRequest.current;setPreviewBusy(true);setError('');try{const image=await invoke<string>('shorts_preview',{kind,id,format,before,after});if(request===previewRequest.current)setPreview(image)}catch(e){setError(String(e))}finally{setPreviewBusy(false)}}}>{previewBusy?'Preparando imagen…':'Ver cómo empieza'}</button>
+   <button className="ghost small-button" disabled={previewBusy||checking||audio===undefined} onClick={async()=>{setPreviewBusy(true);setError('');try{const video=await invoke<string>('shorts_video_preview',{kind,id,format,before,after,audio});setVideoPreview(video)}catch(e){setError(String(e))}finally{setPreviewBusy(false)}}}>Reproducir tramo y escuchar audio</button>
+   {videoPreview&&<video controls preload="metadata" src={videoPreview} aria-label="Vista previa del Short con audio" style={{width:'100%',maxHeight:420}}/>}
    {preview&&<img src={preview} alt="Primer fotograma del Short" style={{maxWidth:'100%',maxHeight:300,objectFit:'contain',display:'block'}}/>}
    <details><summary>Opciones de imagen y audio</summary>
     <div className="short-formats">{FORMATS.map(f=><label key={f.id} className={`short-format${format===f.id?' on':''}`}><input type="radio" name={`fmt-${id}`} checked={format===f.id} onChange={()=>setFormat(f.id)}/><strong>{f.label}</strong><span className="muted small">{f.hint}</span></label>)}</div>

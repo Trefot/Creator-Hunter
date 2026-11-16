@@ -89,12 +89,12 @@ export interface BufferStatus {
  * El colchón: versiones sin publicar que ya están grabadas y editadas (solo falta programarlas o
  * publicarlas). Menos de 4 piezas listas = semana de grabar.
  */
-export function bufferStatus(versions: Adaptation[]): BufferStatus {
+export function bufferStatus(versions: Adaptation[],goal=BUFFER_GOAL): BufferStatus {
   const ready = versions.filter(productionReady);
   const long = ready.filter((a) => a.format === "long_video").length;
   const short = ready.filter((a) => a.format === "short" || a.format === "tiktok" || a.format === "reel").length;
   const level =
-    long + short === 0 ? "empty" : long + short < 4 ? "low" : long >= BUFFER_GOAL.long && short >= BUFFER_GOAL.short ? "full" : "ok";
+    long + short === 0 ? "empty" : long + short < 4 ? "low" : long >= goal.long && short >= goal.short ? "full" : "ok";
   return { long, short, level };
 }
 

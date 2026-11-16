@@ -21,7 +21,7 @@ export function DiscordPanel(){
  const test=(kind:string)=>void run(async()=>{await invoke("discord_test",{kind});setMessage("Mensaje de prueba enviado a Discord.");});
  const remove=(kind:string)=>void run(async()=>{await invoke("discord_remove",{kind});setMessage("Webhook retirado de este equipo.");});
  const publish=(e:FormEvent)=>{e.preventDefault();void run(async()=>{const sent=await invoke<boolean>("discord_publish",{platform,title,url});setMessage(sent?"Publicación enviada a vídeos.":"Este contenido ya se envió o su entrega necesita comprobarse en Discord.");if(sent){setTitle("");setUrl("");}});};
- return <section className="card discord-panel" aria-label="Avisos de Discord">
+ return <section className="card discord-panel" aria-label="Avisos de Discord"><p className="small muted">Los avisos automáticos requieren Nexus abierto e Internet. Este webhook publica avisos; no administra el servidor. Si la entrega queda sin confirmar, revisa el canal antes de reenviar para evitar duplicados.</p>
   <h2>Discord · tu comunidad</h2>
   <p className="muted">Anuncia directos en <strong>🔴・directos</strong> y publicaciones en <strong>🎬・videos</strong>, sin menciones masivas.</p>
   {error&&<p role="alert" className="error">{error}</p>}{message&&<p role="status">{message}</p>}

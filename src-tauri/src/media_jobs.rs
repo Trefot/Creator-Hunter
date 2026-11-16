@@ -1,5 +1,5 @@
 //! Cola global de procesamiento local. Un proceso pesado a la vez; cancelar mata y recoge al hijo.
-use serde::Serialize;
+use serde::{Serialize,Deserialize};
 use serde_json::{Value, json};
 use std::{
     collections::VecDeque,
@@ -13,7 +13,7 @@ use std::{
 };
 use tauri::{AppHandle, Manager};
 
-#[derive(Clone, Serialize)]
+#[derive(Clone, Serialize,Deserialize)]
 pub struct Job {
     pub id: u64,
     pub title: String,
@@ -21,6 +21,8 @@ pub struct Job {
     pub progress: u8,
     pub result: Option<String>,
     pub error: Option<String>,
+    #[serde(default)]
+    pub request: Option<Value>,
 }
 struct Data {
     jobs: VecDeque<Job>,
@@ -31,6 +33,7 @@ struct Queue {
     data: Mutex<Data>,
     light: AtomicBool,
     serial: AtomicU64,
+    journal: Mutex<Option<std::path::PathBuf>>,
 }
 fn queue() -> &'static Queue {
     static Q: OnceLock<Queue> = OnceLock::new();
@@ -42,7 +45,17 @@ fn queue() -> &'static Queue {
         }),
         light: AtomicBool::new(true),
         serial: AtomicU64::new(1),
+        journal: Mutex::new(None),
     })
+}
+
+fn persist(d:&Data) {
+    if let Some(path)=queue().journal.lock().unwrap().as_ref(){
+        if let Ok(bytes)=serde_json::to_vec(&d.jobs){
+            let tmp=path.with_extension("pending");
+            if std::fs::write(&tmp,bytes).is_ok(){let _=std::fs::rename(&tmp,path);}
+        }
+    }
 }
 
 pub struct Ticket {
@@ -85,12 +98,15 @@ impl Ticket {
             progress: 0,
             result: None,
             error: None,
+            request: None,
         });
+        persist(&d);
         Ok(Self {
             id,
             complete: false,
         })
     }
+    pub fn request(&self,command:&str,args:Value){let mut d=queue().data.lock().unwrap();if let Some(j)=d.jobs.iter_mut().find(|j|j.id==self.id){j.request=Some(json!({"command":command,"args":args}));}persist(&d);}
     pub fn cancelled(&self) -> bool {
         queue()
             .data
@@ -125,6 +141,7 @@ impl Ticket {
                 if let Some(j) = d.jobs.iter_mut().find(|j| j.id == self.id) {
                     j.state = "running".into();
                 }
+                persist(&d);
                 return Ok(self);
             }
             drop(d);
@@ -142,6 +159,7 @@ impl Ticket {
             return Err("Trabajo cancelado.".into());
         }
         j.state = "finishing".into();
+        persist(&d);
         Ok(())
     }
     pub fn title(&self, title: &str) {
@@ -188,6 +206,7 @@ impl Ticket {
         if d.active == Some(self.id) {
             d.active = None;
         }
+        persist(&d);
         self.complete = true;
     }
     pub fn run(&self, command: &mut Command, duration: Option<f64>) -> Result<Output, String> {
@@ -319,6 +338,19 @@ pub fn media_jobs_light(app: AppHandle, enabled: bool) -> Result<(), String> {
     Ok(())
 }
 pub fn init(app: &AppHandle) {
+    if let Ok(dir)=app.path().app_local_data_dir(){
+        let _=std::fs::create_dir_all(&dir);
+        let path=dir.join(if cfg!(debug_assertions){"media-jobs-dev.json"}else{"media-jobs.json"});
+        let mut d=queue().data.lock().unwrap();
+        if queue().journal.lock().unwrap().is_none(){
+            if let Ok(text)=std::fs::read_to_string(&path){if let Ok(mut jobs)=serde_json::from_str::<VecDeque<Job>>(&text){
+                for j in &mut jobs {if matches!(j.state.as_str(),"queued"|"running"|"finishing"){j.state="interrupted".into();j.error=Some("Nexus se cerró durante este trabajo. Comprueba el archivo antes de reintentar.".into())}}
+                queue().serial.store(jobs.iter().map(|j|j.id).max().unwrap_or(0).saturating_add(1),Ordering::SeqCst);d.jobs=jobs;
+            }}
+            *queue().journal.lock().unwrap()=Some(path);persist(&d);
+        }
+    }
+
     if let Ok(dir) = app.path().app_local_data_dir() {
         if let Ok(v) = std::fs::read_to_string(dir.join("media-light.json")) {
             queue().light.store(v.trim() != "false", Ordering::SeqCst);

@@ -1,3 +1,4 @@
+import {saveLocalPreferences,restoreLocalPreferences} from "./localPreferences";
 import { invoke } from "@tauri-apps/api/core";
 import { getDb } from "./database";
 
@@ -22,12 +23,15 @@ function stamp(): string {
 
 export async function exportBackup(): Promise<ExportResult> {
   await getDb(); // los comandos usan la conexión que abre la app
+  await saveLocalPreferences();
   return invoke<ExportResult>("export_backup", { stamp: stamp() });
 }
 
 export async function importBackup(content: string): Promise<ImportResult> {
   await getDb();
-  return invoke<ImportResult>("import_backup", { content, stamp: stamp() });
+  const result=await invoke<ImportResult>("import_backup", { content, stamp: stamp() });
+  await restoreLocalPreferences();
+  return result;
 }
 
 /** Resumen de un archivo de copia para mostrarlo antes de importar; null si no lo parece. */

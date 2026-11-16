@@ -552,6 +552,12 @@ pub async fn state(app: &AppHandle, viewer: Option<&str>) -> Result<Value, Strin
         .unwrap()
         .clone();
     let spotify = app.state::<MusicState>().spotify.lock().unwrap().clone();
+    let duck=crate::social_alerts::load(app,"music-duck").await?!=false;
+    let alerts=app.state::<crate::alerts::AlertsState>().0.lock().await.status();
+    let now=SystemTime::now().duration_since(UNIX_EPOCH).unwrap_or_default().as_millis() as u64;
+    let alert_active=alerts["diagnostics"].as_array().is_some_and(|rows|rows.iter().any(|v|v["ends_ms"].as_u64().is_some_and(|end|end>now)));
+    let ducking=duck&&(crate::engagement::speaking(app)||alert_active);
+    let effective_volume=if ducking {volume/4}else{volume};
     let state = app.state::<MusicState>();
     let mut p = state.player.lock().unwrap();
     let owner = if let Some(v) = viewer {
@@ -569,7 +575,7 @@ pub async fn state(app: &AppHandle, viewer: Option<&str>) -> Result<Value, Strin
         false
     };
     Ok(
-        json!({"volume":volume,"library":list,"requests_enabled":enabled,"requests":if viewer.is_none(){p.requests.clone()}else{vec![]},"queue":p.queue,"track":p.track,"playing":p.playing,"generation":p.generation,"audio_owner":owner,"audio_connected":p.lease.is_some_and(|t|t.elapsed()<Duration::from_secs(5)),"message":p.message,"spotify":spotify,"spotify_connected":entry().and_then(|e|e.get_password().map_err(|e|e.to_string())).is_ok(),"spotify_error":spotify_error,"app_version":app.package_info().version.to_string()}),
+        json!({"volume":volume,"duck":duck,"ducking":ducking,"effective_volume":effective_volume,"library":list,"requests_enabled":enabled,"requests":if viewer.is_none(){p.requests.clone()}else{vec![]},"queue":p.queue,"track":p.track,"playing":p.playing,"generation":p.generation,"audio_owner":owner,"audio_connected":p.lease.is_some_and(|t|t.elapsed()<Duration::from_secs(5)),"message":p.message,"spotify":spotify,"spotify_connected":entry().and_then(|e|e.get_password().map_err(|e|e.to_string())).is_ok(),"spotify_error":spotify_error,"app_version":app.package_info().version.to_string()}),
     )
 }
 #[tauri::command]
@@ -627,3 +633,6 @@ pub async fn music_volume(app: AppHandle, volume: u32) -> Result<(), String> {
     }
     crate::social_alerts::save(&app, "music-volume", &json!(volume)).await
 }
+
+#[tauri::command]
+pub async fn music_duck(app:AppHandle,enabled:bool)->Result<(),String>{crate::social_alerts::save(&app,"music-duck",&json!(enabled)).await}

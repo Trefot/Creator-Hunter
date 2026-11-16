@@ -330,6 +330,7 @@ pub async fn subtitles_generate(
     audio: Option<Vec<usize>>,
 ) -> Result<Value, String> {
     let ticket = crate::media_jobs::Ticket::enqueue("Crear subtítulos")?;
+    ticket.request("subtitles_generate",serde_json::json!({"sessionId":session_id,"audio":audio}));
     let handle = app.clone();
     let ticket = tauri::async_runtime::spawn_blocking(move || ticket.wait(&handle))
         .await
@@ -447,4 +448,48 @@ mod output_tests {
         assert_eq!(std::fs::read(next).unwrap(), b"new subtitles");
         std::fs::remove_dir_all(dir).unwrap();
     }
+}
+
+#[tauri::command]
+pub async fn choose_video_file()->Result<Option<String>,String>{
+ tauri::async_runtime::spawn_blocking(||{
+  #[cfg(windows)] {let out=crate::shorts::hidden(std::process::Command::new("powershell.exe").args(["-NoProfile","-STA","-Command","Add-Type -AssemblyName System.Windows.Forms; $d=New-Object System.Windows.Forms.OpenFileDialog; $d.Filter='Vídeos|*.mp4;*.mkv;*.mov;*.webm;*.avi'; if($d.ShowDialog() -eq 'OK'){[Console]::OutputEncoding=[System.Text.Encoding]::UTF8; [Console]::Write($d.FileName)}"])).output().map_err(|_|"No se pudo abrir el explorador de archivos.")?;if !out.status.success(){return Err("No se pudo abrir el explorador de archivos.".into())}let path=String::from_utf8_lossy(&out.stdout).trim().to_string();Ok((!path.is_empty()).then_some(path))}
+  #[cfg(not(windows))] {Err("El selector de archivos está disponible en Windows. Puedes introducir la ruta.".into())}
+ }).await.map_err(|e|e.to_string())?
+}
+#[tauri::command]
+pub async fn subtitles_relink(app:AppHandle,session_id:String,path:String)->Result<(),String>{
+ if !Path::new(&path).is_file(){return Err("El vídeo seleccionado no existe.".into())}
+ let handle=app.clone();let source=path.clone();
+ tauri::async_runtime::spawn_blocking(move||{let f=crate::shorts::find_ffmpeg(&handle).ok_or("Falta ffmpeg para comprobar el vídeo.")?;crate::shorts::probe_duration(&f,&source)}).await.map_err(|e|e.to_string())??;
+ let pool=crate::backup::pool(&app).await?;
+ let n=sqlx::query("UPDATE obs_session SET output_path=$1 WHERE id=$2 AND workspace_id=$3 AND kind='recording' AND ended_at IS NOT NULL").bind(path).bind(session_id).bind(WORKSPACE).execute(&pool).await.map_err(|e|e.to_string())?.rows_affected();
+ if n!=1{return Err("La grabación no está disponible o sigue activa.".into())}Ok(())
+}
+#[tauri::command]
+pub async fn subtitles_burn(app:AppHandle,session_id:String,font_size:Option<u32>)->Result<String,String>{
+ let (video,_)=session_video(&app,&session_id).await?;
+ let pool=crate::backup::pool(&app).await?;
+ let raw:String=sqlx::query_scalar("SELECT content FROM alert_cursor WHERE id=$1").bind(format!("subtitle:{session_id}")).fetch_one(&pool).await.map_err(|_|"Crea primero los subtítulos de esta grabación.")?;
+ let result:Value=serde_json::from_str(&raw).map_err(|_|"No se pudo leer el resultado de subtítulos.")?;
+ let srt=result["srt"].as_str().ok_or("Crea primero los subtítulos.")?;
+ if !Path::new(srt).is_file(){return Err("No se encuentra el archivo SRT. Vuelve a generar los subtítulos.".into())}
+ let ticket=crate::media_jobs::Ticket::enqueue("Vídeo con subtítulos incorporados")?;
+ let handle=app.clone();let mut ticket=tauri::async_runtime::spawn_blocking(move||ticket.wait(&handle)).await.map_err(|e|e.to_string())??;
+ let dir=app.path().video_dir().map_err(|e|e.to_string())?.join("Nexus Shorts");std::fs::create_dir_all(&dir).map_err(|e|e.to_string())?;
+ let output=dir.join(format!("Subtitulado-{:016x}.mp4",rand::random::<u64>()));
+ let temp=std::env::temp_dir().join(format!("nexus-captions-{:016x}",rand::random::<u64>()));std::fs::create_dir(&temp).map_err(|e|e.to_string())?;
+ if let Err(e)=std::fs::copy(srt,temp.join("captions.srt")){let _=std::fs::remove_dir_all(&temp);return Err(e.to_string())}
+ let size=font_size.unwrap_or(24).clamp(18,48);let handle=app.clone();let file=output.clone();
+ let operation=tauri::async_runtime::spawn_blocking(move||{
+  let result:Result<String,String>=(||{let f=crate::shorts::find_ffmpeg(&handle).ok_or("Falta ffmpeg.")?;
+   let filter=format!("subtitles=captions.srt:force_style='FontName=Arial,FontSize={size},Outline=2,Shadow=1,MarginV=30'");
+   let args=vec!["-hide_banner","-loglevel","error","-n","-i",video.as_str(),"-vf",filter.as_str(),"-map","0:v:0","-map","0:a?","-c:v","libx264","-preset","veryfast","-crf","22","-threads","2","-c:a","aac","-movflags","+faststart"];
+   let out=ticket.run(std::process::Command::new(f).current_dir(&temp).args(args).arg(&file),None)?;
+   if !out.status.success(){return Err("No se pudo incorporar el SRT. Comprueba que ffmpeg incluya el filtro subtitles (libass).".into())}
+   Ok(file.to_string_lossy().into_owned())})();
+  let _=std::fs::remove_dir_all(temp);
+  match &result {Ok(path)=>ticket.finish(Ok(path)),Err(e)=>{let _=std::fs::remove_file(&file);ticket.finish(Err(e));}}result
+ }).await.map_err(|e|e.to_string())?;
+ operation
 }

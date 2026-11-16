@@ -456,17 +456,17 @@ export function LivePage({initialTab='cabina',navigationRevision=0,onNavigate}:{
        <div hidden={tab!=='cabina'}><GoLivePanel onNavigate={value=>setTab(asTab(value))}/><LiveCockpit active={tab==='cabina'} onNavigate={value=>setTab(asTab(value))}/></div>
        <StreamingPanel view={tab==='category'?'category':tab==='overlays'?'overlays':'chat'}/>
       </div>
-      <div hidden={tab!=='sound'} role="tabpanel" aria-label="Sonido"><TtsPanel base={base} keyValue={info?.key??""}/><MusicPanel base={base} keyValue={info?.key??""}/></div>
+      <div hidden={tab!=='sound'} role="tabpanel" aria-label="Sonido"><TtsPanel active={tab==='sound'} base={base} keyValue={info?.key??""}/><MusicPanel active={tab==='sound'} base={base} keyValue={info?.key??""}/></div>
       <div hidden={tab!=='recaps'} role="tabpanel" aria-label="Resúmenes"><RecapHistory active={tab==='recaps'}/></div>
       <div hidden={tab!=='estado'} role="tabpanel" aria-label="Estado"><ConnectionsStatus active={tab==='estado'} onNavigate={value=>setTab(asTab(value))}/></div>
       <div hidden={tab!=='commands'} role="tabpanel" aria-label="Comandos"><ChatCommandsPanel active={tab==='commands'}/></div>
       <div hidden={tab!=='moments'} role="tabpanel" aria-label="Momentos"><div className="card"><h2>De la jugada al Short</h2><p>Pulsa MOMENTO después de la jugada. Revisa tus capturas, ajusta el recorte y exporta desde Crear contenido.</p><button onClick={()=>onNavigate?.('projects','moments')}>Abrir mis capturas y Shorts</button></div></div>
-      <div hidden={tab!=='alerts'} role="tabpanel" aria-label="Alertas"><AlertsPanel showConnections={false}/></div>
+      <div hidden={tab!=='alerts'} role="tabpanel" aria-label="Alertas"><AlertsPanel active={tab==='alerts'} showConnections={false}/></div>
       <div hidden={tab!=='connections'} role="tabpanel" aria-label="Conexiones"><div className="card"><h2>Tus cuentas y servicios</h2><p>Continúa la configuración desde el centro de Conexiones.</p><button onClick={()=>onNavigate?.('connections')}>Abrir Conexiones</button></div></div>
       <div hidden={tab!=='obs'} role="tabpanel" aria-label="OBS"><ObsAssistant/>
 
       {/* Conexión con OBS y el Stream Deck */}
-      <ObsPanel clipUrl={info?.running ? `http://127.0.0.1:${info.port}/api/clips/save?key=${encodeURIComponent(info.key)}` : null} markUrl={info?.running ? `http://127.0.0.1:${info.port}/api/moments/mark?key=${encodeURIComponent(info.key)}` : null} />
+      <ObsPanel active={tab==='obs'} clipUrl={info?.running ? `http://127.0.0.1:${info.port}/api/clips/save?key=${encodeURIComponent(info.key)}` : null} markUrl={info?.running ? `http://127.0.0.1:${info.port}/api/moments/mark?key=${encodeURIComponent(info.key)}` : null} />
       </div><div hidden={tab!=='counters'} role="tabpanel" aria-label="Contadores"><FortniteCounterPanel active={tab==='counters'}/>
       <section className={`card live-connect${info?.running ? " on" : ""}`}>
         <div className="live-connect-head">

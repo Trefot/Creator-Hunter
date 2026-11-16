@@ -1,3 +1,4 @@
+import {invoke} from "@tauri-apps/api/core";
 import { PageTitle } from "../../components/PageTitle";
 import { ChangeEvent, useState } from "react";
 import { revealItemInDir } from "@tauri-apps/plugin-opener";
@@ -13,6 +14,7 @@ function stampLabel(stamp: string): string {
 }
 
 export function BackupsPage() {
+  const [automatic,setAutomatic]=useState(()=>localStorage.getItem("nexus-auto-backup")!=="false");
   const [exporting, setExporting] = useState(false);
   const [exported, setExported] = useState<ExportResult | null>(null);
   const [file, setFile] = useState<{ content: string; preview: NonNullable<ReturnType<typeof previewBackup>> } | null>(null);
@@ -71,6 +73,7 @@ export function BackupsPage() {
         <PageTitle section="backups" subtitle={t.subtitle} />
       </header>
 
+      <div className="card backup-block"><h2>Copias y traslado de equipo</h2><button className="ghost small-button" onClick={async()=>{try{const path=await invoke<string>("export_diagnostics");await revealItemInDir(path)}catch(e){setError(String(e))}}}>Exportar diagnóstico sin datos personales</button><label><input type="checkbox" checked={automatic} onChange={e=>{setAutomatic(e.target.checked);localStorage.setItem('nexus-auto-backup',String(e.target.checked))}}/>Una copia automática al día mientras Nexus esté abierto (se conservan siete)</label><p className="small muted">Incluye registros, proyectos, series, métricas de publicaciones, sonidos propios y preferencias respaldadas. Vídeos y modelos permanecen en sus carpetas; cópialos aparte al cambiar de equipo. Las contraseñas y tokens no se exportan: tendrás que reconectar las cuentas.</p><p className="small muted">Última ubicación automática: {localStorage.getItem('nexus-last-auto-backup')??'Todavía no se ha creado una copia automática.'}</p></div>
       <div className="card backup-block">
         <h2>{t.exportTitle}</h2>
         <p className="muted">{t.exportBody}</p>

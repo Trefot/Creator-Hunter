@@ -1,7 +1,7 @@
 import { PageTitle } from "../../components/PageTitle";
 import { PlatformBadge } from "../../components/PlatformBadge";
 import { useEffect, useState } from "react";
-import { Adaptation, listScheduledBetween, listUnscheduled } from "../../db/adaptations";
+import { Adaptation, listScheduledBetween, listUnscheduled, listAllAdaptations, markScheduled } from "../../db/adaptations";
 import { listProfiles, Profile } from "../../db/profiles";
 import { es } from "../../i18n/es";
 import { formatDate, todayIso } from "../../i18n/format";
@@ -28,27 +28,29 @@ export function CalendarPage({ onOpenProject }: Props) {
   const [items, setItems] = useState<Adaptation[] | null>(null);
   const [unscheduled, setUnscheduled] = useState<Adaptation[]>([]);
   const [profiles, setProfiles] = useState<Profile[]>([]);
+  const [overdue,setOverdue]=useState<Adaptation[]>([]),[revision,setRevision]=useState(0);
   const [error, setError] = useState("");
 
   useEffect(() => {
     setItems(null);
-    Promise.all([listScheduledBetween(monday, addDays(monday, 7)), listUnscheduled(), listProfiles()])
-      .then(([week, pending, p]) => {
+    Promise.all([listScheduledBetween(monday, addDays(monday, 7)), listUnscheduled(), listProfiles(),listAllAdaptations()])
+      .then(([week, pending, p,all]) => {
+        setOverdue(all.filter(a=>!a.published_at&&a.scheduled_at&&a.scheduled_at.slice(0,10)<today));
         setItems(week);
         setUnscheduled(pending);
         setProfiles(p);
       })
       .catch((err) => setError(String(err)));
-  }, [monday]);
+  }, [monday,revision]);
 
   const days = weekDays(monday);
 
   function Item({ a, showTime }: { a: Adaptation; showTime: boolean }) {
     const profile = profiles.find((p) => p.id === a.profile_id);
     const step = currentStep(a);
-    const published = a.published_at !== null || step === null;
+    const published = a.published_at !== null;
     return (
-      <button className={`cal-item${published ? " cal-item-done" : ""}`} onClick={() => onOpenProject(a.project_id)}>
+      <button draggable onDragStart={e=>e.dataTransfer.setData("text/plain",a.id)} className={`cal-item${published ? " cal-item-done" : ""}`} onClick={() => onOpenProject(a.project_id)}>
         {a.thumbnail && <img className="cal-thumb" src={a.thumbnail} alt="" />}
         <span className="cal-item-top">
           {showTime && a.scheduled_at && <strong>{a.scheduled_at.slice(11, 16)}</strong>}
@@ -58,7 +60,7 @@ export function CalendarPage({ onOpenProject }: Props) {
         </span>
         <span className="cal-item-title">{a.title}</span>
         <span className="muted small">
-          {tp.formats[a.format]} · {published ? t.published : tp.stepNames[step!.step]}
+          {tp.formats[a.format]} · {published ? t.published : (step ? tp.stepNames[step.step] : "Listo para publicar")}
         </span>
       </button>
     );
@@ -86,6 +88,8 @@ export function CalendarPage({ onOpenProject }: Props) {
         {items && ` · ${t.scheduledCount(items.length)}`}
       </p>
 
+      <p className="small muted">Fechas en la hora local de este equipo. Planificar aquí no sube ni publica contenido en las redes. Arrastra una pieza a otro día o abre su proyecto para cambiar la hora.</p>
+      {!!overdue.length&&<details className="card" open><summary>{overdue.length} publicaciones pendientes de reprogramar</summary>{overdue.map(a=><div key={a.id} className="tools-actions"><button className="ghost" onClick={()=>onOpenProject(a.project_id)}>{a.title}</button><button className="ghost small-button" onClick={()=>void markScheduled(a.id,today+'T18:00',a.published_url).then(()=>setRevision(v=>v+1)).catch(e=>setError(String(e)))}>Mover a hoy, 18:00</button></div>)}</details>}
       {error && <p className="error">{error}</p>}
 
       {items === null ? (
@@ -95,7 +99,7 @@ export function CalendarPage({ onOpenProject }: Props) {
           {days.map((day) => {
             const dayItems = items.filter((a) => a.scheduled_at?.startsWith(day));
             return (
-              <div key={day} className={`day-column${day === today ? " day-today" : ""}`}>
+              <div key={day} onDragOver={e=>e.preventDefault()} onDrop={e=>{e.preventDefault();const id=e.dataTransfer.getData("text/plain"),a=items.find(a=>a.id===id);if(a&&!a.published_at)void markScheduled(a.id,day+"T"+(a.scheduled_at?.slice(11,16)??"18:00"),a.published_url).then(()=>setRevision(v=>v+1)).catch(e=>setError(String(e)))}} className={`day-column${day === today ? " day-today" : ""}`}>
                 <div className="day-header">{dayLabel(day)}</div>
                 {dayItems.length === 0 ? (
                   <span className="muted small day-empty">{t.nothing}</span>

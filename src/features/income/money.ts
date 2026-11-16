@@ -5,7 +5,8 @@ import { Income } from "../../db/income";
  * Devuelve null si no es una cantidad válida, positiva y con como mucho dos decimales.
  */
 export function parseMoney(text: string): number | null {
-  const normalized = text.trim().replace(",", ".");
+  const raw=text.trim().replace(/\s/g,'');
+  const normalized = /^\d{1,3}(\.\d{3})+,\d{1,2}$/.test(raw) ? raw.replace(/\./g,'').replace(',','.') : /^\d{1,3}(,\d{3})+\.\d{1,2}$/.test(raw) ? raw.replace(/,/g,'') : raw.replace(',','.');
   if (!/^\d+(\.\d{1,2})?$/.test(normalized)) return null;
   const minor = Math.round(Number(normalized) * 100);
   return minor > 0 ? minor : null;

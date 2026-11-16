@@ -13,6 +13,7 @@ fn main() {
         "media_jobs",
         "fortnite_counter",
         "metrics_core",
+        "content_core",
         "tiktok_auth_core",
     ] {
         let file = source.join(format!("{name}.rs"));
@@ -27,6 +28,7 @@ fn main() {
             )
             .replace("tauri::path::", "crate::tauri::path::")
             .replace("tauri::async_runtime", "crate::tauri::async_runtime");
+        let code=code.replace("include_str!(\"../migrations/001_initial.sql\")", &format!("include_str!({:?})",source.join("../migrations/001_initial.sql"))).replace("include_str!(\"../migrations/025_content_performance.sql\")", &format!("include_str!({:?})",source.join("../migrations/025_content_performance.sql")));
         fs::write(out.join(format!("{name}.rs")), code).unwrap();
         modules.push_str(&format!(
             "#[path={:?}] mod {name};\n",

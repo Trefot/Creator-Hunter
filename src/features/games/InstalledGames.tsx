@@ -1,0 +1,9 @@
+import {useState} from 'react';
+import {invoke} from '@tauri-apps/api/core';
+import {createGame,listGames} from '../../db/games';
+export function InstalledGames({onChanged}:{onChanged:()=>Promise<void>}){
+ const [items,setItems]=useState<{name:string;launcher:string}[]>([]),[chosen,setChosen]=useState<string[]>([]),[busy,setBusy]=useState(false),[error,setError]=useState(''),[notice,setNotice]=useState('');
+ async function scan(){setBusy(true);setError('');try{setItems(await invoke('pc_installed_games'));setNotice('Selecciona los juegos que quieras añadir. La detección del proceso se configura después desde su ficha.')}catch(e){setError(String(e))}finally{setBusy(false)}}
+ async function add(){setBusy(true);setError('');try{const old=await listGames();let count=0;for(const name of chosen){if(!old.some(g=>g.platform==='pc'&&g.title.toLowerCase()===name.toLowerCase())){await createGame(name,'pc');count++}}await onChanged();setChosen([]);setNotice(`${count} juegos añadidos. No se inventan trofeos ni asociaciones de ejecutables.`)}catch(e){setError(String(e))}finally{setBusy(false)}}
+ return <details className="card"><summary>Importar juegos instalados de Steam y Epic</summary><p className="small muted">Lee los manifiestos locales de las ubicaciones habituales; no inicia sesión ni cambia el lanzador. Las bibliotecas en otras ubicaciones pueden requerir añadir el juego manualmente.</p><button className="ghost" disabled={busy} onClick={()=>void scan()}>Buscar juegos instalados</button>{items.map(g=><label key={g.name} style={{display:'flex',gap:8}}><input type="checkbox" checked={chosen.includes(g.name)} onChange={e=>setChosen(v=>e.target.checked?[...v,g.name]:v.filter(n=>n!==g.name))}/>{g.name} · {g.launcher}</label>)}{!!chosen.length&&<button disabled={busy} onClick={()=>void add()}>Añadir {chosen.length} seleccionados</button>}{notice&&<p role="status">{notice}</p>}{error&&<p role="alert" className="error">{error}</p>}</details>
+}

@@ -397,6 +397,7 @@ pub async fn shorts_render(
         _ => return Err("Codificador no válido.".into()),
     };
     let ticket = crate::media_jobs::Ticket::enqueue("Crear Short")?;
+    ticket.request("shorts_render",serde_json::json!({"kind":kind,"id":id,"format":format.key(),"before":before,"after":after,"audio":audio,"encoder":encoder}));
     let handle = app.clone();
     let ticket = tauri::async_runtime::spawn_blocking(move || ticket.wait(&handle))
         .await
@@ -559,4 +560,38 @@ pub async fn studio_export_project(app: AppHandle, export_id: String) -> Result<
     let project = crate::studio_tools::capture_project(&pool, &kind, &id).await?;
     sqlx::query("UPDATE project SET summary=COALESCE(summary,'') || $1,updated_at=strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE id=$2 AND workspace_id=$3 AND instr(COALESCE(summary,''),$4)=0").bind(format!("\n\nShort exportado: {path}")).bind(&project).bind(WORKSPACE).bind(path).execute(&pool).await.map_err(|e|e.to_string())?;
     Ok(project)
+}
+
+/// Playable preview of the SAME planned interval and chosen audio. Disposable lower-resolution copy.
+#[tauri::command]
+pub async fn shorts_video_preview(app:AppHandle,kind:String,id:String,format:String,before:Option<i64>,after:Option<i64>,audio:Option<Vec<usize>>)->Result<String,String>{
+ use base64::Engine;
+ let ticket=crate::media_jobs::Ticket::enqueue("Vista previa con audio")?;
+ let handle=app.clone();let mut ticket=tauri::async_runtime::spawn_blocking(move||ticket.wait(&handle)).await.map_err(|e|e.to_string())??;
+ let pool=crate::backup::pool(&app).await?;let (_,input,mark)=source(&pool,&kind,&id).await?;
+ let handle=app.clone();let file=input.clone();
+ let (ffmpeg,probe)=tauri::async_runtime::spawn_blocking(move||{let f=find_ffmpeg(&handle).ok_or("Falta ffmpeg.")?;let p=probe(&f,&file)?;Ok::<_,String>((f,p))}).await.map_err(|e|e.to_string())??;
+ let duration=probe["format"]["duration"].as_str().and_then(|s|s.parse::<f64>().ok()).ok_or("No se pudo leer la duración.")?;
+ let (cut,_)=planned_cut(&app,&kind,&id,mark,duration,before,after).await?;
+ let selected=tracks(&probe,audio)?;let format=Format::parse(&format)?;
+ let output=std::env::temp_dir().join(format!("nexus-preview-{:016x}.mp4",rand::random::<u64>()));
+ let mut guard=OwnedOutput::reserve(&output)?;
+ let mut args=core::args_audio(&input,&output.to_string_lossy(),cut,format,&selected,2);
+ for arg in &mut args{if arg.contains("[0:v:0]"){*arg=arg.replace("1920","640").replace("1080","360").replace("boxblur=24:2","boxblur=8:2")}}
+ if matches!(format,Format::Original){let i=args.len()-1;args.splice(i..i,["-vf".into(),"scale=640:-2".into()]);}
+ if let Some(i)=args.iter().position(|s|s=="-n"){args[i]="-y".into()}
+ if let Some(i)=args.iter().position(|s|s=="-preset"){args[i+1]="ultrafast".into()}
+ if let Some(i)=args.iter().position(|s|s=="-crf"){args[i+1]="30".into()}
+ let file=output.clone();
+ let result=tauri::async_runtime::spawn_blocking(move||{
+  let out=ticket.run(Command::new(ffmpeg).args(args),cut.map(|c|c.1));
+  let result=out.and_then(|out|if out.status.success(){
+    let size=std::fs::metadata(&file).map_err(|_|"No se pudo leer la vista previa.")?.len();
+    if size>32*1024*1024{return Err("La vista previa supera 32 MB. Reduce el tramo antes de previsualizar.".into())}
+    let bytes=std::fs::read(&file).map_err(|_|"No se pudo leer la vista previa.")?;
+    Ok(format!("data:video/mp4;base64,{}",base64::engine::general_purpose::STANDARD.encode(bytes)))
+  }else{Err("No se pudo crear la vista previa. Comprueba formato y audio.".into())});
+  match &result{Ok(_)=>ticket.finish(Ok("Vista previa temporal")),Err(e)=>ticket.finish(Err(e))};result
+ }).await.map_err(|e|e.to_string())?;
+ guard.persist=false;result
 }

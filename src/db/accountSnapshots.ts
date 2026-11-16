@@ -11,6 +11,7 @@ export interface AccountSnapshot {
   total_views: number | null;
   /** 'manual' o 'api' (sincronizado; migración 006). */
   source: "manual" | "api";
+  observed_at?: string;
 }
 
 export interface AccountSnapshotInput {
@@ -19,7 +20,7 @@ export interface AccountSnapshotInput {
   watch_hours: number | null;
 }
 
-const COLUMNS = "id, profile_id, recorded_on, followers, watch_hours, total_views, source";
+const COLUMNS = "id, profile_id, recorded_on, followers, watch_hours, total_views, source, COALESCE(updated_at, created_at) AS observed_at";
 
 /** Historial de un perfil, del más reciente al más antiguo. */
 export async function listSnapshots(profileId: string): Promise<AccountSnapshot[]> {
@@ -27,7 +28,7 @@ export async function listSnapshots(profileId: string): Promise<AccountSnapshot[
   return db.select<AccountSnapshot[]>(
     `SELECT ${COLUMNS} FROM account_snapshot
       WHERE profile_id = $1 AND workspace_id = $2
-      ORDER BY recorded_on DESC, created_at DESC`,
+      ORDER BY recorded_on DESC, COALESCE(updated_at, created_at) DESC, id DESC`,
     [profileId, WORKSPACE_ID],
   );
 }
@@ -36,7 +37,7 @@ export async function listSnapshots(profileId: string): Promise<AccountSnapshot[
 export async function listAllSnapshots(): Promise<AccountSnapshot[]> {
   const db = await getDb();
   return db.select<AccountSnapshot[]>(
-    `SELECT ${COLUMNS} FROM account_snapshot WHERE workspace_id = $1 ORDER BY recorded_on, created_at`,
+    `SELECT ${COLUMNS} FROM account_snapshot WHERE workspace_id = $1 ORDER BY recorded_on, COALESCE(updated_at, created_at), id`,
     [WORKSPACE_ID],
   );
 }
@@ -46,8 +47,8 @@ export async function latestSnapshots(): Promise<Map<string, AccountSnapshot>> {
   const db = await getDb();
   const rows = await db.select<AccountSnapshot[]>(
     `SELECT ${COLUMNS} FROM (
-       SELECT ${COLUMNS}, ROW_NUMBER() OVER (
-         PARTITION BY profile_id ORDER BY recorded_on DESC, created_at DESC) AS rn
+       SELECT *, ROW_NUMBER() OVER (
+         PARTITION BY profile_id ORDER BY recorded_on DESC, COALESCE(updated_at, created_at) DESC, id DESC) AS rn
        FROM account_snapshot WHERE workspace_id = $1)
      WHERE rn = 1`,
     [WORKSPACE_ID],

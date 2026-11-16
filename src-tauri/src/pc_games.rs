@@ -142,3 +142,21 @@ mod tests {
         assert!(!executable("game.exe\n"));
     }
 }
+
+#[derive(Serialize)]
+pub struct InstalledGame {name:String,launcher:String}
+/// Reads only local launcher manifests. Import is a separate user action; no accounts or game files are modified.
+#[tauri::command]
+pub fn pc_installed_games()->Vec<InstalledGame>{
+ use std::path::PathBuf;
+ let mut roots=Vec::new();
+ for var in ["ProgramFiles(x86)","ProgramFiles"]{if let Some(base)=std::env::var_os(var){roots.push(PathBuf::from(base).join("Steam/steamapps"));}}
+ let initial=roots.clone();
+ for root in initial{if let Ok(v)=std::fs::read_to_string(root.join("libraryfolders.vdf")){for line in v.lines(){let parts:Vec<_>=line.split('"').collect();if parts.get(1)==Some(&"path"){if let Some(path)=parts.get(3){if path.len()<1024&&!path.starts_with("\\\\"){let p=PathBuf::from(path.replace("\\\\","\\")).join("steamapps");if !roots.contains(&p){roots.push(p)}}}}}}}
+ let mut found=Vec::new();
+ for root in roots{if let Ok(entries)=std::fs::read_dir(root){for e in entries.filter_map(Result::ok){let name=e.file_name().to_string_lossy().into_owned();if !name.starts_with("appmanifest_")||!name.ends_with(".acf")||e.metadata().map(|m|m.len()>1024*1024).unwrap_or(true){continue}
+  if let Ok(v)=std::fs::read_to_string(e.path()){for line in v.lines(){let parts:Vec<_>=line.split('"').collect();if parts.get(1)==Some(&"name"){if let Some(name)=parts.get(3){if !name.trim().is_empty()&&name.len()<300{found.push(InstalledGame{name:name.to_string(),launcher:"Steam".into()})}}}}}
+ }}}
+ if let Some(base)=std::env::var_os("ProgramData"){let path=PathBuf::from(base).join("Epic/EpicGamesLauncher/Data/Manifests");if let Ok(entries)=std::fs::read_dir(path){for e in entries.filter_map(Result::ok){if e.path().extension().and_then(|s|s.to_str())!=Some("item")||e.metadata().map(|m|m.len()>1024*1024).unwrap_or(true){continue}if let Ok(text)=std::fs::read_to_string(e.path()){if let Ok(v)=serde_json::from_str::<serde_json::Value>(&text){if v["bIsIncompleteInstall"]==true{continue}if let Some(name)=v["DisplayName"].as_str().filter(|n|!n.trim().is_empty()&&n.len()<300){found.push(InstalledGame{name:name.into(),launcher:"Epic".into()})}}}}}}
+ found.sort_by_key(|g|g.name.to_lowercase());found.dedup_by(|a,b|a.name.eq_ignore_ascii_case(&b.name));found.truncate(500);found
+}

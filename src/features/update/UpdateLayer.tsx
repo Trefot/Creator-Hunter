@@ -97,7 +97,7 @@ export function UpdateLayer() {
       }
     }).catch(() => { /* no impide usar la app */ });
 
-    invoke<UpdateInfo | null>("update_check").then((info) => info && apply(info)).catch(() => { /* reintento desde el menú */ });
+    invoke<UpdateInfo | null>("update_check").then(setAvailable).catch(() => { /* reintento desde el menú */ });
     const timer = setInterval(() => {
       invoke<UpdateInfo | null>("update_check").then((info) => setAvailable(info)).catch(() => { /* conservar aviso */ });
     }, CHECK_EVERY_MS);

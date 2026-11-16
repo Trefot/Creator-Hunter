@@ -15,3 +15,4 @@
 button:not([class]){color:#21160d}.studio-hero-actions>button:not(.ghost){color:#21160d}.nexus-streaming>div>header{margin-bottom:16px}.stream-chat-toolbar{margin-top:14px}
 
 .nexus-streaming>div:not([hidden]){display:grid;gap:14px}.nexus-streaming>div[hidden]{display:none}.live-cabina-grid .stream-chat-log{box-sizing:border-box}
+.performance-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,330px),1fr));gap:16px}.performance-grid h3{overflow-wrap:anywhere}.performance-counts{display:grid;grid-template-columns:1fr 1fr;gap:12px}.performance-counts dd{margin:0;font-size:1.35rem;font-weight:700}.performance-counts dt{font-size:.8rem;color:var(--muted)}.performance-panel label{display:grid;gap:5px}.performance-panel .status-item{gap:15px;align-items:center}.performance-panel select,.performance-panel input{max-width:100%}

@@ -767,3 +767,28 @@ mod video_tests {
         assert!(!is_video_id("abc def ghi"));
     }
 }
+
+/// Latest fifty uploads plus up to 200 tracked publications. No private/scheduled videos are announced.
+pub(crate) async fn content_feed(app:&AppHandle)->Result<(String,Vec<crate::content_performance::Post>,Option<String>),String>{
+    use crate::content_performance::{Post,count};
+    let connection:Connection=read_json(data_dir(app)?.join(CONNECTION_FILE)).ok_or("Conecta tu canal de YouTube en Conexiones.")?;
+    let state=app.state::<YouTubeState>();let token=access_token(app,&state).await?;
+    let channel=get_json(&token,CHANNELS_URL,&[("part","contentDetails"),("mine","true")],"del canal").await?;
+    if channel["items"][0]["id"].as_str()!=Some(connection.channel.id.as_str()){return Err("La cuenta de YouTube cambió. Vuelve a conectar el perfil correcto.".into())}
+    let playlist=channel["items"][0]["contentDetails"]["relatedPlaylists"]["uploads"].as_str().ok_or("No hay lista de publicaciones del canal.")?;
+    let items=get_json(&token,PLAYLIST_ITEMS_URL,&[("part","contentDetails"),("playlistId",playlist),("maxResults","50")],"de las subidas").await?;
+    let mut ids:Vec<String>=items["items"].as_array().into_iter().flatten().filter_map(|v|v["contentDetails"]["videoId"].as_str().filter(|s|is_video_id(s)).map(str::to_string)).collect();
+    for id in crate::content_performance::known(app,&connection.profile_id).await?{if is_video_id(&id)&&!ids.contains(&id){ids.push(id)}}
+    let mut out=Vec::new();
+    for batch in ids.chunks(50){
+        let v=get_json(&token,VIDEOS_URL,&[("part","snippet,statistics,status"),("id",&batch.join(","))],"de las publicaciones").await?;
+        for v in v["items"].as_array().into_iter().flatten(){
+            if !matches!(v["status"]["privacyStatus"].as_str(),Some("public"|"unlisted")){continue}
+            if v["snippet"]["channelId"].as_str()!=Some(connection.channel.id.as_str()){continue}
+            let Some(id)=v["id"].as_str().filter(|s|is_video_id(s)) else{continue};
+            let mut p=Post::new(&v["snippet"]["thumbnails"]["medium"]["url"],id,v["snippet"]["title"].as_str().unwrap_or("Sin título"),format!("https://www.youtube.com/watch?v={id}"),v["snippet"]["publishedAt"].as_str().unwrap_or_default().into(),"unknown");
+            p.views=count(&v["statistics"]["viewCount"]);p.likes=count(&v["statistics"]["likeCount"]);p.comments=count(&v["statistics"]["commentCount"]);out.push(p);
+        }
+    }
+    Ok((connection.profile_id,out,Some("Vistas y reacciones públicas. Clasifica vídeo o Short antes de comparar formatos; las métricas no son instantáneas.".into())))
+}

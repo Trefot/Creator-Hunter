@@ -1,3 +1,4 @@
+import {GamePlan} from "./GamePlan";
 import { GameResume } from "./GameResume";
 import { PcDetection } from "./PcDetection";
 import { useEffect, useState } from "react";
@@ -50,8 +51,8 @@ interface Props {
 
 /** Ficha de un juego: progreso hacia el platino y lista de trofeos. */
 export function GameDetail(props: Props) {
-  if (!props.game.np_communication_id && !props.game.trophy_count) return <CreativeGameDetail {...props}/>;
-  return <><TrophyGameDetail {...props}/><PcDetection game={props.game}/></>;
+  if (!props.game.np_communication_id && !props.game.trophy_count) return <><CreativeGameDetail {...props}/><GamePlan gameId={props.game.id}/></>;
+  return <><GamePlan gameId={props.game.id}/><TrophyGameDetail {...props}/><PcDetection game={props.game}/></>;
 }
 function TrophyGameDetail({ game, psnConnected, initialView = "route", onBack, onChanged, onOpenProject, onOpenIdeas }: Props) {
   const [trophies, setTrophies] = useState<Trophy[] | null>(null);

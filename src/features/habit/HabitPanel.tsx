@@ -1,3 +1,4 @@
+import {useDraftState} from "../../hooks/useDraftState";
 import { useEffect, useState } from "react";
 import { CalendarCheck, Check, Coffee, Play, ExternalLink, LucideIcon, Plus, Radio, RotateCcw, Scissors, Settings2, Video, X } from "lucide-react";
 import { Adaptation, listAllAdaptations, listInProduction, markScheduled, publishAdaptation } from "../../db/adaptations";
@@ -47,6 +48,7 @@ interface Props {
 
 /** «Hoy toca», la semana y el medidor del colchón en Inicio (D-032). */
 export function HabitPanel({ onOpenProject, onNavigate }: Props) {
+  const [capacity,setCapacity]=useDraftState("capacity",BUFFER_GOAL);
   const [today,setToday]=useState(todayIso);
   const days = Array.from({ length: 7 }, (_, i) => addDays(today, i));
   const [routine, setRoutine] = useState<WorkKind[] | null>(null);
@@ -116,7 +118,7 @@ export function HabitPanel({ onOpenProject, onNavigate }: Props) {
   const options = isPlanned(kind)
     ? candidates(kind, projects, versions).filter((c) => !daySessions.some((s) => s.project_id === c.projectId))
     : [];
-  const buffer = bufferStatus(versions);
+  const buffer = bufferStatus(versions,capacity);
   const week = weekProgress(routine, weekSessions, weekDays);
   const isToday = selected === today;
   const matches = matchUploads(uploads, allVersions, dismissed, youtubeProfileId??undefined);
@@ -157,7 +159,7 @@ export function HabitPanel({ onOpenProject, onNavigate }: Props) {
 
       {editingRoutine && (
         <div className="habit-routine">
-          <p className="muted small">{t.routineHint}</p>
+          <p className="muted small">Ajusta la rutina a tu disponibilidad. Puedes elegir descanso; no necesitas compensar días sin crear.</p><label>Colchón de vídeos largos<input type="number" min={1} max={50} value={capacity.long} onChange={e=>setCapacity(v=>({...v,long:Math.max(1,Math.min(50,Number(e.target.value)||1))}))}/></label><label>Colchón de piezas cortas<input type="number" min={1} max={100} value={capacity.short} onChange={e=>setCapacity(v=>({...v,short:Math.max(1,Math.min(100,Number(e.target.value)||1))}))}/></label>
           <div className="habit-routine-grid">
             {weekDays.map((d, i) => (
               <label key={d}>
@@ -251,8 +253,8 @@ export function HabitPanel({ onOpenProject, onNavigate }: Props) {
           <strong>{t.buffer}</strong>
           <span className="small">{t.bufferLevel[buffer.level]}</span>
         </div>
-        <Meter label={t.longs} value={buffer.long} goal={BUFFER_GOAL.long} />
-        <Meter label={t.shorts} value={buffer.short} goal={BUFFER_GOAL.short} />
+        <Meter label={t.longs} value={buffer.long} goal={capacity.long} />
+        <Meter label={t.shorts} value={buffer.short} goal={capacity.short} />
       </div>
     </section>
   );

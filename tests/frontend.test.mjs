@@ -48,7 +48,7 @@ test('SQLite loading failure also permits retry',async()=>{
 });
 
 test('backup preview rejects malformed documents instead of showing zero rows',()=>{
-  const {previewBackup}=load('src/db/backup.ts',{'@tauri-apps/api/core':{},'./database':{}});
+  const {previewBackup}=load('src/db/backup.ts',{'@tauri-apps/api/core':{},'./database':{},'./localPreferences':{}});
   const valid={format:'trophyhunter-studio-backup',format_version:1,schema_version:15,exported_at:'stamp',tables:{workspace:[{id:'00000000-0000-4000-8000-000000000001'}],idea:[]}};
   assert.equal(previewBackup(JSON.stringify(valid)).counts.length,2);
   for(const tables of [null,[],{}, {workspace:null},{workspace:{}},'bad']){
@@ -367,4 +367,30 @@ test('social progress uses real dated baselines and never invents growth',()=>{
  assert.equal(socialProgress([record('only','2026-11-16',347)],'yt','2026-11-16',28).delta,null);
  assert.equal(socialProgress([record('null','2026-10-01',null),record('zero','2026-11-16',0)],'yt','2026-11-16',28).latest.followers,0);
  assert.equal(socialProgress(rows,'none','2026-11-16',28).latest,null);
+});
+
+test('a refreshed API observation outranks an older manual value on the same day',()=>{
+ const {socialProgress}=load('src/features/dashboard/socialProgress.ts',{});
+ const row={profile_id:'p',recorded_on:'2026-11-16',followers:100};
+ const manual={...row,id:'manual',observed_at:'2026-11-16T11:00:00Z'};
+ const api={...row,id:'api',followers:120,observed_at:'2026-11-16T12:00:00Z'};
+ assert.equal(socialProgress([api,manual],'p','2026-11-16',7).latest.followers,120);
+});
+test('publication comparison refuses lifetime totals without same-age observations',()=>{
+ const {evaluate,checkpoint}=load('src/features/performance/analysis.ts',{});
+ const post={id:'p',published_at:'2026-11-01T00:00:00Z',profile_id:'account',format:'short',views:100000};
+ const history=[{post_id:'p',observed_at:'2026-11-16T00:00:00Z',views:100000}];
+ assert.equal(checkpoint(post,history,24),null);assert.equal(evaluate(post,[post],history,24).ratio,null);
+});
+test('comparison isolates account and format and series advice requires three supported posts',()=>{
+ const {evaluate,seriesAdvice}=load('src/features/performance/analysis.ts',{});
+ const posts=Array.from({length:9},(_,i)=>({id:String(i),published_at:'2026-11-01T00:00:00Z',profile_id:i===8?'other':'account',platform:'youtube',format:i===7?'video':'short',series_id:i<3?'series':null}));
+ const history=posts.map((p,i)=>({post_id:p.id,observed_at:'2026-11-02T00:00:00Z',views:i<3?200:100}));
+ const result=evaluate(posts[0],posts,history,24);assert.equal(result.sample,6);assert.equal(result.ratio,2);
+ assert.equal(seriesAdvice('series','youtube',posts,history,24).label,'Repetir el enfoque');
+ assert.equal(seriesAdvice('series','tiktok',posts,history,24).label,'Seguir probando');
+});
+test('regional money input accepts grouped decimals without accepting arbitrary mixed separators',()=>{
+ const {parseMoney}=load('src/features/income/money.ts',{});
+ assert.equal(parseMoney('1.200,50'),120050);assert.equal(parseMoney('1,200.50'),120050);assert.equal(parseMoney('12.34,56'),null);assert.equal(parseMoney('-1'),null);
 });

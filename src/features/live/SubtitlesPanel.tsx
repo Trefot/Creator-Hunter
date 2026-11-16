@@ -1,3 +1,4 @@
+import {SubtitleActions} from "./SubtitleActions";
 import {AudioPicker} from "./MediaTools";
 import { useEffect, useState } from "react";
 import { listen } from "@tauri-apps/api/event";
@@ -42,7 +43,7 @@ export function SubtitlesPanel({ active }: { active: boolean }) {
     }
   }
 
-  useEffect(()=>{const select=async(event:Event)=>{const id=(event as CustomEvent).detail;if(typeof id==='string'){await refresh();setAudio(undefined);setSelected(id);setTimeout(()=>document.getElementById(`subtitle-${id}`)?.scrollIntoView({block:'center',behavior:'smooth'}),100)}};window.addEventListener('nexus-select-recording',select);return()=>window.removeEventListener('nexus-select-recording',select)},[]);
+  useEffect(()=>{const select=async(event:Event)=>{const id=(event as CustomEvent).detail;if(typeof id==='string'){await refresh();setAudio(undefined);setSelected(id);document.querySelectorAll('details').forEach(d=>{if(d.querySelector('[id^="subtitle-"]')||d.querySelector('summary')?.textContent?.includes('Grabaciones y subtítulos'))d.open=true});setTimeout(()=>document.getElementById(`subtitle-${id}`)?.scrollIntoView({block:'center',behavior:'smooth'}),100)}};window.addEventListener('nexus-select-recording',select);return()=>window.removeEventListener('nexus-select-recording',select)},[]);
   useEffect(() => {
     if (active) refresh();
   }, [active]);
@@ -140,6 +141,7 @@ export function SubtitlesPanel({ active }: { active: boolean }) {
                 </div>
                 <div className="tools-actions">
                   <button className="ghost" onClick={() => showChapters(r)}><ListOrdered size={15} />{t.chapters}</button>
+                  <SubtitleActions sessionId={r.id} hasSrt={!!r.srt} onChanged={refresh}/>
                   {r.srt ? (
                     <button className="ghost" onClick={() => revealItemInDir(r.srt!)}>{t.showSrt}</button>
                   ) : (

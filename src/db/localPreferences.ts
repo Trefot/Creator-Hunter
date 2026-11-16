@@ -1,0 +1,5 @@
+import {getDb} from './database';
+const allowed=(key:string)=>key.startsWith('nexus-draft:')||key.startsWith('nexus-pref:')||['nexus-pc-process-bindings','nexus-focus','game-mode-enabled','game-mode-manual-id','nexus-auto-backup'].includes(key);
+/** Explicit allow-list: credentials, URLs with private control keys and arbitrary storage never enter a backup. */
+export async function saveLocalPreferences(){const db=await getDb();for(let i=0;i<localStorage.length;i++){const id=localStorage.key(i)!;if(allowed(id))await db.execute('INSERT INTO local_preference(id,content) VALUES($1,$2) ON CONFLICT(id) DO UPDATE SET content=excluded.content',[id,localStorage.getItem(id)!])}}
+export async function restoreLocalPreferences(){const rows=await(await getDb()).select<{id:string;content:string}[]>('SELECT id,content FROM local_preference');for(const id of Object.keys(localStorage))if(allowed(id))localStorage.removeItem(id);for(const r of rows)if(allowed(r.id))localStorage.setItem(r.id,r.content);window.dispatchEvent(new Event('nexus-game-mode-changed'))}

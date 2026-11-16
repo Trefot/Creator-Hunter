@@ -1,3 +1,5 @@
+import {startAutomaticBackup} from './features/backups/automaticBackup';
+import {startContentSync} from './features/performance/contentSync';
 import {MediaQueue} from "./features/live/MediaTools";
 import { startGameDetector } from "./features/games/gameDetector";
 import { UpdateLayer } from "./features/update/UpdateLayer";
@@ -35,9 +37,11 @@ const ContentHub=lazy(()=>import("./features/projects/ContentHub").then(m=>({def
 import {AutoMomentsIndicator} from "./features/live/AutoMoments";
 
 function App() {
+  useEffect(()=>startAutomaticBackup(),[]);
+  useEffect(()=>startContentSync(()=>{}),[]);
   const [focus,setFocus]=useState(()=>{try{return localStorage.getItem("nexus-focus")==="true"}catch{return false}});
   const [liveTab,setLiveTab]=useState({value:"cabina",revision:0});
-  const [contentTab,setContentTab]=useState<"projects"|"ideas"|"moments">("moments");
+  const [contentTab,setContentTab]=useState<"projects"|"ideas"|"moments"|"performance">("moments");
   useEffect(()=>startSocialSync(()=>setDataVersion(v=>v+1)),[]);
   const [section, setSection] = useState<Section>("dashboard");
   /** Proyecto que Proyectos debe abrir al entrar (por ejemplo, desde el calendario). */
@@ -51,6 +55,7 @@ function App() {
 
   useEffect(()=>{const handler=(event:Event)=>{const id=(event as CustomEvent).detail;if(typeof id==='string'&&id.length<200)openProject(id)};window.addEventListener('nexus-open-project',handler);return()=>window.removeEventListener('nexus-open-project',handler)},[]);
   // La detección actualiza el banner, sin desmontar formularios ni interrumpir capturas.
+  useEffect(()=>{const failed=(e:Event)=>setNotice({text:String((e as CustomEvent).detail),error:true});window.addEventListener('nexus-sync-error',failed);return()=>window.removeEventListener('nexus-sync-error',failed)},[]);
   const gameMode = useGameMode(() => {});
   useEffect(() => startGameDetector(), []);
   useEffect(() => { invoke("obs_initialize").catch(console.error); }, []);
@@ -83,8 +88,10 @@ function App() {
     return () => clearTimeout(timer);
   }, [notice]);
 
+  useEffect(()=>{const open=()=>select("projects","moments");window.addEventListener("nexus-open-content",open);return()=>window.removeEventListener("nexus-open-content",open)},[]);
+
   function select(next: Section,tab?:string) {
-    if(next==="projects")setContentTab(tab==="projects"?"projects":tab==="ideas"?"ideas":"moments");
+    if(next==="projects")setContentTab(tab==="projects"?"projects":tab==="ideas"?"ideas":tab==="performance"?"performance":"moments");
     if(next==="live")setLiveTab(v=>({value:tab??"cabina",revision:v.revision+1}));
     setProjectToOpen(null);
     setGameToOpen(null);

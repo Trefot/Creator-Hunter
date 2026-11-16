@@ -1,3 +1,4 @@
+import {InstalledGames} from "./InstalledGames";
 import { bindPcGame,pcRunningApps,pcBindings } from "../../db/pcGames";
 import { useEffect, useState } from "react";
 import { Radar } from "lucide-react";
@@ -94,7 +95,7 @@ export function GamesPage({
   if (open) {
     return (
       <>
-      {importDialog}
+      <InstalledGames onChanged={refresh}/>{importDialog}
       {connected&&(open.platform==="ps4"||open.platform==="ps5")&&!open.np_communication_id&&<div className="card"><p>Esta es tu ficha local. Para cargar los trofeos y la portada oficial, importa este juego desde tu cuenta de PSN.</p><button onClick={()=>setImporting(true)}>Importar trofeos de PSN</button></div>}
       <GameDetail
         key={open.id}
@@ -174,7 +175,7 @@ export function GamesPage({
       </details>
 
       </details>
-      {importDialog}
+      <InstalledGames onChanged={refresh}/>{importDialog}
 
       {error && <p className="error">{error}</p>}
 

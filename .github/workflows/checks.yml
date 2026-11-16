@@ -19,6 +19,26 @@ jobs:
       - run: npm ci
       - run: npm test
       - run: npm run build
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install playwright==1.56.0
+      - name: Probar navegación y publicaciones con datos temporales
+        env:
+          CHROMIUM_PATH: /usr/bin/google-chrome
+          NEXUS_TEST_URL: http://127.0.0.1:1444
+          NEXUS_ARTIFACTS: ${{ runner.temp }}/nexus-ui
+        run: |
+          npm run dev -- --host 127.0.0.1 --port 1444 > "$RUNNER_TEMP/nexus-vite.log" 2>&1 &
+          python - <<'PYREADY'
+          import time,urllib.request
+          for attempt in range(30):
+              try:
+                  urllib.request.urlopen('http://127.0.0.1:1444'); break
+              except Exception:
+                  time.sleep(0.5)
+          PYREADY
+          python tests/integral-044-browser.py
       - run: cargo test --locked --manifest-path tests/data-safety/Cargo.toml
       - run: cargo test --locked --manifest-path tests/obs-protocol/Cargo.toml
       - run: cargo test --locked --manifest-path tests/alerts/Cargo.toml

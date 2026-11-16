@@ -146,6 +146,7 @@ pub fn introduced_in(table: &str) -> i64 {
         "stream_event" | "obs_session_counter" => 22,
         "clip_export" => 23,
         "work_routine" | "work_session" => 24,
+        "content_series" | "content_post" | "content_observation" | "local_preference" => 25,
         _ => 1,
     }
 }
@@ -154,7 +155,7 @@ use serde_json::{Map, Value};
 use sqlx::{Pool, Sqlite};
 use std::collections::HashSet;
 
-pub const TABLES: [&str; 34] = [
+pub const TABLES: [&str; 38] = [
     "workspace",
     "profile",
     "account_snapshot",
@@ -193,6 +194,10 @@ pub const TABLES: [&str; 34] = [
     // Hábito de producción (24): después de project y adaptation.
     "work_routine",
     "work_session",
+    "content_series",
+    "content_post",
+    "content_observation",
+    "local_preference",
 ];
 
 const FORMAT: &str = "trophyhunter-studio-backup";
