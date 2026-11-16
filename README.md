@@ -4,7 +4,7 @@
 
 Estudio personal de creación de contenido de TrefotG. Última versión publicada: **[descargas y novedades](https://github.com/Trefot/Creator-Hunter/releases/latest)**. Actualiza desde «Buscar actualizaciones» o descarga el instalador de la release.
 
-Aplicación de escritorio para Windows, construida con React, TypeScript, Tauri 2 y SQLite. Incluye Creator Studio, conexión con YouTube, biblioteca de juegos con trofeos de PSN y contadores para OBS y Stream Deck. Incluye métricas de YouTube y Twitch y configuración de métricas de Facebook, Instagram y TikTok mediante sus API y autorizaciones correspondientes. La integración de TikTok requiere un token autorizado y todavía no incluye el inicio de sesión desde Nexus.
+Aplicación de escritorio para Windows, construida con React, TypeScript, Tauri 2 y SQLite. Incluye Creator Studio, conexión con YouTube, biblioteca de juegos con trofeos de PSN y contadores para OBS y Stream Deck. Incluye métricas de YouTube y Twitch y configuración de métricas de Facebook, Instagram y TikTok mediante sus API y autorizaciones correspondientes. La integración de TikTok permite configurar la autorización de escritorio de tu cuenta de Sandbox con Login Kit; las credenciales se introducen únicamente en Nexus y se guardan en Windows.
 
 
 ## Preparar la actualización

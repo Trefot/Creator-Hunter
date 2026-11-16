@@ -28,6 +28,7 @@ mod shorts;
 mod media_jobs;
 mod fortnite_counter;
 mod metrics_core;
+mod tiktok_auth_core;
 mod social_metrics;
 mod shorts_core;
 mod subtitles;
@@ -253,6 +254,8 @@ pub fn run() {
             shorts::shorts_plan,
             shorts::media_inspect,
             social_metrics::metrics_status,
+            social_metrics::metrics_tiktok_begin,
+            social_metrics::metrics_tiktok_cancel,
             social_metrics::metrics_connect_meta,
             social_metrics::metrics_connect_tiktok,
             social_metrics::metrics_sync,

@@ -16,7 +16,7 @@ Las otras conexiones opcionales pueden consultar la información autorizada de Y
 
 ## Almacenamiento y comunicaciones
 
-Los perfiles, configuraciones sin credenciales y registros históricos se guardan en la base de datos local de Nexus. Los tokens de la integración de TikTok se guardan en el almacén de credenciales del sistema operativo; no se incluyen en las copias de la base de datos ni en el código publicado.
+Los perfiles, configuraciones sin credenciales y registros históricos se guardan en la base de datos local de Nexus. El Client key, Client secret y los tokens de acceso y renovación de la integración de TikTok se guardan en el almacén de credenciales del sistema operativo; no se incluyen en las copias de la base de datos ni en el código publicado. Durante el inicio de sesión se mantiene una solicitud temporal en memoria; los permisos se conceden en el navegador de TikTok y Nexus intercambia el código de retorno desde el equipo. La renovación utiliza el token más reciente entregado por TikTok.
 
 Las consultas a las API se realizan por HTTPS desde el equipo hacia el proveedor correspondiente. Nexus no dispone de un servidor central del desarrollador que recopile estas métricas. El proveedor recibe la solicitud y puede tratar datos de conexión conforme a sus propias políticas. La comprobación y descarga de actualizaciones contacta con GitHub.
 

@@ -2,9 +2,12 @@
 use serde_json::{Value, json};
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 use tauri::{AppHandle, Emitter, Manager};
+use tauri_plugin_opener::OpenerExt;
 #[derive(Default)]
 pub struct MetricsState {
     pub(crate) operation: tauri::async_runtime::Mutex<()>,
+    tiktok_pending: std::sync::Mutex<Option<crate::tiktok_auth_core::Attempt>>,
+    tiktok_completing: std::sync::atomic::AtomicBool,
 }
 fn now() -> u64 {
     SystemTime::now()
@@ -49,7 +52,15 @@ async fn api(request: reqwest::RequestBuilder, platform: &str) -> Result<Value, 
         .json()
         .await
         .map_err(|_| format!("{platform} no devolvió una respuesta válida."))?;
-    if !status.is_success()
+    if platform == "TikTok" {
+        if let Some(message) = crate::tiktok_auth_core::oauth_error(&body) {
+            return Err(message.into());
+        }
+    }
+    if body["error"]
+        .as_str()
+        .is_some_and(|e| !e.is_empty() && e != "ok")
+        || !status.is_success()
         || body
             .get("error")
             .is_some_and(|e| e.is_object() && e["code"].as_str() != Some("ok") && !e.is_null())
@@ -79,12 +90,34 @@ fn text<'a>(v: &'a Value, key: &str) -> Result<&'a str, String> {
 }
 #[tauri::command]
 pub async fn metrics_status(app: AppHandle) -> Result<Value, String> {
+    let shared = app.state::<MetricsState>();
+    let _gate = shared.operation.lock().await;
     let mut out = json!({});
     for p in ["twitch", "meta", "tiktok"] {
         let c = cfg(&app, p).await?;
         let configured = c["configured"] == true && (p == "twitch" || read_secret(p).is_ok());
-        out[p] = json!({"configured":configured,"auto":c["auto"]==true,"profile_id":c["profile_id"],"facebook_profile":c["facebook_profile"],"instagram_profile":c["instagram_profile"],"name":c["name"],"last_sync_ms":c["last_sync_ms"],"error":c["error"]});
+        out[p] = json!({"configured":configured,"auto":c["auto"]==true,"profile_id":c["profile_id"],"facebook_profile":c["facebook_profile"],"instagram_profile":c["instagram_profile"],"name":c["name"],"last_sync_ms":c["last_sync_ms"],"error":c["error"],"last_auth_ms":c["last_auth_ms"]});
     }
+    let state = app.state::<MetricsState>();
+    let mut pending = state
+        .tiktok_pending
+        .lock()
+        .map_err(|_| "No se pudo consultar TikTok.")?;
+    if pending
+        .as_ref()
+        .is_some_and(|p| now().saturating_sub(p.started) >= 600_000)
+    {
+        *pending = None;
+    }
+    out["tiktok"]["pending"] = json!(
+        state
+            .tiktok_completing
+            .load(std::sync::atomic::Ordering::SeqCst)
+            || pending
+                .as_ref()
+                .is_some_and(|p| now().saturating_sub(p.started) < 600_000)
+    );
+    out["tiktok"]["redirect_uri"] = json!(tiktok_redirect());
     Ok(out)
 }
 #[tauri::command]
@@ -180,6 +213,10 @@ pub async fn metrics_connect_tiktok(
 ) -> Result<(), String> {
     let state = app.state::<MetricsState>();
     let _gate = state.operation.lock().await;
+    *state
+        .tiktok_pending
+        .lock()
+        .map_err(|_| "No se pudo cerrar la autorización anterior.")? = None;
     let token = checked_token(&token)?;
     let pool = crate::backup::pool(&app).await?;
     crate::metrics_core::profile(&pool, &profile_id, "tiktok").await?;
@@ -313,7 +350,7 @@ async fn sync(
             }
         }
         "tiktok" => {
-            let secret = read_secret("tiktok")?;
+            let secret = tiktok_secret().await?;
             let token = secret["token"]
                 .as_str()
                 .ok_or("Vuelve a conectar TikTok.")?;
@@ -385,6 +422,12 @@ pub async fn metrics_control(
     let _gate = state.operation.lock().await;
     let mut c = cfg(&app, &platform).await?;
     if action == "disconnect" {
+        if platform == "tiktok" {
+            *state
+                .tiktok_pending
+                .lock()
+                .map_err(|_| "No se pudo cerrar TikTok.")? = None;
+        }
         if platform != "twitch" {
             let _ = vault(&platform)?.delete_credential();
         }
@@ -397,6 +440,10 @@ pub async fn metrics_control(
     save_cfg(&app, &platform, &c).await
 }
 pub async fn reset_after_restore(app: &AppHandle) -> Result<(), String> {
+    *app.state::<MetricsState>()
+        .tiktok_pending
+        .lock()
+        .map_err(|_| "No se pudo cancelar TikTok.")? = None;
     for p in ["twitch", "meta", "tiktok"] {
         let mut c = cfg(app, p).await?;
         if c.is_object() {
@@ -405,4 +452,170 @@ pub async fn reset_after_restore(app: &AppHandle) -> Result<(), String> {
         }
     }
     Ok(())
+}
+
+fn tiktok_redirect() -> String {
+    format!("http://127.0.0.1:{}/tiktok/callback", crate::live::PORT)
+}
+#[tauri::command]
+pub async fn metrics_tiktok_begin(
+    app: AppHandle,
+    client_key: String,
+    client_secret: String,
+    profile_id: String,
+) -> Result<(), String> {
+    let state = app.state::<MetricsState>();
+    let _gate = state.operation.lock().await;
+    let pool = crate::backup::pool(&app).await?;
+    crate::metrics_core::profile(&pool, &profile_id, "tiktok").await?;
+    let key = client_key.trim().to_string();
+    let secret = checked_token(&client_secret)?.to_string();
+    if !app
+        .state::<crate::live::LiveState>()
+        .0
+        .lock()
+        .map_err(|_| "No se pudo consultar el servidor local.")?
+        .running
+    {
+        return Err(
+            "El servidor local de Nexus no está disponible. Revisa En directo antes de autorizar."
+                .into(),
+        );
+    }
+    let pending = crate::tiktok_auth_core::Attempt {
+        state: crate::tiktok_auth_core::nonce(),
+        verifier: crate::tiktok_auth_core::nonce(),
+        key,
+        secret,
+        profile: profile_id,
+        started: now(),
+    };
+    let url = crate::tiktok_auth_core::authorize_url(
+        &pending.key,
+        &pending.state,
+        &pending.verifier,
+        &tiktok_redirect(),
+    )?;
+    *state
+        .tiktok_pending
+        .lock()
+        .map_err(|_| "No se pudo iniciar TikTok.")? = Some(pending);
+    if app.opener().open_url(&url, None::<&str>).is_err() {
+        *state
+            .tiktok_pending
+            .lock()
+            .map_err(|_| "No se pudo cerrar TikTok.")? = None;
+        return Err("No se pudo abrir TikTok en el navegador.".into());
+    }
+    Ok(())
+}
+#[tauri::command]
+pub async fn metrics_tiktok_cancel(app: AppHandle) -> Result<(), String> {
+    let s = app.state::<MetricsState>();
+    if s.tiktok_completing
+        .load(std::sync::atomic::Ordering::SeqCst)
+    {
+        return Err("TikTok ya está comprobando la autorización. Espera el resultado; después puedes desvincular la cuenta.".into());
+    }
+    let _gate = s.operation.lock().await;
+    *s.tiktok_pending
+        .lock()
+        .map_err(|_| "No se pudo cancelar TikTok.")? = None;
+    Ok(())
+}
+pub async fn tiktok_callback(app: &AppHandle, state_value: &str, code: &str) -> Result<(), String> {
+    let state = app.state::<MetricsState>();
+    let _gate = state.operation.lock().await;
+    let p = {
+        let mut pending = state
+            .tiktok_pending
+            .lock()
+            .map_err(|_| "No se pudo comprobar TikTok.")?;
+        let attempt = crate::tiktok_auth_core::take_attempt(&mut pending, state_value, now())?;
+        state
+            .tiktok_completing
+            .store(true, std::sync::atomic::Ordering::SeqCst);
+        attempt
+    };
+    struct Reset<'a>(&'a std::sync::atomic::AtomicBool);
+    impl Drop for Reset<'_> {
+        fn drop(&mut self) {
+            self.0.store(false, std::sync::atomic::Ordering::SeqCst);
+        }
+    }
+    let _reset = Reset(&state.tiktok_completing);
+    let result=async{
+  if code.is_empty()||code.len()>8192{return Err("TikTok no concedió la autorización. Vuelve a conectar desde Nexus.".to_string())}
+  let body=api(client()?.post("https://open.tiktokapis.com/v2/oauth/token/").form(&[("client_key",p.key.as_str()),("client_secret",p.secret.as_str()),("code",code),("grant_type","authorization_code"),("redirect_uri",tiktok_redirect().as_str()),("code_verifier",p.verifier.as_str())]),"TikTok").await?;
+  let secret=crate::tiktok_auth_core::credentials(&body,&p.key,&p.secret,now(),None)?;
+  let v=api(client()?.get("https://open.tiktokapis.com/v2/user/info/").bearer_auth(secret["token"].as_str().ok_or("TikTok no devolvió el token.")?).query(&[("fields","open_id,display_name,follower_count")]),"TikTok").await?;
+  let user=&v["data"]["user"];
+  if user["open_id"]!=secret["account_id"]||crate::metrics_core::count(&user["follower_count"]).is_none(){return Err("No se pudieron comprobar la cuenta y sus estadísticas. Autoriza user.info.basic y user.info.stats.".into())}
+  let pool=crate::backup::pool(app).await?;crate::metrics_core::profile(&pool,&p.profile,"tiktok").await?;
+  let old=read_secret("tiktok").ok();vault("tiktok")?.set_password(&secret.to_string()).map_err(|_|"Windows no pudo guardar TikTok.")?;
+  if let Err(e)=save_cfg(app,"tiktok",&json!({"configured":true,"auto":true,"profile_id":p.profile,"name":user["display_name"],"last_auth_ms":now()})).await{if let Some(old)=old{let _=vault("tiktok")?.set_password(&old.to_string());}else{let _=vault("tiktok")?.delete_credential();}return Err(e)}
+  let _=app.emit("metrics-changed",());Ok(())
+ }.await;
+    if let Err(ref e) = result {
+        let mut c = cfg(app, "tiktok").await?;
+        if !c.is_object() {
+            c = json!({"configured":false,"auto":false});
+        }
+        c["error"] = json!(e);
+        save_cfg(app, "tiktok", &c).await?;
+    }
+    result
+}
+// Caller holds MetricsState.operation, serializing rotation, sync and disconnect.
+async fn tiktok_secret() -> Result<Value, String> {
+    let old = read_secret("tiktok")?;
+    if old["expires_ms"]
+        .as_u64()
+        .is_none_or(|expiry| expiry > now().saturating_add(120_000))
+    {
+        return Ok(old);
+    }
+    if old["refresh_expires_ms"]
+        .as_u64()
+        .is_none_or(|expiry| expiry <= now())
+    {
+        return Err(
+            "La autorización de TikTok caducó. Vuelve a autorizar desde Conexiones.".into(),
+        );
+    }
+    let key = old["client_key"]
+        .as_str()
+        .ok_or("Vuelve a autorizar TikTok.")?;
+    let secret = old["client_secret"]
+        .as_str()
+        .ok_or("Vuelve a autorizar TikTok.")?;
+    let body = api(
+        client()?
+            .post("https://open.tiktokapis.com/v2/oauth/token/")
+            .form(&[
+                ("client_key", key),
+                ("client_secret", secret),
+                ("grant_type", "refresh_token"),
+                (
+                    "refresh_token",
+                    old["refresh_token"]
+                        .as_str()
+                        .ok_or("Vuelve a autorizar TikTok.")?,
+                ),
+            ]),
+        "TikTok",
+    )
+    .await?;
+    let fresh = crate::tiktok_auth_core::credentials(
+        &body,
+        key,
+        secret,
+        now(),
+        old["account_id"].as_str(),
+    )?;
+    // Save the rotated refresh token before any subsequent API call can fail.
+    vault("tiktok")?.set_password(&fresh.to_string()).map_err(
+        |_| "Windows no pudo guardar la renovación de TikTok. Vuelve a autorizar la cuenta.",
+    )?;
+    Ok(fresh)
 }

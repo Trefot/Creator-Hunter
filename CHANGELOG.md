@@ -2,6 +2,13 @@
 
 ## [Sin publicar]
 
+## [0.2.43] · 2026-11-16 · Autorizar TikTok desde Nexus
+
+- Conexiones → TikTok permite autorizar la cuenta en el navegador con las credenciales de tu Sandbox, sin copiar manualmente un access token. Muestra la dirección de retorno que debes registrar en Login Kit → Desktop.
+- Comprueba la sesión de autorización, usa PKCE según el protocolo de TikTok y valida la identidad y sus seguidores antes de guardar la cuenta. Client secret y tokens permanecen en el almacén de Windows; no se incluyen en las copias de la base de datos.
+- Renueva el acceso al consultar las cifras cuando haga falta y conserva el refresh token rotado. Si el proveedor revoca el acceso o vence la renovación, solicita volver a autorizar. Mantiene el token manual como alternativa avanzada.
+- La autorización exige la configuración y permisos de TikTok; las pruebas no equivalen a una aprobación para producción. No añade TikTok LIVE ni publicación de vídeos.
+
 ## [0.2.42] · 2026-11-16 · Conexión directa con Meta
 
 - Instagram + Facebook permite indicar el ID de la página cuando Meta devuelve vacía la lista de páginas, aunque la autorización sí permite leer sus métricas.

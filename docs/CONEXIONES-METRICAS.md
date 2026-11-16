@@ -20,7 +20,18 @@ Una autorización puede incluir explícitamente tu página e Instagram y permiti
 Se consultan seguidores de ambas cuentas. No se importan alcance, ingresos, estadísticas privadas no autorizadas ni alertas automáticas de Instagram. Si una consulta falla no se reemplaza el historial por cero; el guardado de las dos redes es una transacción.
 
 ## TikTok
-Requiere una aplicación de TikTok for Developers y un access token autorizado con user.info.basic y user.info.stats. En sandbox, añade tu cuenta de prueba. Para uso fuera de sandbox se necesita la aprobación correspondiente de TikTok. Pega el token únicamente en el campo privado; se valida la identidad y se consultan seguidores. No se conecta TikTok LIVE. El token no se renueva automáticamente: al caducar hay que volver a autorizar.
+
+En TikTok for Developers crea una aplicación Individual, de tipo Other, y un Sandbox. Añade tu propia cuenta en Target users, el producto Login Kit y los permisos user.info.basic y user.info.stats. En App details activa Desktop y completa los datos de la aplicación. Los enlaces de términos y privacidad están en el README.
+
+En Login Kit → Desktop registra exactamente `http://127.0.0.1:7878/tiktok/callback` para la app instalada. Desarrollo utiliza el puerto 7879 y requiere registrar también esa dirección si vas a probar desde el código. La Web/Desktop URL de App details es la página informativa del proyecto, no esta dirección de retorno.
+
+En Nexus → Conexiones → TikTok elige tu perfil e introduce el Client key y Client secret **del mismo Sandbox** en sus campos privados. Pulsa Autorizar TikTok, inicia sesión en el navegador y concede los dos permisos. Nexus comprobará la cuenta y consultará sus seguidores al regresar. Nunca publiques las credenciales ni el código de retorno.
+
+El flujo de escritorio usa un estado aleatorio de sesión y PKCE con SHA-256 hexadecimal según la documentación de TikTok. Guarda las credenciales y los tokens en el almacén de Windows; cuando se consulta la API renueva el acceso si hace falta y conserva el refresh token nuevo que devuelva el proveedor. No puede renovar una autorización revocada ni un refresh token caducado: en esos casos vuelve a autorizar.
+
+La alternativa de token manual continúa disponible en opciones avanzadas, sin renovación automática al no tener un refresh token. Desvincular métricas cancela la espera y elimina la credencial local; también puedes retirar la autorización en TikTok. Sandbox es para cuentas de prueba: no representa aprobación de producción. No se conecta TikTok LIVE ni se publican vídeos.
+
+Referencias oficiales: [Desktop Login Kit](https://developers.tiktok.com/docs/en/login-kit-desktop), [intercambio de código](https://developers.tiktok.com/docs/en/oauth-get-a-user-access-token), [rotación de tokens](https://developers.tiktok.com/docs/en/oauth-refresh-a-user-access-token).
 
 ## Actualización y recuperación
 Nexus consulta las cuentas configuradas cada tres horas mientras está abierto. Puedes pausar la actualización por proveedor y consultar manualmente. Cada perfil conserva un registro API por día, además de sus registros manuales. El centro distingue autorización guardada de última consulta correcta. Una restauración pausa estas nuevas actualizaciones: revisa los perfiles y reanuda desde Conexiones.

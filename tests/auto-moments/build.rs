@@ -13,6 +13,7 @@ fn main() {
         "media_jobs",
         "fortnite_counter",
         "metrics_core",
+        "tiktok_auth_core",
     ] {
         let file = source.join(format!("{name}.rs"));
         println!("cargo:rerun-if-changed={}", file.display());

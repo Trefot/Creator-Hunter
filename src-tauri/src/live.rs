@@ -152,6 +152,12 @@ fn handle_request(app: &AppHandle, key: &str, request: Request) {
     let query = |name: &str| url.query_pairs().find(|(k, _)| k == name).map(|(_, v)| v.to_string());
 
     match segments.iter().map(String::as_str).collect::<Vec<_>>().as_slice() {
+        ["tiktok","callback"] => {
+            if request.method()!=&tiny_http::Method::Get{return respond_json(request,405,json!({"error":"Usa GET para la autorización."}));}
+            let result=tauri::async_runtime::block_on(crate::social_metrics::tiktok_callback(app,&query("state").unwrap_or_default(),&query("code").unwrap_or_default()));
+            let text=if result.is_ok(){"TikTok conectado. Vuelve a Nexus y pulsa Actualizar cifras."}else{"No se pudo autorizar TikTok. Vuelve a Conexiones en Nexus para ver el motivo y volver a intentar."};
+            let _=request.respond(Response::from_string(text).with_header(header("Content-Type","text/plain; charset=utf-8")).with_header(header("Cache-Control","no-store")).with_header(header("Referrer-Policy","no-referrer")));
+        }
         ["spotify","callback"] => {
             let result=tauri::async_runtime::block_on(crate::music::callback(app,&query("state").unwrap_or_default(),&query("code").unwrap_or_default()));
             let text=if result.is_ok(){"Spotify conectado. Puedes cerrar esta pestaña y volver a Nexus."}else{"No se pudo autorizar Spotify. Vuelve a Nexus y revisa Client ID, URL de retorno y cuenta Premium."};
