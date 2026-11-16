@@ -103,62 +103,71 @@ pub async fn metrics_connect_meta(
     if let Some(id) = instagram_profile.as_ref().filter(|s| !s.is_empty()) {
         crate::metrics_core::profile(&pool, id, "instagram").await?;
     }
-    let request = client()?
-        .get("https://graph.facebook.com/v27.0/me/accounts")
-        .bearer_auth(token)
-        .query(&[
-            ("fields", "id,name,access_token,instagram_business_account"),
-            ("limit", "100"),
-        ]);
-    let pages = api(request, "Meta").await?;
-    let data=pages["data"].as_array().ok_or("Meta no devolvió páginas administradas. Necesitas un token de usuario con acceso a tu página.")?;
-    if data.is_empty() {
-        return Err("No aparecen páginas. Revisa pages_show_list, pages_read_engagement y el acceso a tu página en Meta.".into());
-    }
-    if page_id.is_none() && data.len() > 1 {
-        return Ok(
-            json!({"needs_page":true,"pages":data.iter().map(|p|json!({"id":p["id"],"name":p["name"]})).collect::<Vec<_>>()}),
-        );
-    }
-    let page = data
-        .iter()
-        .find(|p| {
-            page_id
-                .as_ref()
-                .map_or(true, |id| p["id"].as_str() == Some(id.as_str()))
-        })
-        .ok_or("La página elegida no pertenece a esta autorización.")?;
-    let id = text(page, "id")?;
-    let page_token = page["access_token"]
-        .as_str()
-        .ok_or("Meta no devolvió la autorización de la página.")?;
-    let ig = page["instagram_business_account"]["id"]
-        .as_str()
-        .filter(|s| crate::metrics_core::safe_id(s));
-    if instagram_profile.as_ref().is_some_and(|s| !s.is_empty()) && ig.is_none() {
-        return Err("La página no devolvió su Instagram vinculado. Revisa el vínculo y los permisos instagram_basic y pages_read_engagement.".into());
-    }
-    // Validate read access before persisting credentials.
-    api(
+    // A business-owned Page can be readable by ID even when /me/accounts is empty.
+    // Explicit selection verifies read access with the supplied token before saving it.
+    let requested = page_id
+        .as_deref()
+        .map(str::trim)
+        .filter(|id| !id.is_empty());
+    let (id, authorized_token) = if let Some(id) = requested {
+        (
+            crate::metrics_core::meta_page_id(id)?.to_string(),
+            token.to_string(),
+        )
+    } else {
+        let pages = api(
+            client()?
+                .get("https://graph.facebook.com/v27.0/me/accounts")
+                .bearer_auth(token)
+                .query(&[("fields", "id,name,access_token"), ("limit", "100")]),
+            "Meta",
+        )
+        .await?;
+        let data = pages["data"]
+            .as_array()
+            .ok_or("Meta no devolvió una lista válida de páginas.")?;
+        if data.is_empty() {
+            return Ok(json!({"needs_page_id":true}));
+        }
+        if data.len() > 1 {
+            return Ok(
+                json!({"needs_page":true,"pages":data.iter().map(|p|json!({"id":p["id"],"name":p["name"]})).collect::<Vec<_>>()}),
+            );
+        }
+        let page = &data[0];
+        let id = crate::metrics_core::meta_page_id(text(page, "id")?)?.to_string();
+        let page_token = page["access_token"].as_str().ok_or("Meta no devolvió la autorización de la página. Puedes indicar su ID para comprobar el acceso con tu token de usuario.")?;
+        (id, checked_token(page_token)?.to_string())
+    };
+    let page = api(
         client()?
             .get(format!("https://graph.facebook.com/v27.0/{id}"))
-            .bearer_auth(page_token)
-            .query(&[("fields", "id,name,followers_count")]),
+            .bearer_auth(&authorized_token)
+            .query(&[(
+                "fields",
+                "id,name,followers_count,instagram_business_account",
+            )]),
         "Facebook",
     )
     .await?;
-    if let Some(ig) = ig {
-        api(
+    let needs_instagram = instagram_profile.as_ref().is_some_and(|s| !s.is_empty());
+    let ig = crate::metrics_core::meta_page_identity(&page, &id, needs_instagram)?;
+    if needs_instagram {
+        let ig_id = ig
+            .as_deref()
+            .ok_or("La página no tiene un Instagram profesional vinculado.")?;
+        let instagram = api(
             client()?
-                .get(format!("https://graph.facebook.com/v27.0/{ig}"))
-                .bearer_auth(page_token)
+                .get(format!("https://graph.facebook.com/v27.0/{ig_id}"))
+                .bearer_auth(&authorized_token)
                 .query(&[("fields", "id,username,followers_count,media_count")]),
             "Instagram",
         )
         .await?;
+        crate::metrics_core::meta_instagram_identity(&instagram, ig_id)?;
     }
     vault("meta")?
-        .set_password(&json!({"token":page_token,"page_id":id,"instagram_id":ig}).to_string())
+        .set_password(&json!({"token":authorized_token,"page_id":id,"instagram_id":ig}).to_string())
         .map_err(|_| "Windows no pudo guardar la autorización.".to_string())?;
     save_cfg(&app,"meta",&json!({"configured":true,"auto":true,"facebook_profile":facebook_profile,"instagram_profile":instagram_profile,"name":page["name"]})).await?;
     Ok(json!({"configured":true,"name":page["name"]}))

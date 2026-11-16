@@ -2,6 +2,12 @@
 
 ## [Sin publicar]
 
+## [0.2.42] · 2026-11-16 · Conexión directa con Meta
+
+- Instagram + Facebook permite indicar el ID de la página cuando Meta devuelve vacía la lista de páginas, aunque la autorización sí permite leer sus métricas.
+- Verifica la identidad y los seguidores de la página y de su Instagram vinculado antes de guardar la autorización. Conserva el acceso anterior si la comprobación falla.
+- Explica el caso de lista vacía sin atribuirlo automáticamente a permisos faltantes. El token sigue en el almacén de Windows y se elimina del formulario tras conectar; las autorizaciones que caduquen requieren renovación en Meta.
+
 ## [0.2.41] · 2026-11-16 · Tus redes al frente
 
 - Inicio renovado con tarjetas de YouTube, Twitch, TikTok, Instagram y Facebook: cifras, fecha, origen, comparación con registros reales y metas de cada cuenta. No se inventa crecimiento cuando falta historial.

@@ -13,6 +13,10 @@ Requiere una aplicación propia en Meta for Developers, acceso de tu usuario a l
 
 Introduce ese token únicamente en el campo privado de Conexiones → Instagram + Facebook. Elige los perfiles existentes y, si administras varias páginas, selecciona la correcta. Nexus verifica acceso y guarda el token de página en el almacén de credenciales de Windows. El token no se incluye en copias de la base de datos. Comprueba la identidad de la página antes de confirmar: tus perfiles deben corresponder a las cuentas autorizadas.
 
+### Si la lista de páginas está vacía
+
+Una autorización puede incluir explícitamente tu página e Instagram y permitir consultar sus cifras por ID aunque `me/accounts` devuelva `data: []`. En ese caso introduce el ID numérico de tu página de Facebook en el campo opcional de Conexiones. No es el ID de tu usuario, de Instagram ni de la aplicación de Meta. Nexus consulta directamente la página, verifica su identidad y seguidores, obtiene el Instagram vinculado y comprueba también su identidad y seguidores antes de guardar nada. Si falla una lectura conserva la conexión anterior. Este recorrido usa el token de usuario autorizado; su duración depende de Meta y no incluye renovación automática. Si caduca, genera un nuevo token e introdúcelo de nuevo.
+
 Se consultan seguidores de ambas cuentas. No se importan alcance, ingresos, estadísticas privadas no autorizadas ni alertas automáticas de Instagram. Si una consulta falla no se reemplaza el historial por cero; el guardado de las dos redes es una transacción.
 
 ## TikTok

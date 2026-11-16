@@ -98,6 +98,46 @@ pub async fn snapshot_batch(
     tx.commit().await.map_err(|e| e.to_string())?;
     Ok(())
 }
+/// Page IDs are numeric provider identities, never URLs or path fragments.
+pub fn meta_page_id(id: &str) -> Result<&str, String> {
+    if !id.is_empty() && id.len() <= 100 && id.bytes().all(|b| b.is_ascii_digit()) {
+        Ok(id)
+    } else {
+        Err("Introduce solo el ID numérico de tu página de Facebook, no su nombre, usuario ni enlace.".into())
+    }
+}
+pub fn meta_page_identity(
+    page: &Value,
+    expected: &str,
+    needs_instagram: bool,
+) -> Result<Option<String>, String> {
+    meta_page_id(expected)?;
+    if page["id"].as_str() != Some(expected)
+        || page["name"].as_str().is_none_or(|s| s.trim().is_empty())
+        || count(&page["followers_count"]).is_none()
+    {
+        return Err("Meta no permitió comprobar la identidad y los seguidores de esa página. Revisa su ID y la autorización; tu conexión anterior se conserva.".into());
+    }
+    let ig = page["instagram_business_account"]["id"]
+        .as_str()
+        .filter(|id| meta_page_id(id).is_ok())
+        .map(str::to_string);
+    if needs_instagram && ig.is_none() {
+        return Err("La página no devolvió su Instagram profesional vinculado. Revisa el vínculo y los permisos de la cuenta.".into());
+    }
+    Ok(ig)
+}
+pub fn meta_instagram_identity(account: &Value, expected: &str) -> Result<(), String> {
+    if account["id"].as_str() != Some(expected)
+        || count(&account["followers_count"]).is_none()
+        || account["username"]
+            .as_str()
+            .is_none_or(|s| s.trim().is_empty())
+    {
+        return Err("No se pudo comprobar el Instagram vinculado y sus seguidores. La conexión anterior se conserva.".into());
+    }
+    Ok(())
+}
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -201,5 +241,48 @@ mod tests {
                 .await
                 .unwrap();
         });
+    }
+
+    #[test]
+    fn direct_meta_pages_require_verified_identity_and_real_counts() {
+        let page = json!({"id":"111","name":"Mi página","followers_count":0,"instagram_business_account":{"id":"222"}});
+        assert_eq!(
+            meta_page_identity(&page, "111", true).unwrap(),
+            Some("222".into())
+        );
+        assert!(meta_page_identity(&page, "333", true).is_err());
+        assert!(meta_page_identity(&json!({"id":"111","name":"Mi página"}), "111", false).is_err());
+        assert!(
+            meta_page_identity(
+                &json!({"id":"111","name":"Mi página","followers_count":12}),
+                "111",
+                true
+            )
+            .is_err()
+        );
+        assert!(
+            meta_page_identity(
+                &json!({"id":"111","name":"Mi página","followers_count":12}),
+                "111",
+                false
+            )
+            .is_ok()
+        );
+        for id in [
+            "",
+            "../111",
+            "https://facebook.com/page",
+            "111?fields=access_token",
+            "trefotg",
+            "-1",
+        ] {
+            assert!(meta_page_id(id).is_err())
+        }
+        let ig = json!({"id":"222","username":"mi_cuenta","followers_count":0});
+        assert!(meta_instagram_identity(&ig, "222").is_ok());
+        assert!(meta_instagram_identity(&ig, "333").is_err());
+        assert!(
+            meta_instagram_identity(&json!({"id":"222","username":"mi_cuenta"}), "222").is_err()
+        );
     }
 }
