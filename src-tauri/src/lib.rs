@@ -26,6 +26,7 @@ mod chat_commands_core;
 mod recap;
 mod shorts;
 mod media_jobs;
+mod fortnite_counter;
 mod shorts_core;
 mod subtitles;
 mod subtitles_core;
@@ -211,6 +212,7 @@ pub fn run() {
         .manage(discord::DiscordState::default())
         .manage(obs::ObsState::default())
         .manage(auto_moments::AutoMomentsState::default())
+        .manage(fortnite_counter::FortniteCounterState::default())
         .manage(premigrate::Preparation::default())
         .setup(|app| {
             if let Some(window) = tauri::Manager::get_webview_window(app, "main") {
@@ -223,6 +225,7 @@ pub fn run() {
                 let _ = window.set_title("Nexus Studio · PRUEBAS");
             }
             media_jobs::init(app.handle());
+            fortnite_counter::start(app.handle().clone());
             live::start(app.handle().clone());
             social_alerts::start(app.handle().clone());
             discord::start(app.handle().clone());
@@ -246,6 +249,8 @@ pub fn run() {
             shorts::shorts_preview,
             shorts::shorts_plan,
             shorts::media_inspect,
+            fortnite_counter::fortnite_counter_status,
+            fortnite_counter::fortnite_counter_configure,
             media_jobs::media_jobs_status,
             media_jobs::media_jobs_cancel,
             media_jobs::media_jobs_light,
@@ -363,5 +368,6 @@ pub fn run() {
         ])
         .build(tauri::generate_context!())
         .expect("error while building tauri application")
-        .run(|_, event| { if matches!(event, tauri::RunEvent::ExitRequested { .. }) { media_jobs::shutdown(); std::thread::sleep(std::time::Duration::from_millis(250)); } });
+        .run(|app, event| { if matches!(event, tauri::RunEvent::ExitRequested { .. }) { fortnite_counter::stop(app);
+                media_jobs::shutdown(); std::thread::sleep(std::time::Duration::from_millis(250)); } });
 }

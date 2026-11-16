@@ -46,8 +46,16 @@ mod tauri {
             Paths(self.env.dir.clone())
         }
     }
+    pub mod path {
+        pub enum BaseDirectory {
+            Resource,
+        }
+    }
     pub struct Paths(PathBuf);
     impl Paths {
+        pub fn resolve(&self, path: &str, _: path::BaseDirectory) -> Result<PathBuf, String> {
+            Ok(self.0.join(path))
+        }
         pub fn app_local_data_dir(&self) -> Result<PathBuf, String> {
             Ok(self.0.clone())
         }
@@ -120,6 +128,9 @@ mod studio_tools {
     pub async fn capture_project(_: &sqlx::SqlitePool, _: &str, _: &str) -> Result<String, String> {
         Ok("fixture-project".into())
     }
+}
+mod live {
+    pub fn live_notify() {}
 }
 mod obs_store {
     pub const WORKSPACE: &str = "test";

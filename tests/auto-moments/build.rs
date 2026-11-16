@@ -11,6 +11,7 @@ fn main() {
         "subtitles",
         "subtitles_core",
         "media_jobs",
+        "fortnite_counter",
     ] {
         let file = source.join(format!("{name}.rs"));
         println!("cargo:rerun-if-changed={}", file.display());
@@ -22,6 +23,7 @@ fn main() {
                 "use tauri_plugin_opener::",
                 "use crate::tauri_plugin_opener::",
             )
+            .replace("tauri::path::", "crate::tauri::path::")
             .replace("tauri::async_runtime", "crate::tauri::async_runtime");
         fs::write(out.join(format!("{name}.rs")), code).unwrap();
         modules.push_str(&format!(

@@ -29,6 +29,18 @@ jobs:
             src-tauri -> target
             tests/data-safety -> target
             tests/auto-moments -> target
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Compilar lector local de cofres
+        run: dotnet publish tools/fortnite-reader/NexusFortniteReader.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -o src-tauri/resources/fortnite-reader
+      - name: Probar arranque del lector local
+        shell: pwsh
+        run: |
+          $stderr = Join-Path $env:RUNNER_TEMP 'nexus-reader-stderr.txt'
+          $reader = Start-Process -FilePath ./src-tauri/resources/fortnite-reader/NexusFortniteReader.exe -Wait -PassThru -NoNewWindow -RedirectStandardError $stderr
+          $output = Get-Content $stderr -Raw
+          if ($reader.ExitCode -ne 1 -or $output -notmatch 'Indica una repetici') { throw "El lector local no inicia correctamente: $output" }
       - run: npm ci
       - run: npm run release:check
       - run: npm test

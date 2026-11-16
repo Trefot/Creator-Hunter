@@ -1,3 +1,4 @@
+import {FortniteCounterPanel} from "./FortniteCounterPanel";
 import {ConnectionsPage} from "../setup/ConnectionsPage";
 import type {Section} from "../../sections";
 import { ChangeEvent, FormEvent, useEffect, useRef, useState } from "react";
@@ -473,7 +474,7 @@ export function LivePage({onOpenProject,initialTab='cabina',navigationRevision=0
 
       {/* Conexión con OBS y el Stream Deck */}
       <ObsPanel clipUrl={info?.running ? `http://127.0.0.1:${info.port}/api/clips/save?key=${encodeURIComponent(info.key)}` : null} markUrl={info?.running ? `http://127.0.0.1:${info.port}/api/moments/mark?key=${encodeURIComponent(info.key)}` : null} />
-      </div><div hidden={tab!=='counters'} role="tabpanel" aria-label="Contadores">
+      </div><div hidden={tab!=='counters'} role="tabpanel" aria-label="Contadores"><FortniteCounterPanel active={tab==='counters'}/>
       <section className={`card live-connect${info?.running ? " on" : ""}`}>
         <div className="live-connect-head">
           <MonitorPlay size={22} />

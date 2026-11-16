@@ -2,6 +2,13 @@
 
 ## [Sin publicar]
 
+## [0.2.40] · 2026-11-15 · Cofres de Fortnite sin pulsar botones
+
+- En directo → Contadores permite activar el conteo de cofres a partir de las repeticiones locales de Fortnite. Al terminar una partida suma los cofres abiertos y destruidos atribuidos a tu jugador.
+- Conserva el total existente y registra cada partida una sola vez. Las repeticiones anteriores a la activación y los cofres de compañeros no se añaden.
+- Incluye un lector local para Windows: no requiere instalar .NET, iniciar sesión ni subir las repeticiones. Debes activar Guardar repeticiones en Fortnite y mantener Nexus abierto.
+- El conteo se actualiza después de cada partida, no durante ella. Los casos sin atribución segura se excluyen; algunas destrucciones desde vehículos pueden faltar. Una actualización de Fortnite podría requerir actualizar el lector.
+
 ## [0.2.39] · 2026-11-15 · Recuperar la jugada anterior
 
 - MOMENTO se usa después de la jugada: el recorte normal recupera 30 segundos anteriores y 5 posteriores. Se muestra el tiempo disponible antes de guardar.

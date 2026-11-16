@@ -41,3 +41,8 @@ dist-ssr
 
 # Artefactos del banco de captura; el código y Cargo.lock sí se versionan.
 /tests/auto-moments/target/
+
+# Local replay reader builds; source and licenses remain tracked.
+/tools/fortnite-reader/**/bin/
+/tools/fortnite-reader/**/obj/
+/src-tauri/resources/fortnite-reader/
