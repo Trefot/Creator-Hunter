@@ -636,65 +636,71 @@ mod tests {
         assert!(!ready_replay(&path));
         std::fs::remove_file(path).unwrap();
     }
-    #[tokio::test]
-    async fn preserves_base_and_counts_a_match_once_without_uncertain_events() {
-        let c = cfg();
-        let p = db(&c).await;
-        let m = game();
-        assert!(apply(&p, &c, &m, 21000).await.unwrap());
-        assert_eq!(total(&p).await, 2267);
-        assert!(!apply(&p, &c, &m, 22000).await.unwrap());
-        assert_eq!(total(&p).await, 2267);
-        let mut other = game();
-        other.match_id = "c".repeat(32);
-        other.opened = 11;
-        other.destroyed = 3;
-        assert!(apply(&p, &c, &other, 22000).await.unwrap());
-        assert_eq!(total(&p).await, 2281);
+    #[test]
+    fn preserves_base_and_counts_a_match_once_without_uncertain_events() {
+        tauri::async_runtime::block_on(async {
+            let c = cfg();
+            let p = db(&c).await;
+            let m = game();
+            assert!(apply(&p, &c, &m, 21000).await.unwrap());
+            assert_eq!(total(&p).await, 2267);
+            assert!(!apply(&p, &c, &m, 22000).await.unwrap());
+            assert_eq!(total(&p).await, 2267);
+            let mut other = game();
+            other.match_id = "c".repeat(32);
+            other.opened = 11;
+            other.destroyed = 3;
+            assert!(apply(&p, &c, &other, 22000).await.unwrap());
+            assert_eq!(total(&p).await, 2281);
+        });
     }
-    #[tokio::test]
-    async fn rejects_history_other_accounts_disable_and_invalid_data() {
-        let c = cfg();
-        let p = db(&c).await;
-        let mut m = game();
-        m.ended_ms = 9999;
-        m.started_ms = 1000;
-        assert!(!apply(&p, &c, &m, 21000).await.unwrap());
-        let m = game();
-        assert!(apply(&p, &c, &m, 21000).await.unwrap());
-        let mut other = game();
-        other.account_id = "c".repeat(32);
-        other.match_id = "d".repeat(32);
-        assert!(!apply(&p, &c, &other, 21000).await.unwrap());
-        let mut off = c.clone();
-        off.enabled = false;
-        sqlx::query("UPDATE alert_cursor SET content=? WHERE id=?")
-            .bind(serde_json::to_string(&off).unwrap())
-            .bind(CONFIG)
-            .execute(&p)
+    #[test]
+    fn rejects_history_other_accounts_disable_and_invalid_data() {
+        tauri::async_runtime::block_on(async {
+            let c = cfg();
+            let p = db(&c).await;
+            let mut m = game();
+            m.ended_ms = 9999;
+            m.started_ms = 1000;
+            assert!(!apply(&p, &c, &m, 21000).await.unwrap());
+            let m = game();
+            assert!(apply(&p, &c, &m, 21000).await.unwrap());
+            let mut other = game();
+            other.account_id = "c".repeat(32);
+            other.match_id = "d".repeat(32);
+            assert!(!apply(&p, &c, &other, 21000).await.unwrap());
+            let mut off = c.clone();
+            off.enabled = false;
+            sqlx::query("UPDATE alert_cursor SET content=? WHERE id=?")
+                .bind(serde_json::to_string(&off).unwrap())
+                .bind(CONFIG)
+                .execute(&p)
+                .await
+                .unwrap();
+            other.account_id = m.account_id.clone();
+            assert!(!apply(&p, &c, &other, 21000).await.unwrap());
+            assert_eq!(total(&p).await, 2267);
+            other.opened = 9999;
+            assert!(apply(&p, &c, &other, 21000).await.is_err());
+        });
+    }
+    #[test]
+    fn missing_counter_rolls_back_the_deduplication_claim() {
+        tauri::async_runtime::block_on(async {
+            let c = cfg();
+            let p = db(&c).await;
+            sqlx::query("DELETE FROM counter")
+                .execute(&p)
+                .await
+                .unwrap();
+            assert!(apply(&p, &c, &game(), 21000).await.is_err());
+            let n: i64 = sqlx::query_scalar(
+                "SELECT COUNT(*) FROM alert_cursor WHERE id LIKE 'fortnite-match:%'",
+            )
+            .fetch_one(&p)
             .await
             .unwrap();
-        other.account_id = m.account_id.clone();
-        assert!(!apply(&p, &c, &other, 21000).await.unwrap());
-        assert_eq!(total(&p).await, 2267);
-        other.opened = 9999;
-        assert!(apply(&p, &c, &other, 21000).await.is_err());
-    }
-    #[tokio::test]
-    async fn missing_counter_rolls_back_the_deduplication_claim() {
-        let c = cfg();
-        let p = db(&c).await;
-        sqlx::query("DELETE FROM counter")
-            .execute(&p)
-            .await
-            .unwrap();
-        assert!(apply(&p, &c, &game(), 21000).await.is_err());
-        let n: i64 = sqlx::query_scalar(
-            "SELECT COUNT(*) FROM alert_cursor WHERE id LIKE 'fortnite-match:%'",
-        )
-        .fetch_one(&p)
-        .await
-        .unwrap();
-        assert_eq!(n, 0);
+            assert_eq!(n, 0);
+        });
     }
 }
