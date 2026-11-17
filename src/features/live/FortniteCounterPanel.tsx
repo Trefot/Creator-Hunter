@@ -1,3 +1,4 @@
+import {CounterCorrection} from "./CounterCorrection";
 import "./FortniteCounterPanel.css";
 import {useEffect,useState} from 'react';import {invoke} from '@tauri-apps/api/core';import {listCounters,Counter} from '../../db/counters';
 interface State{config:{enabled:boolean;counter_id:string;directory:string;activated_ms:number;player:string|null};reader_ready:boolean;directory_exists:boolean;message:string;recent:{opened:number;destroyed:number;uncertain:number;vehicle_missing:boolean;ended_ms:number;applied:number}[]}
@@ -16,6 +17,7 @@ export function FortniteCounterPanel({active}:{active:boolean}){
  {state?.config.enabled&&!state.directory_exists&&<p role="status">Esperando la carpeta de repeticiones. Activa su guardado en Fortnite.</p>}
  {state?.message&&<p role="status">{state.message}</p>}
  <details><summary>Últimas partidas contadas</summary>{state?.recent.length?<ul>{state.recent.map((m,i)=><li key={i}>{new Date(m.ended_ms).toLocaleString('es')} · +{m.applied}: {m.opened} abiertos y {m.destroyed} destruidos.{m.uncertain>0?` ${m.uncertain} posibles no se sumaron.`:''}{m.vehicle_missing?' Faltan datos de destrucción desde vehículos.':''}</li>)}</ul>:<p className="muted small">Aparecerán aquí cuando termines una partida con el conteo activado.</p>}</details>
+ {selected&&<CounterCorrection counterId={selected.id} onChanged={async()=>setCounters(await listCounters())}/>}
  {error&&<p role="alert" className="error">{error}</p>}
  </section>
 }

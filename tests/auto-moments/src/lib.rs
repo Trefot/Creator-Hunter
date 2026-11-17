@@ -503,6 +503,10 @@ mod tests {
             .unwrap();
         assert_eq!(plan["start"], 40.);
         assert_eq!(plan["end"], 75.);
+        let playable=shorts::shorts_video_preview(a.clone(),"moment".into(),"moment".into(),"original".into(),Some(2),Some(1),Some(vec![]),None).await.unwrap();
+        assert!(playable.starts_with("data:video/mp4;base64,"));
+        let decoded=base64::engine::general_purpose::STANDARD.decode(playable.split_once(',').unwrap().1).unwrap();
+        assert!(decoded.windows(4).any(|w|w==b"ftyp"),"preview must be a real MP4");
         let preview = shorts::shorts_preview(
             a.clone(),
             "moment".into(),
@@ -510,6 +514,7 @@ mod tests {
             "original".into(),
             None,
             None,
+        None,
         )
         .await
         .unwrap();
@@ -549,6 +554,7 @@ mod tests {
             None,
             Some(vec![]),
             None,
+        None,
         )
         .await
         .unwrap();

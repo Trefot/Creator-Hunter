@@ -1,7 +1,7 @@
 import {listen} from '@tauri-apps/api/event';
 import {invoke} from '@tauri-apps/api/core';
 import {todayIso} from '../../i18n/format';
-export interface MetricConnection{configured:boolean;auto:boolean;pending?:boolean;redirect_uri?:string;last_auth_ms?:number;profile_id?:string;facebook_profile?:string;instagram_profile?:string;name?:string;last_sync_ms?:number;error?:string}
+export interface MetricConnection{configured:boolean;auto:boolean;can_reconnect?:boolean;video_access?:boolean;pending?:boolean;redirect_uri?:string;last_auth_ms?:number;profile_id?:string;facebook_profile?:string;instagram_profile?:string;name?:string;last_sync_ms?:number;error?:string}
 export type MetricConnections=Record<'twitch'|'meta'|'tiktok',MetricConnection>;
 const pending=new Map<string,Promise<unknown>>();
 export function syncMetrics(platform:string,profileId?:string):Promise<unknown>{

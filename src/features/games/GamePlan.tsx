@@ -1,9 +1,22 @@
-import {useEffect,useState} from 'react';
-import {defaultPlan,gamePlans,saveGamePlan,GamePlan as Plan} from '../../db/gamePlan';
-import {useDraftState,clearDraft} from '../../hooks/useDraftState';
-export function GamePlan({gameId}:{gameId:string}){
- const [value,setValue]=useDraftState<Plan>('game-plan:'+gameId,defaultPlan),[loaded,setLoaded]=useState(false),[message,setMessage]=useState(''),[error,setError]=useState('');
- useEffect(()=>{let dead=false;void gamePlans().then(all=>{if(!dead){if(!localStorage.getItem('nexus-draft:game-plan:'+gameId))setValue(all[gameId]??defaultPlan);setLoaded(true)}}).catch(e=>setError(String(e)));return()=>{dead=true}},[gameId]);
- const set=(patch:Partial<Plan>)=>setValue(v=>({...v,...patch}));
- return <details className="card"><summary>Mi prioridad y próximos objetivos</summary><p className="small muted">Tus estimaciones personales complementan los trofeos verificados; no se presentan como una guía oficial.</p><form onSubmit={async e=>{e.preventDefault();setError('');try{await saveGamePlan(gameId,value);clearDraft('game-plan:'+gameId);setMessage('Plan guardado e incluido en las copias.')}catch(err){setError(String(err))}}}><label>Prioridad<select value={value.priority} onChange={e=>set({priority:Number(e.target.value)})}><option value={0}>Sin priorizar</option><option value={1}>Cuando tenga tiempo</option><option value={2}>Próximamente</option><option value={3}>Mi siguiente objetivo</option></select></label><label>Horas restantes estimadas<input type="number" min={0} max={5000} value={value.hours} onChange={e=>set({hours:e.target.value})}/></label><label>Dificultad personal (1–10)<input type="number" min={1} max={10} value={value.difficulty} onChange={e=>set({difficulty:e.target.value})}/></label><label>Mis próximos tres objetivos<textarea maxLength={2000} rows={3} value={value.next} onChange={e=>set({next:e.target.value})} placeholder="1. …\n2. …\n3. …"/></label><label><input type="checkbox" checked={value.spoilerFree} onChange={e=>set({spoilerFree:e.target.checked})}/>Ocultar mis objetivos por defecto para evitar spoilers</label><button disabled={!loaded}>Guardar mi plan</button></form>{message&&<p role="status">{message}</p>}{error&&<p className="error" role="alert">{error}</p>}</details>
+import { useEffect, useState } from 'react';
+import { defaultPlan, gamePlans, saveGamePlan, GamePlan as Plan } from '../../db/gamePlan';
+import { useDraftState, clearDraft } from '../../hooks/useDraftState';
+export function GamePlan({ gameId }: {
+    gameId: string;
+}) {
+    const [value, setValue] = useDraftState<Plan>('game-plan:' + gameId, defaultPlan), [loaded, setLoaded] = useState(false), [message, setMessage] = useState(''), [error, setError] = useState('');
+    useEffect(() => { let dead = false; void gamePlans().then(all => { if (!dead) {
+        if (!localStorage.getItem('nexus-draft:game-plan:' + gameId))
+            setValue(all[gameId] ?? defaultPlan);
+        setLoaded(true);
+    } }).catch(e => setError(String(e))); return () => { dead = true; }; }, [gameId]);
+    const set = (patch: Partial<Plan>) => setValue(v => ({ ...v, ...patch }));
+    return <details className="card"><summary>Mi prioridad y próximos objetivos</summary><p className="small muted">Tus estimaciones personales complementan los trofeos verificados; no se presentan como una guía oficial.</p><form onSubmit={async (e) => { e.preventDefault(); setError(''); try {
+        await saveGamePlan(gameId, value);
+        clearDraft('game-plan:' + gameId);
+        setMessage('Plan guardado e incluido en las copias.');
+    }
+    catch (err) {
+        setError(String(err));
+    } }}><label>Prioridad<select value={value.priority} onChange={e => set({ priority: Number(e.target.value) })}><option value={0}>Sin priorizar</option><option value={1}>Cuando tenga tiempo</option><option value={2}>Próximamente</option><option value={3}>Mi siguiente objetivo</option></select></label><label>Horas restantes estimadas<input type="number" min={0} max={5000} value={value.hours} onChange={e => set({ hours: e.target.value })}/></label><label>Dificultad personal (1–10)<input type="number" min={1} max={10} value={value.difficulty} onChange={e => set({ difficulty: e.target.value })}/></label><label>Mis próximos tres objetivos<textarea maxLength={2000} rows={3} value={value.next} onChange={e => set({ next: e.target.value })} placeholder="1. …\n2. …\n3. …"/></label><label><input type="checkbox" checked={value.spoilerFree} onChange={e => set({ spoilerFree: e.target.checked })}/>Ocultar mis objetivos por defecto para evitar spoilers</label><button disabled={!loaded}>Guardar mi plan</button></form>{message && <p role="status">{message}</p>}{error && <p className="error" role="alert">{error}</p>}</details>;
 }

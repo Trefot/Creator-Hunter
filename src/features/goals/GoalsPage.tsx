@@ -78,6 +78,7 @@ export function GoalsPage({ dataVersion = 0 }: { dataVersion?: number }) {
 
   return (
     <section className="page">
+      <p className="small muted">Las metas globales suman seguidores entre redes; no son personas únicas. Las metas de ingresos cuentan cobros registrados en USD, sin convertir otras monedas. Las horas no certifican elegibilidad de monetización.</p>
       <header className="page-header">
         <PageTitle section="goals" subtitle={t.subtitle} />
         {editing === null && <button onClick={() => setEditing("new")}><Plus size={16} />{t.add}</button>}

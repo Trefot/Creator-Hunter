@@ -1,5 +1,13 @@
 # Actualizaciones de Nexus Studio
 
+## 0.2.44 · entrega integral
+
+[Instalador 0.2.44](https://github.com/Trefot/Creator-Hunter/releases/download/v0.2.44/Nexus-Studio_0.2.44_x64-setup.exe). La publicación se realiza mediante el workflow de Windows, con pruebas y verificación del instalador antes de activar el canal.
+
+Incluye publicaciones y resultados, borradores recuperables, capturas unificadas, reproducción y encuadre de Shorts, subtítulos incorporados, copias automáticas y correcciones de la auditoría. Las métricas se consultan periódicamente con Nexus abierto; TikTok requiere video.list y Meta permisos de estadísticas adicionales. Detalles en [Publicaciones](docs/actualizaciones/PUBLICACIONES.md).
+
+Instala fuera de una emisión o grabación. A partir de 0.2.44 Nexus avisa de versiones disponibles y permite elegir cuándo instalarlas, comprobando el trabajo activo. No se cambian la identidad de instalación ni las credenciales existentes.
+
 ## 0.2.20 publicada
 
 [Descargar instalador 0.2.20](https://github.com/Trefot/Creator-Hunter/releases/download/v0.2.20/Nexus-Studio_0.2.20_x64-setup.exe) o «Buscar actualizaciones» → «Actualizar ahora».

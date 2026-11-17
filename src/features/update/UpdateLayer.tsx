@@ -1,3 +1,4 @@
+import {listen} from "@tauri-apps/api/event";
 import { useEffect, useRef, useState } from "react";
 import { getVersion } from "@tauri-apps/api/app";
 import { invoke } from "@tauri-apps/api/core";
@@ -8,8 +9,6 @@ import { es } from "../../i18n/es";
 const t = es.update;
 /** Cada cuánto se mira si hay una versión nueva con la app abierta. */
 const CHECK_EVERY_MS = 10 * 60 * 1000;
-/** Tiempo para leer las novedades antes de instalar al abrir la app. */
-const READ_TIME_MS = 3500;
 /** Novedades de la versión que se está instalando, para enseñarlas al volver a abrir. */
 const PENDING_KEY = "th.update.pending";
 /** El botón «Buscar actualizaciones» del menú lanza este evento. */
@@ -34,12 +33,10 @@ function Notes({ notes }: { notes: string[] }) {
   );
 }
 
-/**
- * Actualización como Lumen (D-021, D-023). Al abrir la app, si GitHub tiene una versión nueva,
- * enseña sus novedades y se instala sola. Con la app abierta solo avisa (nunca reinicia a mitad
- * de un stream). Tras actualizar, muestra una vez «¡Actualizado!» con las novedades.
- */
+/** Comprueba al abrir y periódicamente; instalar siempre requiere la acción del usuario. */
 export function UpdateLayer() {
+  const [progress,setProgress]=useState<number|null>(null);
+  useEffect(()=>{const cleanup=listen<number>("update-progress",e=>setProgress(e.payload));return()=>{void cleanup.then(fn=>fn())}},[]);
   const [installing, setInstalling] = useState<UpdateInfo | null>(null);
   const [available, setAvailable] = useState<UpdateInfo | null>(null);
   const [updated, setUpdated] = useState<{ version: string; notes: string[] } | null>(null);
@@ -66,13 +63,13 @@ export function UpdateLayer() {
     if (applying.current) return;
     applying.current = true;
     setError("");
+    setProgress(null);
     setInstalling(info);
     try {
       localStorage.setItem(PENDING_KEY, JSON.stringify({ version: info.version, notes: info.notes }));
     } catch {
       /* sin almacenamiento: solo se pierde el aviso de después */
     }
-    await new Promise((r) => setTimeout(r, READ_TIME_MS));
     try {
       await invoke("update_apply");
     } catch (err) {
@@ -116,6 +113,7 @@ export function UpdateLayer() {
         <Logo size={72} />
         <h2>{t.newVersion(installing.version)}</h2>
         <Notes notes={installing.notes} />
+        {progress!==null&&<><progress max={100} value={progress} aria-label="Descarga del instalador"/><p className="small muted">{progress<100?`Descargando: ${progress}%`:"Descarga completa; verificando el instalador y el trabajo activo…"}</p></>}
         <p className="muted">
           <RefreshCw size={16} className="spin" /> {t.installingHint}
         </p>

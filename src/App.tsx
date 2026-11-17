@@ -1,3 +1,4 @@
+import {CloseGuard} from "./components/CloseGuard";
 import {startAutomaticBackup} from './features/backups/automaticBackup';
 import {startContentSync} from './features/performance/contentSync';
 import {MediaQueue} from "./features/live/MediaTools";
@@ -73,13 +74,14 @@ function App() {
   // Actualiza datos sin desmontar formularios ni interrumpir la edición.
   useEffect(() => startYouTubeAutoSync(
     (data) => {
+      localStorage.removeItem("nexus-pref:youtube-sync-error");
       setDataVersion((v) => v + 1);
       setNotice({
         text: data.warning ? es.youtube.syncedWithWarning : es.youtube.synced(data.videosSynced),
         error: !!data.warning,
       });
     },
-    (err) => setNotice({ text: `${es.youtube.syncFailed} ${err}`, error: true }),
+    (err) => {localStorage.setItem("nexus-pref:youtube-sync-error","Revisa la conexión de YouTube");setDataVersion(v=>v+1);setNotice({ text: `${es.youtube.syncFailed} ${err}`, error: true })},
   ), []);
 
   useEffect(() => {
@@ -156,7 +158,7 @@ function App() {
           <ComingSoon title={es.sections[section]} />
         )}</Suspense>
       </main>
-      <UpdateLayer />
+      <CloseGuard/><UpdateLayer />
       <StreamRecapLayer />
       <HabitLayer />
       {notice && (

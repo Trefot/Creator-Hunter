@@ -3,3 +3,6 @@ src-tauri/migrations/*.sql text eol=lf
 
 # Fija el commit de origen en los ZIP preparados con git archive.
 .release-source.json export-subst
+
+# Las vistas previas usan hashes CSP del script empaquetado.
+src-tauri/overlay/*.html text eol=lf

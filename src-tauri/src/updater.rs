@@ -8,7 +8,7 @@ use std::{
     sync::atomic::{AtomicBool, Ordering},
     time::Duration,
 };
-use tauri::{AppHandle, Manager};
+use tauri::{AppHandle, Manager, Emitter};
 const PREFIX: &str = "TrophyHunter_";
 const SUFFIX: &str = "_x64-setup.exe";
 const CHANNEL: &str =
@@ -113,7 +113,7 @@ fn integrity(m: &Manifest) -> Result<(String, u64), String> {
         .ok_or("El canal no incluye un tamaño de instalador válido.")?;
     Ok((sha.to_ascii_lowercase(), size))
 }
-async fn limited(mut r: reqwest::Response, limit: usize) -> Result<Vec<u8>, String> {
+async fn limited(mut r: reqwest::Response, limit: usize, app:Option<&AppHandle>) -> Result<Vec<u8>, String> {
     if !r.status().is_success() {
         return Err(format!(
             "GitHub rechazó la descarga ({}).",
@@ -124,6 +124,8 @@ async fn limited(mut r: reqwest::Response, limit: usize) -> Result<Vec<u8>, Stri
         return Err("La descarga supera el tamaño esperado.".into());
     }
     let mut b = Vec::new();
+    let mut previous=0;
+    if let Some(app)=app{let _=app.emit("update-progress",0u64);}
     while let Some(chunk) = r
         .chunk()
         .await
@@ -133,6 +135,8 @@ async fn limited(mut r: reqwest::Response, limit: usize) -> Result<Vec<u8>, Stri
             return Err("La descarga supera el tamaño esperado.".into());
         }
         b.extend_from_slice(&chunk);
+        let percent=(b.len() as u64*100/(limit.max(1) as u64)).min(100);
+        if percent>previous{previous=percent;if let Some(app)=app{let _=app.emit("update-progress",percent);}}
     }
     Ok(b)
 }
@@ -150,7 +154,7 @@ async fn check_github(current: Version) -> Result<Option<Found>, String> {
         .map_err(
             |_| "No se pudo consultar GitHub por HTTPS. Revisa la conexión e inténtalo de nuevo.",
         )?;
-    let raw = limited(r, 256 * 1024).await?;
+    let raw = limited(r, 256 * 1024,None).await?;
     let m: Manifest = serde_json::from_slice(&raw)
         .map_err(|_| "GitHub devolvió un canal de actualización no válido.")?;
     let v = parse_version(&m.version).ok_or("Versión no válida en el canal de actualizaciones.")?;
@@ -221,7 +225,7 @@ pub async fn update_apply(app: AppHandle) -> Result<(), String> {
     let _guard = ApplyGuard;
     if crate::obs::media_busy(&app) { return Err("Termina la grabación o emisión antes de instalar. La actualización queda disponible.".into()); }
     let jobs=crate::media_jobs::media_jobs_status(app.clone());
-    if jobs["jobs"].as_array().is_some_and(|jobs|jobs.iter().any(|j|j["state"]=="running"||j["state"]=="queued")){return Err("Espera a que termine el procesamiento antes de actualizar.".into())}
+    if jobs["jobs"].as_array().is_some_and(|jobs|jobs.iter().any(|j|j["state"]=="running"||j["state"]=="queued"||j["state"]=="finishing")){return Err("Espera a que termine el procesamiento antes de actualizar.".into())}
     let setup = match pending(&app)
         .await?
         .ok_or("No hay ninguna actualización pendiente.")?
@@ -243,7 +247,7 @@ pub async fn update_apply(app: AppHandle) -> Result<(), String> {
                 .send()
                 .await
                 .map_err(|_| "No se pudo descargar el instalador por HTTPS.")?;
-            let bytes = limited(r, size as usize).await?;
+            let bytes = limited(r, size as usize,Some(&app)).await?;
             verify(&bytes, &sha, size)?;
             let path = std::env::temp_dir().join(format!(
                 "Nexus-Studio_{}-{}_x64-setup.exe",
@@ -255,6 +259,10 @@ pub async fn update_apply(app: AppHandle) -> Result<(), String> {
             path
         }
     };
+    if crate::obs::media_busy(&app){return Err("OBS empezó a grabar o emitir durante la descarga. Instala cuando termines.".into())}
+    let jobs=crate::media_jobs::media_jobs_status(app.clone());
+    if jobs["jobs"].as_array().is_some_and(|rows|rows.iter().any(|j|matches!(j["state"].as_str(),Some("queued"|"running"|"finishing")))){return Err("Hay procesamiento activo. La descarga terminó; espera antes de instalar.".into())}
+    if crate::auto_moments::auto_moments_activity(app.clone())["pending"].is_object(){return Err("Espera a que termine la captura de momento antes de instalar.".into())}
     #[cfg(windows)]
     {
         use std::os::windows::process::CommandExt;
@@ -387,13 +395,13 @@ mod tests {
         }
         let r = response(b"HTTP/1.1 200 OK\r\nContent-Length: 4\r\nConnection: close\r\n\r\ntest");
         assert_eq!(
-            tauri::async_runtime::block_on(limited(r, 4)).unwrap(),
+            tauri::async_runtime::block_on(limited(r, 4,None)).unwrap(),
             b"test"
         );
         let r=response(b"HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\nConnection: close\r\n\r\n4\r\ntest\r\n4\r\nmore\r\n0\r\n\r\n");
-        assert!(tauri::async_runtime::block_on(limited(r, 4)).is_err());
+        assert!(tauri::async_runtime::block_on(limited(r, 4,None)).is_err());
         let r =
             response(b"HTTP/1.1 404 Not Found\r\nContent-Length: 0\r\nConnection: close\r\n\r\n");
-        assert!(tauri::async_runtime::block_on(limited(r, 4)).is_err());
+        assert!(tauri::async_runtime::block_on(limited(r, 4,None)).is_err());
     }
 }

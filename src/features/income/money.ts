@@ -9,7 +9,7 @@ export function parseMoney(text: string): number | null {
   const normalized = /^\d{1,3}(\.\d{3})+,\d{1,2}$/.test(raw) ? raw.replace(/\./g,'').replace(',','.') : /^\d{1,3}(,\d{3})+\.\d{1,2}$/.test(raw) ? raw.replace(/,/g,'') : raw.replace(',','.');
   if (!/^\d+(\.\d{1,2})?$/.test(normalized)) return null;
   const minor = Math.round(Number(normalized) * 100);
-  return minor > 0 ? minor : null;
+  return Number.isSafeInteger(minor) && minor > 0 ? minor : null;
 }
 
 /** Centavos → texto editable ("12.50"). */

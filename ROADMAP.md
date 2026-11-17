@@ -418,3 +418,14 @@ Guardar Replay Buffer se implementa en 0.2.13; recortar/editar vídeo sigue pend
 - [x] Compilar, verificar actualización desde 0.2.19 y publicar 0.2.20; canal y descarga comparados.
 - [ ] Autorizar las cuentas y probar eventos reales y sonido con OBS en el PC del usuario.
 - [ ] Recepción automática de TikTok y bot/anuncios de Discord, como tareas independientes.
+
+## Actualización integral 0.2.44 · autorizada
+
+- [x] Reunir la auditoría y añadir seguimiento de publicaciones y series al alcance.
+- [x] Implementar datos, borradores, conexiones, capturas, resultados, juegos y copias en una sola rama.
+- [x] Comprobar migración aditiva y restauración de las 38 tablas con datos temporales.
+- [x] Añadir pruebas de comparación, idempotencia de cobros, encuadre real con ffmpeg e interfaz.
+- [ ] Completar comprobaciones nativas Windows y publicar un único instalador 0.2.44.
+- [ ] Verificar después de la publicación descarga, canal e inventario de los 57 puntos.
+
+Alcance y límites de las APIs en docs/actualizaciones/PUBLICACIONES.md. Las pruebas físicas de audio y las autorizaciones adicionales pertenecen al equipo y cuentas del usuario.

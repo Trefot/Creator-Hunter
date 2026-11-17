@@ -294,6 +294,7 @@ pub async fn shorts_preview(
     format: String,
     before: Option<i64>,
     after: Option<i64>,
+    layout: Option<crate::shorts_layout::Layout>,
 ) -> Result<String, String> {
     use base64::Engine;
     let pool = crate::backup::pool(&app).await?;
@@ -317,6 +318,7 @@ pub async fn shorts_preview(
             &[],
             2,
         );
+        crate::shorts_layout::apply(&mut args,layout)?;
         let end = args.iter().position(|s| s == "-c:v").unwrap();
         args.truncate(end);
         args.extend(
@@ -384,6 +386,7 @@ pub async fn shorts_render(
     after: Option<i64>,
     audio: Option<Vec<usize>>,
     encoder: Option<String>,
+    layout: Option<crate::shorts_layout::Layout>,
 ) -> Result<Value, String> {
     let format = Format::parse(&format)?;
     let gpu = match encoder.as_deref().unwrap_or("cpu") {
@@ -397,7 +400,7 @@ pub async fn shorts_render(
         _ => return Err("Codificador no válido.".into()),
     };
     let ticket = crate::media_jobs::Ticket::enqueue("Crear Short")?;
-    ticket.request("shorts_render",serde_json::json!({"kind":kind,"id":id,"format":format.key(),"before":before,"after":after,"audio":audio,"encoder":encoder}));
+    ticket.request("shorts_render",serde_json::json!({"layout":layout,"kind":kind,"id":id,"format":format.key(),"before":before,"after":after,"audio":audio,"encoder":encoder}));
     let handle = app.clone();
     let ticket = tauri::async_runtime::spawn_blocking(move || ticket.wait(&handle))
         .await
@@ -450,6 +453,7 @@ pub async fn shorts_render(
         &audio,
         crate::media_jobs::threads(),
     );
+    crate::shorts_layout::apply(&mut arguments,layout)?;
     if let Some(flag) = arguments.iter_mut().find(|s| s.as_str() == "-n") {
         *flag = "-y".into();
     }
@@ -564,7 +568,7 @@ pub async fn studio_export_project(app: AppHandle, export_id: String) -> Result<
 
 /// Playable preview of the SAME planned interval and chosen audio. Disposable lower-resolution copy.
 #[tauri::command]
-pub async fn shorts_video_preview(app:AppHandle,kind:String,id:String,format:String,before:Option<i64>,after:Option<i64>,audio:Option<Vec<usize>>)->Result<String,String>{
+pub async fn shorts_video_preview(app:AppHandle,kind:String,id:String,format:String,before:Option<i64>,after:Option<i64>,audio:Option<Vec<usize>>,layout:Option<crate::shorts_layout::Layout>)->Result<String,String>{
  use base64::Engine;
  let ticket=crate::media_jobs::Ticket::enqueue("Vista previa con audio")?;
  let handle=app.clone();let mut ticket=tauri::async_runtime::spawn_blocking(move||ticket.wait(&handle)).await.map_err(|e|e.to_string())??;
@@ -577,8 +581,9 @@ pub async fn shorts_video_preview(app:AppHandle,kind:String,id:String,format:Str
  let output=std::env::temp_dir().join(format!("nexus-preview-{:016x}.mp4",rand::random::<u64>()));
  let mut guard=OwnedOutput::reserve(&output)?;
  let mut args=core::args_audio(&input,&output.to_string_lossy(),cut,format,&selected,2);
+ crate::shorts_layout::apply(&mut args,layout)?;
  for arg in &mut args{if arg.contains("[0:v:0]"){*arg=arg.replace("1920","640").replace("1080","360").replace("boxblur=24:2","boxblur=8:2")}}
- if matches!(format,Format::Original){let i=args.len()-1;args.splice(i..i,["-vf".into(),"scale=640:-2".into()]);}
+ if matches!(format,Format::Original)&&layout.is_none_or(|l|l.camera.is_none()){let i=args.len()-1;args.splice(i..i,["-vf".into(),"scale=640:-2".into()]);}
  if let Some(i)=args.iter().position(|s|s=="-n"){args[i]="-y".into()}
  if let Some(i)=args.iter().position(|s|s=="-preset"){args[i+1]="ultrafast".into()}
  if let Some(i)=args.iter().position(|s|s=="-crf"){args[i+1]="30".into()}
@@ -591,7 +596,22 @@ pub async fn shorts_video_preview(app:AppHandle,kind:String,id:String,format:Str
     let bytes=std::fs::read(&file).map_err(|_|"No se pudo leer la vista previa.")?;
     Ok(format!("data:video/mp4;base64,{}",base64::engine::general_purpose::STANDARD.encode(bytes)))
   }else{Err("No se pudo crear la vista previa. Comprueba formato y audio.".into())});
-  match &result{Ok(_)=>ticket.finish(Ok("Vista previa temporal")),Err(e)=>ticket.finish(Err(e))};result
+  match &result{Ok(_)=>ticket.finish(Ok("")),Err(e)=>ticket.finish(Err(e))};result
  }).await.map_err(|e|e.to_string())?;
  guard.persist=false;result
+}
+
+#[tauri::command]
+pub async fn media_relink(app:AppHandle,kind:String,id:String,path:String)->Result<(),String>{
+ if !std::path::Path::new(&path).is_file(){return Err("No existe el vídeo seleccionado.".into())}
+ let handle=app.clone();let input=path.clone();let duration=tauri::async_runtime::spawn_blocking(move||{let f=find_ffmpeg(&handle).ok_or("Falta ffmpeg para comprobar la grabación.")?;probe_duration(&f,&input)}).await.map_err(|e|e.to_string())??;
+ let pool=crate::backup::pool(&app).await?;let mut tx=pool.begin().await.map_err(|e|e.to_string())?;
+ let n=match kind.as_str(){
+  "clip"=>{let n=sqlx::query("UPDATE obs_clip SET output_path=$1 WHERE id=$2 AND workspace_id=$3").bind(&path).bind(&id).bind(WORKSPACE).execute(&mut *tx).await.map_err(|e|e.to_string())?.rows_affected();sqlx::query("UPDATE alert_cursor SET content=json_set(content,'$.output_path',$1) WHERE id=$2").bind(&path).bind(format!("auto-moment:{id}")).execute(&mut *tx).await.map_err(|e|e.to_string())?;n},
+  "moment"=>{let session:Option<String>=sqlx::query_scalar("SELECT session_id FROM obs_marker WHERE id=$1 AND workspace_id=$2").bind(&id).bind(WORKSPACE).fetch_optional(&mut *tx).await.map_err(|e|e.to_string())?;
+   let session=session.ok_or("No existe esta marca.")?;let max:Option<i64>=sqlx::query_scalar("SELECT MAX(record_ms) FROM obs_marker WHERE session_id=$1").bind(&session).fetch_one(&mut *tx).await.map_err(|e|e.to_string())?;if max.is_some_and(|m|m as f64/1000.>duration+0.5){return Err("El vídeo es más corto que las marcas de esta grabación. Selecciona el archivo original completo.".into())}
+   sqlx::query("UPDATE obs_session SET output_path=$1 WHERE id=$2 AND workspace_id=$3 AND ended_at IS NOT NULL").bind(&path).bind(session).bind(WORKSPACE).execute(&mut *tx).await.map_err(|e|e.to_string())?.rows_affected()
+  },_=>return Err("Tipo de captura no válido.".into())};
+ if n!=1{return Err("La captura no existe o la grabación sigue activa.".into())}
+ tx.commit().await.map_err(|e|e.to_string())?;Ok(())
 }

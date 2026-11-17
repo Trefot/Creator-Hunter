@@ -704,3 +704,15 @@ mod tests {
         });
     }
 }
+
+/// Manual correction is separate from replay claims; never modifies or re-counts a match.
+#[tauri::command]
+pub async fn counter_correct(app:AppHandle,counter_id:String,delta:i64,reason:String)->Result<(),String>{
+ if delta==0||!(-1000..=1000).contains(&delta)||reason.trim().is_empty()||reason.len()>500{return Err("Indica un ajuste entre -1000 y 1000 y su motivo.".into())}
+ let pool=crate::backup::pool(&app).await?;let mut tx=pool.begin().await.map_err(|e|e.to_string())?;
+ let value:Option<i64>=sqlx::query_scalar("UPDATE counter SET value=value+$1,updated_at=strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE id=$2 AND workspace_id=$3 AND value+$1 BETWEEN 0 AND 9007199254740991 RETURNING value").bind(delta).bind(&counter_id).bind(crate::obs_store::WORKSPACE).fetch_optional(&mut *tx).await.map_err(|e|e.to_string())?;
+ let value=value.ok_or("El contador no existe o el ajuste produciría un total no válido.")?;
+ let entry=json!({"counter_id":counter_id,"delta":delta,"reason":reason.trim(),"value":value,"at":now()});
+ sqlx::query("INSERT INTO alert_cursor(id,content) VALUES($1,$2)").bind(format!("counter-adjust:{:016x}",rand::random::<u64>())).bind(entry.to_string()).execute(&mut *tx).await.map_err(|e|e.to_string())?;
+ tx.commit().await.map_err(|e|e.to_string())?;let _=app.emit("counters-changed",());Ok(())
+}

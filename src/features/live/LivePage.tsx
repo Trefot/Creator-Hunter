@@ -1,3 +1,4 @@
+import {StreamDeckGuide} from "./StreamDeckGuide";
 import {FortniteCounterPanel} from "./FortniteCounterPanel";
 import type {Section} from "../../sections";
 import { ChangeEvent, FormEvent, useEffect, useRef, useState } from "react";
@@ -450,7 +451,8 @@ export function LivePage({initialTab='cabina',navigationRevision=0,onNavigate}:{
 
       <button className="ghost small-button" onClick={()=>onNavigate?.("connections")}>¿Cómo conecto mis servicios?</button>
       <SectionTabs tabs={liveTabs.filter(t=>['cabina','chat','sound','moments','recaps'].includes(t.id))} value={tab} onChange={setTab} label="Durante el directo"/>
-      <details open={['setup','estado','alerts','overlays','category','obs','connections','commands','counters'].includes(tab)}><summary>Configurar y revisar</summary><SectionTabs tabs={liveTabs.filter(t=>!['cabina','chat','sound','moments','recaps'].includes(t.id))} value={tab} onChange={setTab} label="Configuración del estudio"/></details>
+      <details open={['setup','estado','alerts','overlays','category','obs','connections','commands','counters'].includes(tab)}><summary>Configurar y revisar</summary><SectionTabs tabs={liveTabs.filter(t=>!['cabina','chat','sound','moments','recaps','setup','connections'].includes(t.id))} value={tab} onChange={setTab} label="Configuración del estudio"/></details>
+      <StreamDeckGuide base={base} keyValue={info?.key??""}/>
       {tab==='setup'&&<div className="card"><h2>Conecta tu estudio</h2><p>Las cuentas y sus pasos de conexión están reunidos en un solo lugar.</p><button onClick={()=>onNavigate?.('connections')}>Abrir Conexiones</button></div>}
       <div className={tab==='cabina'?'live-cabina-grid':''} hidden={!['cabina','chat','category','overlays'].includes(tab)}>
        <div hidden={tab!=='cabina'}><GoLivePanel onNavigate={value=>setTab(asTab(value))}/><LiveCockpit active={tab==='cabina'} onNavigate={value=>setTab(asTab(value))}/></div>

@@ -13,6 +13,7 @@ mod studio_core;
 mod studio_tools;
 mod engagement;
 mod music;
+mod income_tracking;
 mod discord;
 mod discord_core;
 mod game_broadcast;
@@ -33,6 +34,7 @@ mod social_metrics;
 mod content_performance;
 mod content_core;
 mod shorts_core;
+mod shorts_layout;
 mod subtitles;
 mod subtitles_core;
 mod auto_moments_core;
@@ -248,6 +250,7 @@ pub fn run() {
             auto_moments::auto_moments_configure,
             auto_moments::auto_moments_control,
             auto_moments::auto_moments_review,
+            auto_moments::auto_moments_delete_file,
             auto_moments::auto_moments_languages,
             auto_moments::auto_moments_cleanup,
             shorts::shorts_status,
@@ -256,19 +259,23 @@ pub fn run() {
             shorts::studio_export_project,
             shorts::shorts_preview,
             shorts::shorts_video_preview,
+            shorts::media_relink,
             shorts::shorts_plan,
             shorts::media_inspect,
             social_metrics::metrics_status,
             content_performance::content_sync,
             social_metrics::metrics_tiktok_begin,
+            social_metrics::metrics_tiktok_reconnect,
             social_metrics::metrics_tiktok_cancel,
             social_metrics::metrics_connect_meta,
             social_metrics::metrics_connect_tiktok,
             social_metrics::metrics_sync,
             social_metrics::metrics_control,
             fortnite_counter::fortnite_counter_status,
+            fortnite_counter::counter_correct,
             fortnite_counter::fortnite_counter_configure,
             media_jobs::media_jobs_status,
+            media_jobs::media_jobs_stop_for_exit,
             media_jobs::media_jobs_cancel,
             media_jobs::media_jobs_light,
             media_jobs::media_gpu_test,
@@ -297,6 +304,7 @@ pub fn run() {
             backup::export_backup,
             backup::automatic_backup,
             backup::export_diagnostics,
+            income_tracking::income_receive_expected,
             backup::import_backup,
             youtube::youtube_import_client,
             youtube::youtube_status,

@@ -8,6 +8,8 @@ Nexus consulta las cuentas conectadas cada diez minutos mientras permanece abier
 - Facebook: publicaciones de la página. Las vistas de contenido mostrado/reproducido usan insights/post_media_view con read_insights y pages_read_engagement; no equivalen necesariamente a reproducciones únicas. Hasta 50 recientes.
 - Twitch: hasta 50 vídeos y repeticiones; vistas. No se inventan likes ni comentarios. Los clips no forman parte de esta importación.
 
+Las consultas de vistas de Meta se limitan a diez por red y recorrido: se priorizan las cinco publicaciones más recientes y se rotan las demás. Cada métrica conserva la fecha de su última lectura válida; omitir una consulta no convierte el dato anterior en cero ni lo presenta como recién leído.
+
 La primera consulta no importa todo el archivo histórico. Los límites de las APIs y sus permisos se muestran en el apartado. Cambiar serie, formato o proyecto solo modifica la organización local. Las referencias compartidas no cambian datos remotos.
 
 Las comparaciones usan observaciones cercanas a 24, 72 o 168 horas desde la publicación, con tolerancia del 20 %. No sustituyen un registro ausente por el total actual de un vídeo antiguo. Se requieren cinco publicaciones de referencia del mismo perfil y formato; la orientación de una serie necesita tres publicaciones con comparación suficiente. La referencia es la mediana: no es una prueba de causalidad. No se suman vistas entre plataformas como si fueran métricas idénticas.

@@ -727,3 +727,20 @@ mod tests {
         assert!(child.wait().unwrap().success());
     }
 }
+
+#[tauri::command]
+pub async fn auto_moments_delete_file(app:AppHandle,id:String,confirmed:bool)->Result<(),String>{
+ if !confirmed{return Err("Confirma el envío del vídeo a la papelera.".into())}
+ let jobs=crate::media_jobs::media_jobs_status(app.clone());
+ if jobs["jobs"].as_array().is_some_and(|rows|rows.iter().any(|j|matches!(j["state"].as_str(),Some("queued"|"running"|"finishing")))){return Err("Termina el procesamiento antes de liberar espacio.".into())}
+ let pool=crate::backup::pool(&app).await?;
+ let used:bool=sqlx::query_scalar("SELECT EXISTS(SELECT 1 FROM project WHERE id=$1 UNION ALL SELECT 1 FROM clip_export WHERE source_kind='clip' AND source_id=$2)").bind(format!("capture-project-clip-{id}")).bind(&id).fetch_one(&pool).await.map_err(|e|e.to_string())?;
+ if used{return Err("Este clip está vinculado a un proyecto o una exportación. Conserva el original o gestiona el archivo desde el explorador.".into())}
+ tauri::async_runtime::spawn_blocking(move||{
+  let state=app.state::<AutoMomentsState>();let _gate=state.gate.lock().map_err(|e|e.to_string())?;
+  let candidate=candidates(&app)?.into_iter().find(|c|c.id==id&&c.state=="discarded").ok_or("Solo se pueden retirar vídeos descartados.")?;
+  if !std::path::Path::new(&candidate.output_path).is_file(){return Err("El archivo ya no está en esa carpeta.".into())}
+  #[cfg(windows)]{let out=powershell("$ErrorActionPreference='Stop';Add-Type -AssemblyName Microsoft.VisualBasic;[Microsoft.VisualBasic.FileIO.FileSystem]::DeleteFile($env:NEXUS_REMOVE_PATH,'OnlyErrorDialogs','SendToRecycleBin')").env("NEXUS_REMOVE_PATH",&candidate.output_path).output().map_err(|_|"No se pudo abrir la papelera de Windows.")?;if !out.status.success(){return Err("Windows no pudo enviar el archivo a la papelera. Puede estar en uso.".into())}emit(&app);Ok(())}
+  #[cfg(not(windows))]{Err("El envío a la papelera está disponible en Windows.".into())}
+ }).await.map_err(|e|e.to_string())?
+}

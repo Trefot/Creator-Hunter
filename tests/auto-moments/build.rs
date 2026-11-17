@@ -8,12 +8,14 @@ fn main() {
         "auto_moments_core",
         "shorts",
         "shorts_core",
+        "shorts_layout",
         "subtitles",
         "subtitles_core",
         "media_jobs",
         "fortnite_counter",
         "metrics_core",
         "content_core",
+        "income_tracking",
         "tiktok_auth_core",
     ] {
         let file = source.join(format!("{name}.rs"));

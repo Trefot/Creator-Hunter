@@ -97,6 +97,8 @@ pub async fn import_backup(
     stamp: String,
 ) -> Result<ImportResult, String> {
     tauri::async_runtime::spawn_blocking(move || {
+        let content_state=app.state::<crate::content_performance::ContentState>();
+        let _content_guard=tauri::async_runtime::block_on(content_state.0.lock());
         let metrics_state=app.state::<crate::social_metrics::MetricsState>();
         let _metrics_guard=tauri::async_runtime::block_on(metrics_state.operation.lock());
         let chest_state=app.state::<crate::fortnite_counter::FortniteCounterState>();
@@ -119,6 +121,7 @@ pub async fn import_backup(
                 let total = data_safety::restore(&pool, &content).await?;
                 crate::fortnite_counter::reset_after_restore(&app).await?;
                 crate::social_metrics::reset_after_restore(&app).await?;
+                crate::social_alerts::save(&app,"content-auto",&serde_json::json!(false)).await?;
                 crate::obs::reset_after_restore(&app);
                 crate::engagement::reset_after_restore(&app);
                 crate::music::reset_after_restore(&app);

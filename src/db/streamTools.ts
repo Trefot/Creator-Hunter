@@ -44,6 +44,6 @@ export interface ShortExport {
 }
 export const shortsStatus = () => invoke<{ ffmpeg: string | null }>("shorts_status");
 export const shortsInstallFfmpeg = () => invoke<void>("shorts_install_ffmpeg");
-export const shortsRender = (kind: "moment" | "clip", id: string, format: ShortFormat, before: number, after: number, audio?:number[],encoder="cpu") =>
-  invoke<{ id:string;path: string;warning?:string|null }>("shorts_render", { kind, id, format, before, after, audio,encoder });
+export const shortsRender = (kind: "moment" | "clip", id: string, format: ShortFormat, before: number, after: number, audio?:number[],encoder="cpu",layout?:import("../features/live/ShortLayoutPicker").ShortLayout) =>
+  invoke<{ id:string;path: string;warning?:string|null }>("shorts_render", { kind, id, format, before, after, audio,encoder,layout });
 export const shortsList = () => invoke<ShortExport[]>("shorts_list");

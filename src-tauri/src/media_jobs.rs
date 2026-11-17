@@ -306,6 +306,7 @@ pub fn shutdown() {
             j.state = "cancelled".into();
         }
     }
+    persist(&d);
 }
 #[tauri::command]
 pub fn media_jobs_status(app: AppHandle) -> Value {
@@ -436,4 +437,13 @@ pub async fn media_gpu_test(app: AppHandle) -> Result<Value, String> {
     })
     .await
     .map_err(|e| e.to_string())?
+}
+
+#[tauri::command]
+pub async fn media_jobs_stop_for_exit()->Result<(),String>{
+ shutdown();
+ tauri::async_runtime::spawn_blocking(||{
+  for _ in 0..30 {if queue().data.lock().unwrap().active.is_none(){return Ok(())}std::thread::sleep(Duration::from_millis(200));}
+  Err("Hay un archivo terminando de guardarse. Espera unos segundos y vuelve a cerrar.".into())
+ }).await.map_err(|e|e.to_string())?
 }

@@ -48,10 +48,14 @@ async fn api(request: reqwest::RequestBuilder, platform: &str) -> Result<Value, 
         format!("No se pudo contactar con {platform}. Comprueba Internet y vuelve a intentar.")
     })?;
     let status = response.status();
+    if status.as_u16()==429{return Err(format!("{platform} está limitando las consultas. Espera unos minutos antes de reintentar; tus cifras se conservan."))}
+    if status.is_server_error(){return Err(format!("{platform} no está disponible temporalmente. No necesitas volver a registrar la aplicación; reintenta más tarde."))}
     let body: Value = response
         .json()
         .await
         .map_err(|_| format!("{platform} no devolvió una respuesta válida."))?;
+    if platform=="Meta"&&body["error"]["code"].as_i64()==Some(190){return Err("La autorización de Meta caducó o fue revocada. Renueva el token en Conexiones; tus registros se conservan.".into())}
+    if platform=="Meta"&&matches!(body["error"]["code"].as_i64(),Some(10|200)){return Err("Meta no concedió el permiso necesario para esta consulta. Revisa la página seleccionada y los permisos de contenido/estadísticas de la aplicación.".into())}
     if platform == "TikTok" {
         if let Some(message) = crate::tiktok_auth_core::oauth_error(&body) {
             return Err(message.into());
@@ -96,7 +100,7 @@ pub async fn metrics_status(app: AppHandle) -> Result<Value, String> {
     for p in ["twitch", "meta", "tiktok"] {
         let c = cfg(&app, p).await?;
         let configured = c["configured"] == true && (p == "twitch" || read_secret(p).is_ok());
-        out[p] = json!({"configured":configured,"auto":c["auto"]==true,"profile_id":c["profile_id"],"facebook_profile":c["facebook_profile"],"instagram_profile":c["instagram_profile"],"name":c["name"],"last_sync_ms":c["last_sync_ms"],"error":c["error"],"last_auth_ms":c["last_auth_ms"]});
+        out[p] = json!({"configured":configured,"auto":c["auto"]==true,"profile_id":c["profile_id"],"facebook_profile":c["facebook_profile"],"instagram_profile":c["instagram_profile"],"name":c["name"],"last_sync_ms":c["last_sync_ms"],"error":c["error"],"last_auth_ms":c["last_auth_ms"],"can_reconnect":p=="tiktok"&&read_secret(p).is_ok_and(|s|s["client_key"].is_string()&&s["client_secret"].is_string()),"video_access":p=="tiktok"&&read_secret(p).is_ok_and(|s|s["scope"].as_str().unwrap_or_default().split(',').any(|v|v.trim()=="video.list"))});
     }
     let state = app.state::<MetricsState>();
     let mut pending = state
@@ -638,6 +642,7 @@ pub(crate) async fn content_feed(app:&AppHandle,platform:&str)->Result<(String,V
  match platform{
  "tiktok"=>{
   let secret=tiktok_secret().await?;
+  crate::content_core::bind_owner(&crate::backup::pool(app).await?,&profile,platform,text(&secret,"account_id")?).await?;
   if !secret["scope"].as_str().unwrap_or_default().split(',').any(|s|s.trim()=="video.list"){return Err("TikTok necesita el permiso video.list: añádelo en tu Sandbox, activa Publicaciones al autorizar y vuelve a conectar. Tus cifras de seguidores siguen disponibles.".into())}
   let token=secret["token"].as_str().ok_or("Vuelve a conectar TikTok.")?;
   let fields="id,title,video_description,create_time,cover_image_url,share_url,like_count,comment_count,share_count,view_count";
@@ -661,29 +666,37 @@ pub(crate) async fn content_feed(app:&AppHandle,platform:&str)->Result<(String,V
  "instagram"|"facebook"=>{
   let secret=read_secret("meta")?;let token=secret["token"].as_str().ok_or("Renueva la autorización de Meta.")?;
   let owner=text(&secret,if platform=="instagram"{"instagram_id"}else{"page_id"})?;
+  crate::content_core::bind_owner(&crate::backup::pool(app).await?,&profile,platform,owner).await?;
   let fields=if platform=="instagram"{"id,caption,media_type,media_product_type,permalink,thumbnail_url,media_url,timestamp,like_count,comments_count"}else{"id,message,created_time,permalink_url,full_picture,likes.limit(0).summary(true),comments.limit(0).summary(true),shares"};
   let path=if platform=="instagram"{"media"}else{"published_posts"};
   let v=api(client()?.get(format!("https://graph.facebook.com/v27.0/{owner}/{path}")).bearer_auth(token).query(&[("fields",fields),("limit","50")]),"Meta").await?;
   let items=v["data"].as_array().ok_or("Meta no devolvió publicaciones. Revisa los permisos de contenido de la cuenta.")?;
   let mut missing_insights=false;
+  let pool=crate::backup::pool(app).await?;
+  let attempts:Vec<(String,String)>=sqlx::query_as("SELECT id,content FROM alert_cursor WHERE id LIKE $1").bind(format!("content-insight-{platform}:%")).fetch_all(&pool).await.map_err(|e|e.to_string())?;
+  let attempts:std::collections::HashMap<String,u64>=attempts.into_iter().map(|(id,raw)|(id,serde_json::from_str::<u64>(&raw).unwrap_or(0))).collect();
+  let mut order:Vec<usize>=(0..items.len()).collect();order.sort_by_key(|i|if *i<5{(0,*i as u64)}else{(1,*attempts.get(&format!("content-insight-{platform}:{}",items[*i]["id"].as_str().unwrap_or_default())).unwrap_or(&0))});
+  let eligible:std::collections::HashSet<String>=order.into_iter().take(10).filter_map(|i|items[i]["id"].as_str().map(str::to_string)).collect();
   for v in items{
    let Some(id)=v["id"].as_str().filter(|s|crate::metrics_core::safe_id(s)) else{continue};
    let ig=platform=="instagram";
    let format=if ig {if v["media_product_type"]=="REELS"{"reel"}else{"post"}}else{"post"};
    let mut p=Post::new(if ig{if v["thumbnail_url"].is_string(){&v["thumbnail_url"]}else{&v["media_url"]}}else{&v["full_picture"]},id,v[if ig{"caption"}else{"message"}].as_str().unwrap_or("Publicación"),v[if ig{"permalink"}else{"permalink_url"}].as_str().unwrap_or_default().into(),v[if ig{"timestamp"}else{"created_time"}].as_str().unwrap_or_default().into(),format);
    p.likes=count(if ig{&v["like_count"]}else{&v["likes"]["summary"]["total_count"]});p.comments=count(if ig{&v["comments_count"]}else{&v["comments"]["summary"]["total_count"]});p.shares=count(&v["shares"]["count"]);
-   if !missing_insights{
+   if !missing_insights&&eligible.contains(id){
+    crate::social_alerts::save(app,&format!("content-insight-{platform}:{id}"),&json!(now())).await?;
     match api(client()?.get(format!("https://graph.facebook.com/v27.0/{id}/insights")).bearer_auth(token).query(&[("metric",if ig{"views"}else{"post_media_view"})]),"Meta").await{
      Ok(insights)=>{p.views=count(&insights["data"][0]["values"][0]["value"]).or_else(||count(&insights["data"][0]["total_value"]["value"]));},Err(_)=>missing_insights=true,
     }
    }
    out.push(p);
   }
-  warning=Some(if platform=="facebook"&&missing_insights{"Últimas 50 publicaciones. Las vistas requieren read_insights y pages_read_engagement; renueva la autorización con esos permisos. Los datos no disponibles quedan vacíos."}else if platform=="facebook"{"Últimas 50 publicaciones. Vistas de contenido mostrado o reproducido (post_media_view), likes, comentarios y compartidos según disponibilidad de Meta."}else if missing_insights{"Últimas 50 publicaciones. Para vistas se necesita instagram_manage_insights; los valores no disponibles quedan vacíos. Comprueba el permiso en Meta y renueva la autorización."}else{"Últimas 50 publicaciones; las estadísticas de Meta pueden tener retraso."}.into());
+  warning=Some(if platform=="facebook"&&missing_insights{"Últimas 50 publicaciones. Las vistas requieren read_insights y pages_read_engagement; renueva la autorización con esos permisos. Los datos no disponibles quedan vacíos."}else if platform=="facebook"{"Últimas 50 publicaciones. Vistas de contenido mostrado o reproducido (post_media_view). Hasta diez consultas de vistas por recorrido; las demás métricas dependen de Meta y cada cifra conserva su fecha."}else if missing_insights{"Últimas 50 publicaciones. Para vistas se necesita instagram_manage_insights; los valores no disponibles quedan vacíos. Comprueba el permiso en Meta y renueva la autorización."}else{"Últimas 50 publicaciones. Se rotan hasta diez consultas de vistas por recorrido para cuidar la cuota; cada cifra conserva su fecha. Meta puede entregar datos con retraso."}.into());
  },
  "twitch"=>{
   let (client_id,token,user)=crate::social_alerts::twitch_token().await?;
   if c["account_id"].as_str()!=Some(user.as_str()){return Err("La cuenta de Twitch cambió. Revisa el perfil antes de consultar contenido.".into())}
+  crate::content_core::bind_owner(&crate::backup::pool(app).await?,&profile,platform,&user).await?;
   let v=api(client()?.get("https://api.twitch.tv/helix/videos").bearer_auth(&token).header("Client-Id",client_id).query(&[("user_id",user.as_str()),("first","50")]),"Twitch").await?;
   for v in v["data"].as_array().into_iter().flatten(){
    let Some(id)=v["id"].as_str() else{continue};let mut p=Post::new(&v["thumbnail_url"],id,v["title"].as_str().unwrap_or("Directo"),v["url"].as_str().unwrap_or_default().into(),v["published_at"].as_str().unwrap_or_default().into(),"live");p.views=count(&v["view_count"]);out.push(p);
@@ -692,4 +705,13 @@ pub(crate) async fn content_feed(app:&AppHandle,platform:&str)->Result<(String,V
  },_=>return Err("Esta red no admite consultas de publicaciones.".into())
  }
  Ok((profile,out,warning))
+}
+
+#[tauri::command]
+pub async fn metrics_tiktok_reconnect(app:AppHandle,profile_id:String,publications:Option<bool>)->Result<(),String>{
+ let old=read_secret("tiktok")?;
+ let key=old["client_key"].as_str().ok_or("Esta conexión manual no tiene cliente guardado. Introduce el Client key y Client secret para usar autorización renovable.")?;
+ let secret=old["client_secret"].as_str().ok_or("Introduce de nuevo el Client secret en el campo privado.")?;
+ let video=publications.unwrap_or(false)||old["scope"].as_str().unwrap_or_default().split(',').any(|v|v.trim()=="video.list");
+ metrics_tiktok_begin(app,key.into(),secret.into(),profile_id,Some(video)).await
 }

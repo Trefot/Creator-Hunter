@@ -775,6 +775,7 @@ pub(crate) async fn content_feed(app:&AppHandle)->Result<(String,Vec<crate::cont
     let state=app.state::<YouTubeState>();let token=access_token(app,&state).await?;
     let channel=get_json(&token,CHANNELS_URL,&[("part","contentDetails"),("mine","true")],"del canal").await?;
     if channel["items"][0]["id"].as_str()!=Some(connection.channel.id.as_str()){return Err("La cuenta de YouTube cambió. Vuelve a conectar el perfil correcto.".into())}
+    crate::content_core::bind_owner(&crate::backup::pool(app).await?,&connection.profile_id,"youtube",&connection.channel.id).await?;
     let playlist=channel["items"][0]["contentDetails"]["relatedPlaylists"]["uploads"].as_str().ok_or("No hay lista de publicaciones del canal.")?;
     let items=get_json(&token,PLAYLIST_ITEMS_URL,&[("part","contentDetails"),("playlistId",playlist),("maxResults","50")],"de las subidas").await?;
     let mut ids:Vec<String>=items["items"].as_array().into_iter().flatten().filter_map(|v|v["contentDetails"]["videoId"].as_str().filter(|s|is_video_id(s)).map(str::to_string)).collect();

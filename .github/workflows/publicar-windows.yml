@@ -10,7 +10,19 @@ concurrency:
   # Por defecto serializa las publicaciones; la marca permite sustituir un build propio obsoleto.
   cancel-in-progress: ${{ contains(github.event.head_commit.message, '[replace-pending-build]') }}
 jobs:
+  interface:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - uses: ./.github/actions/test-interface
   build:
+    needs: interface
     runs-on: windows-latest
     permissions:
       contents: write

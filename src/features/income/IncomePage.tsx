@@ -1,3 +1,4 @@
+import {ExpectedIncome} from "./ExpectedIncome";
 import { PageTitle } from "../../components/PageTitle";
 import { EmptyState } from "../../components/EmptyState";
 import { CircleDollarSign, PartyPopper, Plus, X } from "lucide-react";
@@ -185,7 +186,7 @@ export function IncomePage() {
     network === null ? null : network === "none" ? t.noProfileShort : selectedProfile ? es.platforms[selectedProfile.platform] : null;
 
   return (
-    <section className="page">
+    <section className="page"><ExpectedIncome onReceived={refresh}/>
       <header className="page-header">
         <PageTitle section="income" subtitle={t.subtitle} />
         {editing === null && <button onClick={() => setEditing("new")}><Plus size={16} />{t.add}</button>}
