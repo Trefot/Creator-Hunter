@@ -98,9 +98,11 @@ pub async fn metrics_status(app: AppHandle) -> Result<Value, String> {
     let _gate = shared.operation.lock().await;
     let mut out = json!({});
     for p in ["twitch", "meta", "tiktok"] {
-        let c = cfg(&app, p).await?;
-        let configured = c["configured"] == true && (p == "twitch" || read_secret(p).is_ok());
-        out[p] = json!({"configured":configured,"auto":c["auto"]==true,"profile_id":c["profile_id"],"facebook_profile":c["facebook_profile"],"instagram_profile":c["instagram_profile"],"name":c["name"],"last_sync_ms":c["last_sync_ms"],"error":c["error"],"last_auth_ms":c["last_auth_ms"],"can_reconnect":p=="tiktok"&&read_secret(p).is_ok_and(|s|s["client_key"].is_string()&&s["client_secret"].is_string()),"video_access":p=="tiktok"&&read_secret(p).is_ok_and(|s|s["scope"].as_str().unwrap_or_default().split(',').any(|v|v.trim()=="video.list"))});
+        let c = match cfg(&app,p).await{Ok(c)=>c,Err(_)=>{out[p]=json!({"configured":false,"auto":false,"error":"No se pudo leer la configuración de esta red. Revisa Conexiones o la copia de seguridad; las demás redes siguen disponibles."});continue}};
+        let secret_ok=p=="twitch"||read_secret(p).is_ok();
+        let configured = c["configured"] == true && secret_ok;
+        let error=if c["configured"]==true&&!secret_ok{json!("La autorización no está disponible en Windows. Reconecta esta cuenta; se conserva el historial.")}else{c["error"].clone()};
+        out[p] = json!({"configured":configured,"auto":c["auto"]==true,"profile_id":c["profile_id"],"facebook_profile":c["facebook_profile"],"instagram_profile":c["instagram_profile"],"name":c["name"],"last_sync_ms":c["last_sync_ms"],"error":error,"last_auth_ms":c["last_auth_ms"],"can_reconnect":p=="tiktok"&&read_secret(p).is_ok_and(|s|s["client_key"].is_string()&&s["client_secret"].is_string()),"video_access":p=="tiktok"&&read_secret(p).is_ok_and(|s|s["scope"].as_str().unwrap_or_default().split(',').any(|v|v.trim()=="video.list"))});
     }
     let state = app.state::<MetricsState>();
     let mut pending = state
@@ -697,11 +699,22 @@ pub(crate) async fn content_feed(app:&AppHandle,platform:&str)->Result<(String,V
   let (client_id,token,user)=crate::social_alerts::twitch_token().await?;
   if c["account_id"].as_str()!=Some(user.as_str()){return Err("La cuenta de Twitch cambió. Revisa el perfil antes de consultar contenido.".into())}
   crate::content_core::bind_owner(&crate::backup::pool(app).await?,&profile,platform,&user).await?;
-  let v=api(client()?.get("https://api.twitch.tv/helix/videos").bearer_auth(&token).header("Client-Id",client_id).query(&[("user_id",user.as_str()),("first","50")]),"Twitch").await?;
-  for v in v["data"].as_array().into_iter().flatten(){
-   let Some(id)=v["id"].as_str() else{continue};let mut p=Post::new(&v["thumbnail_url"],id,v["title"].as_str().unwrap_or("Directo"),v["url"].as_str().unwrap_or_default().into(),v["published_at"].as_str().unwrap_or_default().into(),"live");p.views=count(&v["view_count"]);out.push(p);
+  let v=api(client()?.get("https://api.twitch.tv/helix/videos").bearer_auth(&token).header("Client-Id",&client_id).query(&[("user_id",user.as_str()),("first","50")]),"Twitch").await?;
+  let videos=v["data"].as_array().ok_or("Twitch no devolvió la lista de vídeos.")?;
+  for v in videos{
+   if v["user_id"].as_str()!=Some(user.as_str()){continue}
+   let Some(id)=v["id"].as_str() else{continue};let mut p=Post::new(&v["thumbnail_url"],id,v["title"].as_str().unwrap_or("Directo"),v["url"].as_str().unwrap_or_default().into(),v["published_at"].as_str().unwrap_or_default().into(),if v["type"]=="archive"{"live"}else{"video"});p.views=count(&v["view_count"]);out.push(p);
   }
-  warning=Some("Últimos 50 vídeos y repeticiones. Twitch no ofrece aquí likes ni comentarios comparables a otras redes. Los clips se gestionan por separado.".into());
+  let pool=crate::backup::pool(app).await?;
+  let start:String=sqlx::query_scalar("SELECT strftime('%Y-%m-%dT%H:%M:%SZ','now','-7 days')").fetch_one(&pool).await.map_err(|e|e.to_string())?;
+  let end:String=sqlx::query_scalar("SELECT strftime('%Y-%m-%dT%H:%M:%SZ','now')").fetch_one(&pool).await.map_err(|e|e.to_string())?;
+  let clips=api(client()?.get("https://api.twitch.tv/helix/clips").bearer_auth(&token).header("Client-Id",&client_id).query(&[("broadcaster_id",user.as_str()),("first","50"),("started_at",start.as_str()),("ended_at",end.as_str())]),"Twitch").await;
+  let mut clips_available=false;
+  if let Ok(clips)=clips{if let Some(rows)=clips["data"].as_array(){clips_available=true;for v in rows{
+   if v["broadcaster_id"].as_str()!=Some(user.as_str()){continue}
+   let Some(id)=v["id"].as_str() else{continue};let mut p=Post::new(&v["thumbnail_url"],&format!("clip:{id}"),v["title"].as_str().unwrap_or("Clip"),v["url"].as_str().unwrap_or_default().into(),v["created_at"].as_str().unwrap_or_default().into(),"clip");p.views=count(&v["view_count"]);out.push(p);
+  }}}
+  warning=Some(if clips_available{"Hasta 50 vídeos/repeticiones y 50 clips de los últimos siete días. Twitch no ofrece aquí likes ni comentarios comparables a otras redes."}else{"Vídeos consultados; no se pudieron actualizar los clips. Se conserva su historial anterior. Revisa la conexión antes de reintentar."}.into());
  },_=>return Err("Esta red no admite consultas de publicaciones.".into())
  }
  Ok((profile,out,warning))

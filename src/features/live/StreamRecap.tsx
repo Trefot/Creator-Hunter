@@ -36,7 +36,7 @@ function tiles(r: StreamRecap) {
 }
 
 /** La tarjeta del resumen, igual en el aviso al terminar y en el historial. */
-export function RecapCard({ recap: r }: { recap: StreamRecap }) {
+export function RecapCard({ recap: r,onContinue }: { recap: StreamRecap;onContinue?:()=>void }) {
   const [preview, setPreview] = useState<string | null>(null);
   const [state, setState] = useState<"idle" | "busy" | "sent" | "already">("idle");
   const [error, setError] = useState("");
@@ -78,7 +78,7 @@ export function RecapCard({ recap: r }: { recap: StreamRecap }) {
         <Gamepad2 size={34} className="recap-head-icon" />
       </header>
 
-      <button className="ghost small-button" onClick={()=>window.dispatchEvent(new CustomEvent("nexus-open-content",{detail:"moments"}))}>Revisar capturas y preparar el siguiente contenido</button>
+      <button className="ghost small-button" onClick={()=>{onContinue?.();window.dispatchEvent(new CustomEvent("nexus-open-content",{detail:"moments"}))}}>Revisar capturas y preparar el siguiente contenido</button>
       <div className="recap-tiles">
         {tiles(r).map((x) => (
           <div key={x.label} className="recap-tile">
@@ -227,7 +227,7 @@ export function StreamRecapLayer() {
         <button className="ghost icon-button recap-close" onClick={close} title={t.close}>
           <X size={18} />
         </button>
-        <RecapCard recap={recap} />
+        <RecapCard recap={recap} onContinue={close}/>
         <button className="recap-done" onClick={close}>
           {t.done}
         </button>

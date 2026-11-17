@@ -141,7 +141,7 @@ export function SubtitlesPanel({ active }: { active: boolean }) {
                 </div>
                 <div className="tools-actions">
                   <button className="ghost" onClick={() => showChapters(r)}><ListOrdered size={15} />{t.chapters}</button>
-                  <SubtitleActions sessionId={r.id} hasSrt={!!r.srt} onChanged={refresh}/>
+                  <SubtitleActions sessionId={r.id} hasSrt={!!r.srt} srtPath={r.srt} onChanged={refresh}/>
                   {r.srt ? (
                     <button className="ghost" onClick={() => revealItemInDir(r.srt!)}>{t.showSrt}</button>
                   ) : (

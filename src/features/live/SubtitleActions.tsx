@@ -1,9 +1,11 @@
+import {SubtitleEditor} from "./SubtitleEditor";
 import { useState } from 'react';
 import { invoke } from '@tauri-apps/api/core';
 import { revealItemInDir } from '@tauri-apps/plugin-opener';
-export function SubtitleActions({ sessionId, hasSrt, onChanged }: {
+export function SubtitleActions({ sessionId, hasSrt, onChanged, srtPath }: {
     sessionId: string;
     hasSrt: boolean;
+    srtPath?:string|null;
     onChanged: () => Promise<void>;
 }) {
     const [busy, setBusy] = useState(false), [size, setSize] = useState(24), [path, setPath] = useState(''), [result, setResult] = useState(''), [error, setError] = useState(''), [notice, setNotice] = useState('');
@@ -31,7 +33,7 @@ export function SubtitleActions({ sessionId, hasSrt, onChanged }: {
     }
     finally {
         setBusy(false);
-    } }}>Guardar nueva ruta</button>{hasSrt && <><label>Tamaño de subtítulos<select value={size} onChange={e => setSize(Number(e.target.value))}><option value={20}>Discreto</option><option value={24}>Normal</option><option value={32}>Grande</option><option value={40}>Muy grande</option></select></label><button disabled={busy} onClick={async () => { setBusy(true); setError(''); try {
+    } }}>Guardar nueva ruta</button>{hasSrt && <><SubtitleEditor key={srtPath??sessionId} draftScope={srtPath??sessionId} sessionId={sessionId} onSaved={onChanged}/><label>Tamaño de subtítulos<select value={size} onChange={e => setSize(Number(e.target.value))}><option value={20}>Discreto</option><option value={24}>Normal</option><option value={32}>Grande</option><option value={40}>Muy grande</option></select></label><button disabled={busy} onClick={async () => { setBusy(true); setError(''); try {
         setResult(await invoke('subtitles_burn', { sessionId, fontSize: size }));
     }
     catch (e) {

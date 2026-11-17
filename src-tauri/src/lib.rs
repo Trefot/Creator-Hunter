@@ -288,6 +288,8 @@ pub fn run() {
             subtitles::choose_video_file,
             subtitles::subtitles_relink,
             subtitles::subtitles_burn,
+            subtitles::subtitles_read_text,
+            subtitles::subtitles_save_text,
             subtitles::subtitles_import,
             chat_commands::chat_commands_get,
             chat_commands::chat_commands_save,

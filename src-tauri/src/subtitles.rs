@@ -493,3 +493,31 @@ pub async fn subtitles_burn(app:AppHandle,session_id:String,font_size:Option<u32
  }).await.map_err(|e|e.to_string())?;
  operation
 }
+
+async fn saved_srt(app:&AppHandle,session:&str)->Result<(Value,std::path::PathBuf),String>{
+ let pool=crate::backup::pool(app).await?;
+ let raw:String=sqlx::query_scalar("SELECT content FROM alert_cursor WHERE id=$1").bind(format!("subtitle:{session}")).fetch_one(&pool).await.map_err(|_|"Crea primero los subtítulos.")?;
+ let value:Value=serde_json::from_str(&raw).map_err(|_|"No se pudo leer el registro de subtítulos.")?;
+ let path=std::path::PathBuf::from(value["srt"].as_str().ok_or("No existe un SRT asociado.")?);
+ if path.extension().and_then(|e|e.to_str()).is_none_or(|e|!e.eq_ignore_ascii_case("srt")){return Err("El archivo asociado no es un SRT.".into())}
+ Ok((value,path))
+}
+#[tauri::command]
+pub async fn subtitles_read_text(app:AppHandle,session_id:String)->Result<String,String>{
+ let (_,path)=saved_srt(&app,&session_id).await?;
+ if std::fs::metadata(&path).map_err(|_|"No se encuentra el archivo SRT.")?.len()>2*1024*1024{return Err("El SRT supera 2 MB. Ábrelo con un editor de texto externo.".into())}
+ std::fs::read_to_string(path).map_err(|_|"No se pudo leer el SRT en UTF-8.".into())
+}
+#[tauri::command]
+pub async fn subtitles_save_text(app:AppHandle,session_id:String,content:String)->Result<String,String>{
+ crate::subtitles_core::validate_srt(&content)?;let (mut value,path)=saved_srt(&app,&session_id).await?;
+ let title=path.file_stem().and_then(|s|s.to_str()).unwrap_or("Subtítulos").chars().take(70).collect::<String>();
+ let target=path.with_file_name(format!("{title} corregido {:08x}.srt",rand::random::<u32>()));
+ use std::io::Write;
+ let mut file=std::fs::OpenOptions::new().write(true).create_new(true).open(&target).map_err(|_|"No se pudo reservar una copia del SRT corregido.")?;
+ let written=file.write_all(content.as_bytes()).and_then(|_|file.sync_all());drop(file);
+ if written.is_err(){let _=std::fs::remove_file(&target);return Err("No se pudo guardar la copia corregida; el original se conserva.".into())}
+ value["srt"]=json!(target.to_string_lossy());value["revised_from"]=json!(path.to_string_lossy());
+ if let Err(error)=crate::social_alerts::save(&app,&format!("subtitle:{session_id}"),&value).await{let _=std::fs::remove_file(&target);return Err(error)}
+ Ok(target.to_string_lossy().into())
+}

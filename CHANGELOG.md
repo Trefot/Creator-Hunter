@@ -2,15 +2,15 @@
 
 ## [Sin publicar]
 
-## [0.2.44] · 2026-11-16 · Publicaciones, contenido y fiabilidad
+## [0.2.44] · 2026-11-17 · Publicaciones, contenido y fiabilidad
 
-- Crear contenido → Publicaciones y resultados detecta contenido reciente de YouTube, TikTok, Instagram, Facebook y vídeos de Twitch mediante sus APIs oficiales. Guarda las métricas disponibles y su evolución; consulta cada diez minutos mientras Nexus esté abierto, con límites y permisos visibles. No promete tiempo real al segundo.
+- Crear contenido → Publicaciones y resultados detecta contenido reciente de YouTube, TikTok, Instagram, Facebook y vídeos/repeticiones y clips de Twitch mediante sus APIs oficiales. Guarda las métricas disponibles y su evolución; consulta cada diez minutos mientras Nexus esté abierto, con límites y permisos visibles. No promete tiempo real al segundo.
 - Agrupa publicaciones por serie y proyecto y compara resultados dentro de cada cuenta y formato a 24 horas, 72 horas o siete días. Exige referencias suficientes antes de orientar una serie; no pausa ni publica contenido automáticamente. TikTok necesita video.list y las vistas de Meta requieren permisos de estadísticas adicionales.
 - Corregida la selección de cifras recientes al mezclar API y registros manuales y el falso estado Publicado del calendario. Inicio añade evolución, varias metas, horas y vistas, fecha de consulta e hitos respaldados por registros reales.
 - Borradores recuperables de ideas, metas, versiones, proyectos, guiones y notas de juego. El guion guarda durante la escritura. Cerrar con trabajo activo pide revisar la salida y el historial multimedia identifica trabajos interrumpidos para volver a solicitarlos.
 - Actualizar al abrir ahora avisa: la instalación se elige cuando conviene y comprueba OBS, capturas y procesamiento activo. Los instaladores locales requieren verificación contra el canal oficial.
 - Capturas reunidas en una bandeja con revisión y estados de proyecto, exportación, calendario y publicación. Vista previa del Short con reproducción y audio, selección de pistas recordada y encuadre con plantilla vertical de cámara más juego.
-- Subtítulos accesibles desde el Short, incorporación opcional en una copia del vídeo, selector de archivos y reparación de rutas. Los candidatos descartados sin vínculos se pueden enviar explícitamente a la papelera de Windows para liberar espacio.
+- Subtítulos accesibles desde el Short, corrección del SRT conservando el original, incorporación opcional en una copia del vídeo, selector de archivos y reparación de rutas. Los candidatos descartados sin vínculos se pueden enviar explícitamente a la papelera de Windows para liberar espacio.
 - Conexiones permite configurar OBS, Spotify y PlayStation en su propio centro. TikTok reutiliza el cliente guardado al reautorizar; corregidas su primera consulta global y la actualización automática tras reconectar Twitch. Los fallos explican permisos, caducidad o disponibilidad sin borrar cifras válidas.
 - Menos consultas de paneles ocultos, diagnóstico de alertas, atenuación de música local durante voz y alertas, catálogo de acciones Stream Deck y continuidad del resumen del directo hacia las capturas. Discord explica cuándo necesita Nexus abierto.
 - Biblioteca local de Steam y Epic importable, prioridad y objetivos personales de juegos, próximos platinos ordenados por preferencia y ajustes de cofres con motivo, separados de las partidas detectadas. Rutina y colchón ajustables y calendario con atrasados y reprogramación.

@@ -446,6 +446,15 @@ mod tests {
                 .unwrap()
                 .is_empty()
         );
+        assert_eq!(subtitles::subtitles_read_text(a.clone(),"r".into()).await.unwrap(),"subtitles");
+        let corrected="1\n00:00:00,000 --> 00:00:01,000\nTexto corregido 🎮\n";
+        let revision=subtitles::subtitles_save_text(a.clone(),"r".into(),corrected.into()).await.unwrap();
+        assert_ne!(revision,srt.display().to_string());
+        assert_eq!(std::fs::read_to_string(&srt).unwrap(),"subtitles");
+        assert_eq!(std::fs::read_to_string(&revision).unwrap(),corrected);
+        assert_eq!(subtitles::subtitles_recordings(a.clone(),None).await.unwrap()[0]["srt"],revision);
+        assert!(subtitles::subtitles_save_text(a.clone(),"r".into(),"tiempos rotos".into()).await.is_err());
+        assert_eq!(subtitles::subtitles_read_text(a.clone(),"r".into()).await.unwrap(),corrected);
         std::fs::remove_dir_all(&a.env.dir).unwrap();
     }
     #[cfg(unix)]

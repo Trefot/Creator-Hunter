@@ -510,7 +510,7 @@ async fn fetch_analytics_counts(
 ) -> Result<(), String> {
     for chunk in ids.chunks(200) {
         let filter = format!("video=={}", chunk.join(","));
-        let response = reqwest::Client::new()
+        let response = reqwest::Client::builder().timeout(Duration::from_secs(25)).build().map_err(|_|"No se pudo preparar YouTube Analytics.")?
             .get(ANALYTICS_URL)
             .query(&[
                 ("ids", "channel==MINE"),
@@ -791,5 +791,16 @@ pub(crate) async fn content_feed(app:&AppHandle)->Result<(String,Vec<crate::cont
             p.views=count(&v["statistics"]["viewCount"]);p.likes=count(&v["statistics"]["likeCount"]);p.comments=count(&v["statistics"]["commentCount"]);out.push(p);
         }
     }
-    Ok((connection.profile_id,out,Some("Vistas y reacciones públicas. Clasifica vídeo o Short antes de comparar formatos; las métricas no son instantáneas.".into())))
+    let mut warning="Clasifica vídeo o Short antes de comparar formatos. Vistas y reacciones pueden tener retraso.".to_string();
+    if !out.is_empty(){
+        let pool=crate::backup::pool(app).await?;
+        let end:String=sqlx::query_scalar("SELECT date('now')").fetch_one(&pool).await.map_err(|e|e.to_string())?;
+        let start=out.iter().filter_map(|p|p.published_at.get(..10)).min().unwrap_or(end.as_str()).max("2009-01-01");
+        let ids:Vec<_>=out.iter().map(|p|p.remote_id.clone()).collect();let mut analytics=std::collections::HashMap::new();
+        if fetch_analytics_counts(&token,&ids,start,&end,&mut analytics).await.is_ok(){
+            for p in &mut out{if let Some(a)=analytics.get(&p.remote_id){p.watch_hours=a.watch_hours;p.shares=a.shares.and_then(|n|i64::try_from(n).ok()).filter(|n|*n<=9_007_199_254_740_991);}}
+            warning.push_str(" Horas y compartidos provienen de Analytics y pueden llegar con 1–2 días de retraso; no acreditan monetización.");
+        }else{warning.push_str(" Analytics no está disponible: se conservan las últimas horas y compartidos válidos, con su fecha.");}
+    }
+    Ok((connection.profile_id,out,Some(warning)))
 }

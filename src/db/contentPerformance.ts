@@ -23,6 +23,7 @@ export interface ContentPost {
     likes_at?: string | null;
     comments_at?: string | null;
     shares_at?: string | null;
+    watch_hours?:number|null;watch_hours_at?:string|null;
 }
 export interface Observation {
     post_id: string;
@@ -53,7 +54,7 @@ export async function contentLibrary() {
 (SELECT comments FROM content_observation WHERE post_id=p.id AND comments IS NOT NULL ORDER BY observed_at DESC LIMIT 1) AS comments,
 (SELECT observed_at FROM content_observation WHERE post_id=p.id AND comments IS NOT NULL ORDER BY observed_at DESC LIMIT 1) AS comments_at,
 (SELECT shares FROM content_observation WHERE post_id=p.id AND shares IS NOT NULL ORDER BY observed_at DESC LIMIT 1) AS shares,
-(SELECT observed_at FROM content_observation WHERE post_id=p.id AND shares IS NOT NULL ORDER BY observed_at DESC LIMIT 1) AS shares_at,o.observed_at FROM content_post p JOIN profile r ON r.id=p.profile_id LEFT JOIN content_series s ON s.id=p.series_id LEFT JOIN content_observation o ON o.id=(SELECT id FROM content_observation WHERE post_id=p.id ORDER BY observed_at DESC LIMIT 1) WHERE p.workspace_id=$1 ORDER BY p.published_at DESC LIMIT 1000`, [WORKSPACE_ID]);
+(SELECT observed_at FROM content_observation WHERE post_id=p.id AND shares IS NOT NULL ORDER BY observed_at DESC LIMIT 1) AS shares_at,(SELECT watch_hours FROM content_observation WHERE post_id=p.id AND watch_hours IS NOT NULL ORDER BY observed_at DESC LIMIT 1) AS watch_hours,(SELECT observed_at FROM content_observation WHERE post_id=p.id AND watch_hours IS NOT NULL ORDER BY observed_at DESC LIMIT 1) AS watch_hours_at,o.observed_at FROM content_post p JOIN profile r ON r.id=p.profile_id LEFT JOIN content_series s ON s.id=p.series_id LEFT JOIN content_observation o ON o.id=(SELECT id FROM content_observation WHERE post_id=p.id ORDER BY observed_at DESC LIMIT 1) WHERE p.workspace_id=$1 ORDER BY p.published_at DESC LIMIT 1000`, [WORKSPACE_ID]);
 }
 /** At most one genuine reading near each comparison checkpoint; the index bounds every per-post lookup. */
 export async function contentHistory() {
@@ -72,7 +73,7 @@ export async function contentSeries() { return (await getDb()).select<Series[]>(
 export async function addSeries(title: string) { const text = title.trim(); if (!text || text.length > 120)
     throw Error('Escribe un nombre de serie de hasta 120 caracteres.'); const result = await (await getDb()).execute('INSERT INTO content_series(id,workspace_id,title) SELECT $1,$2,$3 WHERE NOT EXISTS(SELECT 1 FROM content_series WHERE workspace_id=$2 AND lower(title)=lower($3))', [newId(), WORKSPACE_ID, text]); if (result.rowsAffected === 0)
     throw Error('Ya existe una serie con ese nombre.'); }
-export async function classifyPost(id: string, format: string, series: string | null, project: string | null) { if (!['unknown', 'video', 'short', 'reel', 'post', 'live'].includes(format))
+export async function classifyPost(id: string, format: string, series: string | null, project: string | null) { if (!['unknown', 'video', 'short', 'reel', 'post', 'live', 'clip'].includes(format))
     throw Error('Formato no válido.'); await (await getDb()).execute('UPDATE content_post SET format=$1,series_id=$2,project_id=$3 WHERE id=$4 AND workspace_id=$5', [format, series, project, id, WORKSPACE_ID]); }
 export async function contentSyncStatus() { const rows = await (await getDb()).select<{
     id: string;

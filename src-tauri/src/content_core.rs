@@ -12,6 +12,7 @@ pub struct Post {
     pub likes: Option<i64>,
     pub comments: Option<i64>,
     pub shares: Option<i64>,
+    pub watch_hours: Option<f64>,
 }
 impl Post {
     pub fn new(
@@ -29,13 +30,14 @@ impl Post {
             thumbnail: v
                 .as_str()
                 .filter(|s| s.starts_with("https://") && s.len() < 4096)
-                .map(str::to_string),
+                .map(|s|s.replace("%{width}","320").replace("%{height}","180").replace("{width}","320").replace("{height}","180")),
             published_at,
             format: format.into(),
             views: None,
             likes: None,
             comments: None,
             shares: None,
+            watch_hours: None,
         }
     }
 }
@@ -57,6 +59,7 @@ pub(crate) async fn store(
         .map_err(|e| e.to_string())?;
     let n = posts.len();
     for mut p in posts {
+        if p.watch_hours.is_some_and(|n|!n.is_finite()||n<0.0||n>9_007_199_254_740_991.0){return Err("YouTube no devolvió un tiempo de reproducción válido.".into())}
         if [p.views, p.likes, p.comments, p.shares]
             .into_iter()
             .flatten()
@@ -84,8 +87,8 @@ pub(crate) async fn store(
         }
         sqlx::query("INSERT INTO content_post(id,workspace_id,profile_id,remote_id,platform,title,url,thumbnail,published_at,format,last_seen_at) VALUES(lower(hex(randomblob(16))),$1,$2,$3,$4,$5,$6,$7,$8,$9,$10) ON CONFLICT(profile_id,remote_id) DO UPDATE SET title=excluded.title,url=excluded.url,thumbnail=COALESCE(excluded.thumbnail,content_post.thumbnail),last_seen_at=excluded.last_seen_at")
          .bind(crate::obs_store::WORKSPACE).bind(profile).bind(&p.remote_id).bind(platform).bind(p.title).bind(p.url).bind(p.thumbnail).bind(p.published_at).bind(p.format).bind(&stamp).execute(&mut *tx).await.map_err(|e|e.to_string())?;
-        sqlx::query("INSERT INTO content_observation(id,post_id,observed_at,views,likes,comments,shares) SELECT lower(hex(randomblob(16))),id,$1,$2,$3,$4,$5 FROM content_post WHERE profile_id=$6 AND remote_id=$7 ON CONFLICT(post_id,observed_at) DO UPDATE SET views=excluded.views,likes=excluded.likes,comments=excluded.comments,shares=excluded.shares")
-         .bind(&stamp).bind(p.views).bind(p.likes).bind(p.comments).bind(p.shares).bind(profile).bind(p.remote_id).execute(&mut *tx).await.map_err(|e|e.to_string())?;
+        sqlx::query("INSERT INTO content_observation(id,post_id,observed_at,views,likes,comments,shares,watch_hours) SELECT lower(hex(randomblob(16))),id,$1,$2,$3,$4,$5,$6 FROM content_post WHERE profile_id=$7 AND remote_id=$8 ON CONFLICT(post_id,observed_at) DO UPDATE SET views=excluded.views,likes=excluded.likes,comments=excluded.comments,shares=excluded.shares,watch_hours=excluded.watch_hours")
+         .bind(&stamp).bind(p.views).bind(p.likes).bind(p.comments).bind(p.shares).bind(p.watch_hours).bind(profile).bind(p.remote_id).execute(&mut *tx).await.map_err(|e|e.to_string())?;
     }
     tx.commit().await.map_err(|e| e.to_string())?;
     Ok(n)

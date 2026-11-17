@@ -2,11 +2,11 @@
 
 Nexus consulta las cuentas conectadas cada diez minutos mientras permanece abierto. Vistas, likes, cantidad de comentarios y compartidos se guardan cuando la API los entrega. No son lecturas al segundo. No se leen textos de comentarios ni se publica, elimina o pausa contenido por una recomendación.
 
-- YouTube: descubre 50 subidas recientes y consulta también hasta 200 publicaciones ya seguidas por recorrido. No anuncia vídeos privados o todavía programados. El formato vídeo/Short se clasifica explícitamente: duración por sí sola no acredita que sea un Short.
+- YouTube: descubre 50 subidas recientes y consulta también hasta 200 publicaciones ya seguidas por recorrido. No anuncia vídeos privados o todavía programados. Consulta también horas y compartidos de Analytics cuando están disponibles; pueden llegar con uno o dos días de retraso y no certifican monetización. El formato vídeo/Short se clasifica explícitamente: duración por sí sola no acredita que sea un Short.
 - TikTok: requiere Display API y el permiso video.list añadido en el portal y autorizado por el usuario. Las conexiones anteriores de seguidores siguen funcionando sin ese permiso. Descubre los 20 vídeos públicos recientes y actualiza hasta 200 seguidos.
 - Instagram: publicaciones profesionales vinculadas. Likes y cantidad de comentarios disponibles según permisos; vistas mediante insights/views con instagram_manage_insights. Hasta 50 recientes por consulta.
 - Facebook: publicaciones de la página. Las vistas de contenido mostrado/reproducido usan insights/post_media_view con read_insights y pages_read_engagement; no equivalen necesariamente a reproducciones únicas. Hasta 50 recientes.
-- Twitch: hasta 50 vídeos y repeticiones; vistas. No se inventan likes ni comentarios. Los clips no forman parte de esta importación.
+- Twitch: hasta 50 vídeos/repeticiones y 50 clips de los últimos siete días, con sus vistas. Los clips se comparan como formato separado. No se inventan likes ni comentarios.
 
 Las consultas de vistas de Meta se limitan a diez por red y recorrido: se priorizan las cinco publicaciones más recientes y se rotan las demás. Cada métrica conserva la fecha de su última lectura válida; omitir una consulta no convierte el dato anterior en cero ni lo presenta como recién leído.
 
@@ -27,3 +27,5 @@ Las comparaciones usan observaciones cercanas a 24, 72 o 168 horas desde la publ
 - https://dev.twitch.tv/docs/api/reference/#get-videos
 
 Los permisos o la aprobación del proveedor no se conceden al instalar Nexus. La validación física de las cuentas del usuario sigue siendo una comprobación aparte de los ensayos con datos simulados.
+
+- Referencia de clips: https://dev.twitch.tv/docs/api/reference/clips

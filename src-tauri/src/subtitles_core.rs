@@ -190,3 +190,17 @@ mod tests {
         );
     }
 }
+
+/// Editing text must not accidentally turn captions into an invalid timing file.
+pub fn validate_srt(text:&str)->Result<(),String>{
+ fn stamp(value:&str)->Option<u64>{let (time,ms)=value.trim().split_once(',')?;if ms.len()!=3{return None}let parts:Vec<_>=time.split(':').collect();if parts.len()!=3{return None}let h=parts[0].parse::<u64>().ok()?;let m=parts[1].parse::<u64>().ok()?;let s=parts[2].parse::<u64>().ok()?;let ms=ms.parse::<u64>().ok()?;if h>999||m>=60||s>=60||ms>=1000{return None}Some(((h*60+m)*60+s)*1000+ms)}
+ if text.len()>2*1024*1024||text.contains('\0'){return Err("El SRT es demasiado grande o contiene caracteres no válidos.".into())}
+ let normalized=text.trim_start_matches('\u{feff}').replace("\r\n","\n");let mut count=0;
+ for block in normalized.split("\n\n").filter(|b|!b.trim().is_empty()){
+  count+=1;let mut lines=block.trim().lines();let id=lines.next().and_then(|s|s.trim().parse::<u64>().ok());let times=lines.next().and_then(|s|s.split_once("-->"));
+  let valid=times.and_then(|(a,b)|Some(stamp(a)?<stamp(b)?)).unwrap_or(false);
+  if id.is_none()||!valid||lines.all(|l|l.trim().is_empty()){return Err(format!("Revisa el bloque {count}: conserva su número, tiempos válidos y texto."))}
+ }
+ if count==0{return Err("El SRT no contiene subtítulos.".into())}Ok(())
+}
+#[cfg(test)]mod edit_tests{use super::*;#[test]fn edits_preserve_valid_timestamps(){assert!(validate_srt("1\n00:00:00,000 --> 00:00:01,200\nTexto corregido 🎮\n").is_ok());assert!(validate_srt("1\n00:00:02,000 --> 00:00:01,200\nTexto").is_err());assert!(validate_srt("1\n00:80:00,000 --> 00:90:01,200\nTexto").is_err());assert!(validate_srt("").is_err())}}

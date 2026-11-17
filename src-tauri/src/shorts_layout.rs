@@ -107,7 +107,7 @@ mod execution_tests {
                 "-f",
                 "lavfi",
                 "-i",
-                "color=c=blue:s=640x360:d=0.5",
+                "color=c=blue:s=640x360:d=0.5,drawbox=x=0:y=0:w=160:h=108:color=red:t=fill",
                 "-c:v",
                 "libx264",
                 "-threads",
@@ -159,6 +159,11 @@ mod execution_tests {
             .output()
             .unwrap();
         assert_eq!(String::from_utf8_lossy(&probe.stdout).trim(), "1080,1920");
+        for (y,channel) in [(100,0usize),(1000,2usize)] {
+            let filter=format!("crop=2:2:500:{y},format=rgb24");
+            let sample=Command::new("ffmpeg").args(["-v","error","-i"]).arg(&output).args(["-vf",&filter,"-frames:v","1","-f","rawvideo","pipe:1"]).output().unwrap();
+            assert!(sample.status.success());assert!(sample.stdout.len()>=3);assert!(sample.stdout[channel]>200,"camera should be red and gameplay blue");
+        }
         let _ = std::fs::remove_dir_all(dir);
     }
 }

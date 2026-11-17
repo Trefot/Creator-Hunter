@@ -1,6 +1,6 @@
 # Nexus Studio — Condiciones de uso
 
-Actualizado: 16 de noviembre de 2026.
+Actualizado: 17 de noviembre de 2026.
 
 ## Qué es Nexus Studio
 
@@ -10,7 +10,7 @@ El proyecto está destinado al uso personal de su propietario. La integración d
 
 ## Cuentas y autorizaciones
 
-Conecta únicamente cuentas propias o cuentas para las que tengas autorización. Cada proveedor determina qué permisos y datos permite consultar. La conexión de TikTok requiere autorización para información básica y estadísticas (`user.info.basic` y `user.info.stats`). La integración actual consulta métricas: no publica vídeos en TikTok ni ofrece recepción de TikTok LIVE.
+Conecta únicamente cuentas propias o cuentas para las que tengas autorización. Cada proveedor determina qué permisos y datos permite consultar. La conexión de TikTok requiere autorización para información básica y estadísticas (`user.info.basic` y `user.info.stats`). El seguimiento opcional de publicaciones también requiere `video.list`; las estadísticas de otras redes pueden exigir permisos adicionales. Las consultas son periódicas con Nexus abierto y pueden reflejar retrasos del proveedor. Las orientaciones de rendimiento dependen de la muestra disponible y no garantizan resultados. La integración actual consulta métricas: no publica vídeos en TikTok ni ofrece recepción de TikTok LIVE.
 
 Puedes interrumpir la conexión desde Nexus y revocar el acceso desde el proveedor. Las autorizaciones pueden caducar. Las funciones que dependen de plataformas externas pueden dejar de estar disponibles si cambian sus API, permisos o condiciones. No se promete disponibilidad permanente ni una exactitud que exceda los datos entregados por cada plataforma.
 

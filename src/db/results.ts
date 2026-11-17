@@ -25,7 +25,7 @@ export async function listResults(adaptationId: string): Promise<ResultSnapshot[
   return db.select<ResultSnapshot[]>(
     `SELECT ${COLUMNS} FROM result_snapshot
       WHERE adaptation_id = $1 AND workspace_id = $2
-      ORDER BY recorded_on DESC, created_at DESC`,
+      ORDER BY recorded_on DESC, COALESCE(updated_at,created_at) DESC,id DESC`,
     [adaptationId, WORKSPACE_ID],
   );
 }
@@ -77,7 +77,7 @@ export async function latestViews(): Promise<LatestViews[]> {
     `SELECT a.id AS adaptation_id, a.profile_id, a.published_at, r.views
        FROM adaptation a
        JOIN (SELECT adaptation_id, views, ROW_NUMBER() OVER (
-               PARTITION BY adaptation_id ORDER BY recorded_on DESC, created_at DESC) AS rn
+               PARTITION BY adaptation_id ORDER BY recorded_on DESC, COALESCE(updated_at,created_at) DESC,id DESC) AS rn
                FROM result_snapshot WHERE views IS NOT NULL AND workspace_id = $1) r
          ON r.adaptation_id = a.id AND r.rn = 1
       WHERE a.workspace_id = $1`,

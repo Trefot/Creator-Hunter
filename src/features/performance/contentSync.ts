@@ -4,7 +4,7 @@ import { contentAuto } from '../../db/contentPerformance';
 import { getDb } from '../../db/database';
 const requests = new Map<string, Promise<unknown>>();
 export function syncContent(platform: string) { let p = requests.get(platform); if (!p) {
-    p = invoke('content_sync', { platform }).then(v => { window.dispatchEvent(new Event('nexus-content-changed')); return v; }).finally(() => requests.delete(platform));
+    p = invoke('content_sync', { platform }).finally(() => requests.delete(platform));
     requests.set(platform, p);
 } return p; }
 export function startContentSync(onChanged: () => void) {
@@ -36,7 +36,7 @@ export function startContentSync(onChanged: () => void) {
     const initial = setTimeout(() => void tick(), 8000), timer = setInterval(() => void tick(), 10 * 60000);
     const update = () => { if (!stopped)
         onChanged(); };
-    const cleanup = listen('content-changed', update);
+    const cleanup = listen('content-changed',()=>{if(!stopped)window.dispatchEvent(new Event('nexus-content-changed'))});
     window.addEventListener('nexus-content-changed', update);
     const online = () => void tick();
     window.addEventListener('online', online);

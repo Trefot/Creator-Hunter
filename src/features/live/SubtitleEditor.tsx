@@ -1,0 +1,8 @@
+import {useState} from 'react';
+import {invoke} from '@tauri-apps/api/core';
+import {useDraftState,clearDraft} from '../../hooks/useDraftState';
+export function SubtitleEditor({sessionId,onSaved,draftScope=sessionId}:{sessionId:string;draftScope?:string;onSaved:()=>Promise<void>}){
+ const [text,setText]=useDraftState('srt:'+draftScope,''),[loaded,setLoaded]=useState(false),[busy,setBusy]=useState(false),[error,setError]=useState(''),[notice,setNotice]=useState('');
+ async function load(){setBusy(true);setError('');try{if(localStorage.getItem('nexus-draft:srt:'+draftScope)===null)setText(await invoke('subtitles_read_text',{sessionId}));setLoaded(true)}catch(e){setError(String(e))}finally{setBusy(false)}}
+ return <details><summary>Corregir el texto de los subtítulos</summary><p className="small muted">Conserva los números y tiempos; corrige únicamente el texto cuando sea posible. Guardar crea otro SRT y conserva el original.</p>{!loaded?<button className="ghost small-button" disabled={busy} onClick={()=>void load()}>Abrir texto SRT o recuperar borrador</button>:<><textarea aria-label="Texto de subtítulos SRT" rows={12} maxLength={2*1024*1024} value={text} onChange={e=>setText(e.target.value)}/><button disabled={busy} onClick={async()=>{setBusy(true);setError('');try{await invoke('subtitles_save_text',{sessionId,content:text});clearDraft('srt:'+draftScope);await onSaved();setNotice('SRT corregido guardado en una copia nueva. Incorporar al vídeo utilizará esta revisión.')}catch(e){setError(String(e))}finally{setBusy(false)}}}>Guardar copia corregida</button></>}{notice&&<p role="status">{notice}</p>}{error&&<p className="error" role="alert">{error}</p>}</details>
+}
