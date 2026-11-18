@@ -131,6 +131,8 @@ struct YouTubeReader {
     subs_error: Option<String>,
     live_error: Option<String>,
     chat_error: Option<String>,
+    /// El contador solo cuenta desde que Nexus está abierto: la primera lectura fija la base.
+    count_ready: bool,
 }
 impl Default for YouTubeReader {
     fn default() -> Self {
@@ -145,19 +147,42 @@ impl Default for YouTubeReader {
             subs_error: None,
             live_error: None,
             chat_error: None,
+            count_ready: false,
         }
     }
 }
+/// Suscriptores sin nombre a anunciar cuando sube el contador del canal.
+/// YouTube solo da el nombre de quien tiene sus suscripciones públicas; el resto solo se nota
+/// en el contador. `high` es el máximo visto (las bajas y vueltas no repiten alertas); la
+/// primera lectura solo fija la base. `credit` son subs públicos ya anunciados que el contador
+/// (que va con retraso) aún no reflejaba. Devuelve (alertas, nuevo máximo, nuevo crédito).
+fn anonymous_subs(high: Option<i64>, credit: i64, count: i64, public_new: i64) -> (i64, i64, i64) {
+    let credit = (credit + public_new).clamp(0, 50);
+    match high {
+        None => (0, count, 0),
+        Some(h) if count > h => {
+            let rise = count - h;
+            let used = rise.min(credit);
+            (rise - used, count, credit - used)
+        }
+        Some(h) => (0, h, credit),
+    }
+}
+
 impl YouTubeReader {
     async fn subscribers(&mut self, app: &AppHandle, token: &str) -> Result<(), String> {
         // Detecta también un cambio de cuenta en Perfiles antes de usar su cursor.
         let channel = api(
             "https://www.googleapis.com/youtube/v3/channels",
             token,
-            &[("part", "id"), ("mine", "true")],
+            &[("part", "id,statistics"), ("mine", "true")],
             None,
         )
         .await?;
+        let count = channel["items"][0]["statistics"]["subscriberCount"]
+            .as_str()
+            .and_then(|s| s.parse::<i64>().ok());
+        let hidden = channel["items"][0]["statistics"]["hiddenSubscriberCount"] == true;
         let channel = channel["items"][0]["id"]
             .as_str()
             .ok_or("No hay canal conectado.")?;
@@ -166,6 +191,7 @@ impl YouTubeReader {
             self.chat.clear();
             self.page.clear();
             self.live = Instant::now();
+            self.count_ready = false;
         }
         let v = api(
             "https://www.googleapis.com/youtube/v3/subscriptions",
@@ -191,6 +217,7 @@ impl YouTubeReader {
         let items = v["items"]
             .as_array()
             .ok_or("Respuesta de suscriptores no válida.")?;
+        let mut public_new = 0i64;
         for item in items.iter().rev() {
             let Some(event_id) = item["id"].as_str() else {
                 continue;
@@ -199,6 +226,7 @@ impl YouTubeReader {
                 continue;
             }
             if old.is_array() {
+                public_new += 1;
                 deliver(
                     app,
                     "youtube",
@@ -221,7 +249,32 @@ impl YouTubeReader {
             save(app, &id, &json!(seen)).await?;
         }
         // Incluso cero suscriptores es una línea base válida.
-        save(app, &id, &json!(seen)).await
+        save(app, &id, &json!(seen)).await?;
+        // Respaldo para suscripciones privadas: el contador del canal.
+        if let (Some(count), false) = (count, hidden) {
+            let key = format!("youtube-subcount-{}", self.channel);
+            let stored = load(app, &key).await?;
+            let (alerts, high, credit) =
+                anonymous_subs(stored["high"].as_i64().filter(|_| self.count_ready), stored["credit"].as_i64().unwrap_or(0), count, public_new);
+            save(app, &key, &json!({"high": high, "credit": credit})).await?;
+            self.count_ready = true;
+            // Una alerta por sub; si llegan muchos de golpe (Nexus cerrado), una sola con el total.
+            let batch: Vec<i64> = if alerts > 3 { vec![alerts] } else { vec![1; alerts as usize] };
+            for amount in batch {
+                deliver(
+                    app,
+                    "youtube",
+                    Incoming {
+                        kind: "subscriber",
+                        name: if amount > 1 { format!("{amount} nuevos suscriptores") } else { "Nuevo suscriptor".into() },
+                        amount: amount.to_string(),
+                        note: String::new(),
+                    },
+                )
+                .await?;
+            }
+        }
+        Ok(())
     }
     async fn active_live(&mut self, app: &AppHandle, token: &str) -> Result<(), String> {
         let v = api(
@@ -750,3 +803,31 @@ pub fn start(app: AppHandle) {
 
 #[tauri::command]
 pub async fn twitch_reauthorize(app:AppHandle)->Result<Value,String>{let raw=entry()?.get_password().map_err(|_|"Primero conecta Twitch con tu Client ID.")?;let v:Value=serde_json::from_str(&raw).map_err(|_|"Vuelve a introducir tu Client ID.")?;let client=v["client_id"].as_str().ok_or("Falta Client ID.")?;twitch_begin(app,client.into()).await}
+
+#[cfg(test)]
+mod subscriber_count_tests {
+    use super::anonymous_subs;
+
+    #[test]
+    fn first_read_is_baseline_and_rises_alert() {
+        assert_eq!(anonymous_subs(None, 0, 352, 0), (0, 352, 0));
+        assert_eq!(anonymous_subs(Some(352), 0, 354, 0), (2, 354, 0));
+        assert_eq!(anonymous_subs(Some(354), 0, 354, 0), (0, 354, 0));
+    }
+
+    #[test]
+    fn drops_and_resubs_do_not_repeat() {
+        assert_eq!(anonymous_subs(Some(354), 0, 353, 0), (0, 354, 0));
+        assert_eq!(anonymous_subs(Some(354), 0, 354, 0), (0, 354, 0));
+        assert_eq!(anonymous_subs(Some(354), 0, 355, 0), (1, 355, 0));
+    }
+
+    #[test]
+    fn public_subs_are_not_announced_twice() {
+        // Mismo ciclo: el sub público ya sonó con su nombre.
+        assert_eq!(anonymous_subs(Some(352), 0, 353, 1), (0, 353, 0));
+        // El contador llega tarde: el crédito espera y se consume después.
+        assert_eq!(anonymous_subs(Some(352), 0, 352, 1), (0, 352, 1));
+        assert_eq!(anonymous_subs(Some(352), 1, 354, 0), (1, 354, 0));
+    }
+}

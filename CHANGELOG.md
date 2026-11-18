@@ -2,6 +2,11 @@
 
 ## [Sin publicar]
 
+## [0.2.46] · 2026-11-18 · Alertas de suscriptores de YouTube
+
+- Las alertas de YouTube ahora suenan también con suscriptores que tienen sus suscripciones privadas, que eran la mayoría y no aparecían: Nexus vigila el contador del canal cada 2 minutos y anuncia «Nuevo suscriptor» cuando sube. Los públicos siguen saliendo con su nombre y no se anuncian dos veces.
+- Las bajas y vueltas no repiten alertas. Solo cuentan los suscriptores que llegan con Nexus abierto, y si entran varios de golpe sale una sola alerta con el total.
+
 ## [0.2.45] · 2026-11-18 · YouTube vuelve a conectar
 
 - Corregido «Failed to fetch» al conectar YouTube: la política de seguridad de 0.2.38 bloqueaba la foto del canal y la conexión aparecía como fallida aunque ya se había guardado. Al reconectar, el chat del directo y los comandos de YouTube vuelven a funcionar.
