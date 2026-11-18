@@ -1,22 +1,12 @@
 {
-  "version": "0.2.44",
+  "version": "0.2.45",
   "notes": [
-    "Crear contenido → Publicaciones y resultados detecta contenido reciente de YouTube, TikTok, Instagram, Facebook y vídeos/repeticiones y clips de Twitch mediante sus APIs oficiales. Guarda las métricas disponibles y su evolución; consulta cada diez minutos mientras Nexus esté abierto, con límites y permisos visibles. No promete tiempo real al segundo.",
-    "Agrupa publicaciones por serie y proyecto y compara resultados dentro de cada cuenta y formato a 24 horas, 72 horas o siete días. Exige referencias suficientes antes de orientar una serie; no pausa ni publica contenido automáticamente. TikTok necesita video.list y las vistas de Meta requieren permisos de estadísticas adicionales.",
-    "Corregida la selección de cifras recientes al mezclar API y registros manuales y el falso estado Publicado del calendario. Inicio añade evolución, varias metas, horas y vistas, fecha de consulta e hitos respaldados por registros reales.",
-    "Borradores recuperables de ideas, metas, versiones, proyectos, guiones y notas de juego. El guion guarda durante la escritura. Cerrar con trabajo activo pide revisar la salida y el historial multimedia identifica trabajos interrumpidos para volver a solicitarlos.",
-    "Actualizar al abrir ahora avisa: la instalación se elige cuando conviene y comprueba OBS, capturas y procesamiento activo. Los instaladores locales requieren verificación contra el canal oficial.",
-    "Capturas reunidas en una bandeja con revisión y estados de proyecto, exportación, calendario y publicación. Vista previa del Short con reproducción y audio, selección de pistas recordada y encuadre con plantilla vertical de cámara más juego.",
-    "Subtítulos accesibles desde el Short, corrección del SRT conservando el original, incorporación opcional en una copia del vídeo, selector de archivos y reparación de rutas. Los candidatos descartados sin vínculos se pueden enviar explícitamente a la papelera de Windows para liberar espacio.",
-    "Conexiones permite configurar OBS, Spotify y PlayStation en su propio centro. TikTok reutiliza el cliente guardado al reautorizar; corregidas su primera consulta global y la actualización automática tras reconectar Twitch. Los fallos explican permisos, caducidad o disponibilidad sin borrar cifras válidas.",
-    "Menos consultas de paneles ocultos, diagnóstico de alertas, atenuación de música local durante voz y alertas, catálogo de acciones Stream Deck y continuidad del resumen del directo hacia las capturas. Discord explica cuándo necesita Nexus abierto.",
-    "Biblioteca local de Steam y Epic importable, prioridad y objetivos personales de juegos, próximos platinos ordenados por preferencia y ajustes de cofres con motivo, separados de las partidas detectadas. Rutina y colchón ajustables y calendario con atrasados y reprogramación.",
-    "Ingresos previstos separados de cobros confirmados, sin duplicar pagos; formatos regionales de dinero y monedas independientes. Copias automáticas diarias con siete versiones, preferencias respaldadas y diagnóstico sin credenciales ni datos personales.",
-    "Añadidas pruebas de interfaz en las comprobaciones automáticas, migración aditiva 25 con las nuevas tablas incluidas en copias y política de contenido web restringida. Las pruebas simuladas no sustituyen la comprobación de audio, dispositivos y permisos reales en tu equipo."
+    "Corregido «Failed to fetch» al conectar YouTube: la política de seguridad de 0.2.38 bloqueaba la foto del canal y la conexión aparecía como fallida aunque ya se había guardado. Al reconectar, el chat del directo y los comandos de YouTube vuelven a funcionar.",
+    "Si la foto del canal no se puede poner, la conexión sigue adelante y ya no se muestra como error."
   ],
-  "date": "2026-11-17",
+  "date": "2026-11-18",
   "installer": "TrophyHunter-setup.exe",
-  "source_commit": "4b842151d202cfdc0c26eed12310362e23b4f813",
-  "sha256": "5a838c995d808678b40caf4b88765db56ccc6696bed1ca6c21165f7ebb8fe39a",
-  "size": 43114265
+  "source_commit": "08744eaf076aa1023c7f054bc3fbf515e566c6b5",
+  "sha256": "146bc0057b2fa768bf97da911047bffe2a3ba561830a9cf3a3a8278727a68aed",
+  "size": 43097798
 }
