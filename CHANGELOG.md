@@ -2,6 +2,11 @@
 
 ## [Sin publicar]
 
+## [0.2.45] · 2026-11-18 · YouTube vuelve a conectar
+
+- Corregido «Failed to fetch» al conectar YouTube: la política de seguridad de 0.2.38 bloqueaba la foto del canal y la conexión aparecía como fallida aunque ya se había guardado. Al reconectar, el chat del directo y los comandos de YouTube vuelven a funcionar.
+- Si la foto del canal no se puede poner, la conexión sigue adelante y ya no se muestra como error.
+
 ## [0.2.44] · 2026-11-17 · Publicaciones, contenido y fiabilidad
 
 - Crear contenido → Publicaciones y resultados detecta contenido reciente de YouTube, TikTok, Instagram, Facebook y vídeos/repeticiones y clips de Twitch mediante sus APIs oficiales. Guarda las métricas disponibles y su evolución; consulta cada diez minutos mientras Nexus esté abierto, con límites y permisos visibles. No promete tiempo real al segundo.

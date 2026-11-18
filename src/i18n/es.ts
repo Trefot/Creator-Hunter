@@ -2,7 +2,7 @@
 export const es = {
   appName: "Nexus Studio",
   appTagline: "Tu espacio para crear",
-  version: "Alpha 0.2 · v0.2.44",
+  version: "Alpha 0.2 · v0.2.45",
   /** Marca de la versión de pruebas (D-019). */
   devBadge: "PRUEBAS",
   startup: {

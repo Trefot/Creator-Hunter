@@ -74,8 +74,13 @@ export function YouTubeConnect({ profileId, onChange }: Props) {
       const result = await connectYouTube(profileId);
       if (result.avatar) {
         // La foto del canal llega a tamaño completo: se reduce como cualquier otra (D-013).
-        const blob = await (await fetch(result.avatar)).blob();
-        await setProfileAvatar(profileId, await resizeImage(new File([blob], "canal"), AVATAR_SIZE));
+        // Es un extra: si falla, el canal ya está conectado y no se debe mostrar como error.
+        try {
+          const blob = await (await fetch(result.avatar)).blob();
+          await setProfileAvatar(profileId, await resizeImage(new File([blob], "canal"), AVATAR_SIZE));
+        } catch (err) {
+          console.warn("No se pudo poner la foto del canal", err);
+        }
       }
       await load();
       // Primera sincronización nada más conectar.
