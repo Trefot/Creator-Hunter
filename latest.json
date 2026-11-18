@@ -1,12 +1,12 @@
 {
-  "version": "0.2.45",
+  "version": "0.2.46",
   "notes": [
-    "Corregido «Failed to fetch» al conectar YouTube: la política de seguridad de 0.2.38 bloqueaba la foto del canal y la conexión aparecía como fallida aunque ya se había guardado. Al reconectar, el chat del directo y los comandos de YouTube vuelven a funcionar.",
-    "Si la foto del canal no se puede poner, la conexión sigue adelante y ya no se muestra como error."
+    "Las alertas de YouTube ahora suenan también con suscriptores que tienen sus suscripciones privadas, que eran la mayoría y no aparecían: Nexus vigila el contador del canal cada 2 minutos y anuncia «Nuevo suscriptor» cuando sube. Los públicos siguen saliendo con su nombre y no se anuncian dos veces.",
+    "Las bajas y vueltas no repiten alertas. Solo cuentan los suscriptores que llegan con Nexus abierto, y si entran varios de golpe sale una sola alerta con el total."
   ],
   "date": "2026-11-18",
   "installer": "TrophyHunter-setup.exe",
-  "source_commit": "08744eaf076aa1023c7f054bc3fbf515e566c6b5",
-  "sha256": "146bc0057b2fa768bf97da911047bffe2a3ba561830a9cf3a3a8278727a68aed",
-  "size": 43097798
+  "source_commit": "9f88e62c1e8f5aa4099e31287716cccce1420d84",
+  "sha256": "6ca84c7a6b7e54bdfb038925e20997d82ff20a5ea17401e4b98df532e51110f1",
+  "size": 43102968
 }
