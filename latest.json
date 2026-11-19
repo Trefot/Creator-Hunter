@@ -1,12 +1,13 @@
 {
-  "version": "0.2.46",
+  "version": "0.2.47",
   "notes": [
-    "Las alertas de YouTube ahora suenan también con suscriptores que tienen sus suscripciones privadas, que eran la mayoría y no aparecían: Nexus vigila el contador del canal cada 2 minutos y anuncia «Nuevo suscriptor» cuando sube. Los públicos siguen saliendo con su nombre y no se anuncian dos veces.",
-    "Las bajas y vueltas no repiten alertas. Solo cuentan los suscriptores que llegan con Nexus abierto, y si entran varios de golpe sale una sola alerta con el total."
+    "Nuevo «Episodio para YouTube» en Crear contenido → Momentos y clips → Grabaciones: elige dónde empieza y acaba el episodio viendo la imagen de ese momento, qué pistas de audio entran y el título. Sirve para emitir en Twitch y subir el vídeo a YouTube.",
+    "Deja fuera la pista de la música para evitar reclamaciones de copyright. La imagen no se vuelve a codificar, así que incluso un directo de varias horas sale en pocos minutos y con la misma calidad.",
+    "Prepara la descripción con capítulos a partir de tus marcas dentro del tramo elegido, la guarda en un .txt junto al vídeo y abre YouTube Studio para que solo arrastres el archivo. Nexus no sube nada por ti."
   ],
-  "date": "2026-11-18",
+  "date": "2026-11-19",
   "installer": "TrophyHunter-setup.exe",
-  "source_commit": "9f88e62c1e8f5aa4099e31287716cccce1420d84",
-  "sha256": "6ca84c7a6b7e54bdfb038925e20997d82ff20a5ea17401e4b98df532e51110f1",
-  "size": 43102968
+  "source_commit": "d418a8a088fb66439401b40866854053cf62594f",
+  "sha256": "1e4cb94364c8aa76cc9ff85f058676e09be97c888e6508a10bc6e0c2f05c9e1f",
+  "size": 43128503
 }
