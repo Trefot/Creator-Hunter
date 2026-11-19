@@ -26,6 +26,8 @@ mod chat_commands;
 mod chat_commands_core;
 mod recap;
 mod shorts;
+mod episode;
+mod episode_core;
 mod media_jobs;
 mod fortnite_counter;
 mod metrics_core;
@@ -288,6 +290,9 @@ pub fn run() {
             subtitles::choose_video_file,
             subtitles::subtitles_relink,
             subtitles::subtitles_burn,
+            episode::episode_frame,
+            episode::episode_saved,
+            episode::episode_render,
             subtitles::subtitles_read_text,
             subtitles::subtitles_save_text,
             subtitles::subtitles_import,

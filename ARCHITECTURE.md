@@ -372,3 +372,8 @@ Las dependencias nuevas se añaden a esta tabla con su justificación.
 - La cola conserva un diario local de trabajos. Tras reinicio marca interrupciones; reintentar es una solicitud nueva, no reanudar ffmpeg a mitad del archivo. Previsualización MP4 temporal limitada a 32 MB; exportaciones y subtítulos conservan archivos originales y usan salidas nuevas.
 - Instalación elegida por el usuario y comprobada antes y después de descargar, con OBS, cola y capturas. Política CSP de producción restringida; hashes concretos para scripts empaquetados de vistas previas. Desarrollo tiene política separada para Vite.
 - Pruebas de interfaz con Python/Playwright solo en desarrollo y CI; ninguna dependencia nueva en la aplicación. Acción compartida para comprobar interfaz antes de publicar Windows. Las pruebas simuladas no acreditan audio físico ni autorización real de proveedores.
+
+### D-036 · Episodio para YouTube desde la grabación (0.2.47)
+- Directos en una plataforma y vídeos en otra: el episodio sale de la grabación local de OBS, nunca de descargar el VOD. Se elige inicio, final y pistas de audio; la imagen se copia sin recodificar (rápido en directos de horas, corte en el fotograma clave anterior) y solo se convierte el audio elegido, para poder dejar fuera la pista de música.
+- Las marcas dentro del tramo se desplazan al nuevo inicio y generan los capítulos con las mismas reglas de YouTube; la descripción se guarda en un .txt junto al vídeo y en alert_cursor `episode:{sesión}` (sin migración).
+- Nexus no sube vídeos: la API de YouTube deja en privado lo subido desde proyectos no auditados y gasta 1600 de 10 000 unidades por vídeo. Se abre YouTube Studio y el usuario arrastra el archivo.

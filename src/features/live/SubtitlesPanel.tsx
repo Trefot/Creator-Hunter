@@ -1,9 +1,10 @@
 import {SubtitleActions} from "./SubtitleActions";
 import {AudioPicker} from "./MediaTools";
+import {EpisodeMaker} from "./EpisodeMaker";
 import { useEffect, useState } from "react";
 import { listen } from "@tauri-apps/api/event";
 import { revealItemInDir } from "@tauri-apps/plugin-opener";
-import { Captions, Copy, Download, ListOrdered, RefreshCw } from "lucide-react";
+import { Captions, Clapperboard, Copy, Download, ListOrdered, RefreshCw } from "lucide-react";
 import { Recording, SubtitleStatus, subtitlesChapters, subtitlesGenerate, subtitlesInstall, subtitlesImport, subtitlesRecordings, subtitlesStatus } from "../../db/subtitles";
 import { es } from "../../i18n/es";
 import { formatDateTime } from "../../i18n/format";
@@ -32,6 +33,7 @@ export function SubtitlesPanel({ active }: { active: boolean }) {
   const [query,setQuery]=useState("");
   const [hasMore,setHasMore]=useState(true);
   const [copied, setCopied] = useState<string | null>(null);
+  const [episode, setEpisode] = useState<string | null>(null);
 
   async function refresh() {
     try {
@@ -43,7 +45,7 @@ export function SubtitlesPanel({ active }: { active: boolean }) {
     }
   }
 
-  useEffect(()=>{const select=async(event:Event)=>{const id=(event as CustomEvent).detail;if(typeof id==='string'){await refresh();setAudio(undefined);setSelected(id);document.querySelectorAll('details').forEach(d=>{if(d.querySelector('[id^="subtitle-"]')||d.querySelector('summary')?.textContent?.includes('Grabaciones y subtítulos'))d.open=true});setTimeout(()=>document.getElementById(`subtitle-${id}`)?.scrollIntoView({block:'center',behavior:'smooth'}),100)}};window.addEventListener('nexus-select-recording',select);return()=>window.removeEventListener('nexus-select-recording',select)},[]);
+  useEffect(()=>{const select=async(event:Event)=>{const id=(event as CustomEvent).detail;if(typeof id==='string'){await refresh();setAudio(undefined);setSelected(id);document.querySelectorAll('details').forEach(d=>{if(d.querySelector('[id^="subtitle-"]')||d.querySelector('summary')?.textContent?.includes('Grabaciones:'))d.open=true});setTimeout(()=>document.getElementById(`subtitle-${id}`)?.scrollIntoView({block:'center',behavior:'smooth'}),100)}};window.addEventListener('nexus-select-recording',select);return()=>window.removeEventListener('nexus-select-recording',select)},[]);
   useEffect(() => {
     if (active) refresh();
   }, [active]);
@@ -140,6 +142,7 @@ export function SubtitlesPanel({ active }: { active: boolean }) {
                   </span>
                 </div>
                 <div className="tools-actions">
+                  <button disabled={!r.exists || !status?.ffmpeg} onClick={() => setEpisode(episode === r.id ? null : r.id)}><Clapperboard size={15} />Episodio para YouTube</button>
                   <button className="ghost" onClick={() => showChapters(r)}><ListOrdered size={15} />{t.chapters}</button>
                   <SubtitleActions sessionId={r.id} hasSrt={!!r.srt} srtPath={r.srt} onChanged={refresh}/>
                   {r.srt ? (
@@ -151,6 +154,7 @@ export function SubtitlesPanel({ active }: { active: boolean }) {
                   )}
                 </div>
               </div>
+              {episode === r.id && <EpisodeMaker sessionId={r.id} game={r.game} marks={r.marks} onClose={() => setEpisode(null)} />}
               {selected===r.id&&<div className="short-maker"><AudioPicker kind="recording" id={r.id} value={audio} onChange={setAudio} required/><button disabled={!audio?.length||busy!==null} onClick={()=>void generate(r)}>Transcribir las pistas elegidas</button><button className="ghost" onClick={()=>setSelected(null)}>Cerrar</button></div>}
               {chapters[r.id] && (
                 <div className="short-maker">

@@ -2,6 +2,12 @@
 
 ## [Sin publicar]
 
+## [0.2.47] · 2026-11-18 · Episodio para YouTube
+
+- Nuevo «Episodio para YouTube» en Crear contenido → Momentos y clips → Grabaciones: elige dónde empieza y acaba el episodio viendo la imagen de ese momento, qué pistas de audio entran y el título. Sirve para emitir en Twitch y subir el vídeo a YouTube.
+- Deja fuera la pista de la música para evitar reclamaciones de copyright. La imagen no se vuelve a codificar, así que incluso un directo de varias horas sale en pocos minutos y con la misma calidad.
+- Prepara la descripción con capítulos a partir de tus marcas dentro del tramo elegido, la guarda en un .txt junto al vídeo y abre YouTube Studio para que solo arrastres el archivo. Nexus no sube nada por ti.
+
 ## [0.2.46] · 2026-11-18 · Alertas de suscriptores de YouTube
 
 - Las alertas de YouTube ahora suenan también con suscriptores que tienen sus suscripciones privadas, que eran la mayoría y no aparecían: Nexus vigila el contador del canal cada 2 minutos y anuncia «Nuevo suscriptor» cuando sube. Los públicos siguen saliendo con su nombre y no se anuncian dos veces.
