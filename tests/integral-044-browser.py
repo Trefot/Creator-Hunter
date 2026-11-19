@@ -38,7 +38,7 @@ with ns['sync_playwright']() as pw:
  assert any(c=='studio_tts_status' for c,a in ns['calls'])
  page.get_by_role('button',name='Buscar en Nexus',exact=False).click();page.get_by_label('Buscar secciones',exact=True).fill('clips');page.get_by_role('button',name='Momentos y Shorts',exact=False).click();page.wait_for_timeout(300)
  page.evaluate("window.dispatchEvent(new CustomEvent('nexus-select-recording',{detail:'audit'}))");page.wait_for_timeout(200)
- assert page.locator('details').evaluate_all("els=>els.some(e=>e.open&&e.querySelector('summary')?.textContent.includes('Grabaciones y subtítulos'))")
+ assert page.locator('details').evaluate_all("els=>els.some(e=>e.open&&e.querySelector('summary')?.textContent.includes('Grabaciones: episodios y subtítulos'))")
  page.get_by_role('button',name='Nueva idea',exact=True).click()
  page.get_by_label('Título',exact=True).fill('Borrador recuperable de prueba')
  page.get_by_role('button',name='En directo',exact=False).first.click()
