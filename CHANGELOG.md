@@ -2,6 +2,10 @@
 
 ## [Sin publicar]
 
+## [0.2.48] · 2026-11-19 · Nexus vuelve a cerrarse
+
+- Corregido: al pulsar la X o «Cancelar trabajos de Nexus y cerrar», Nexus no se cerraba y mostraba «window|close not allowed by ACL». Faltaba el permiso para cerrar su propia ventana desde 0.2.44.
+
 ## [0.2.47] · 2026-11-18 · Episodio para YouTube
 
 - Nuevo «Episodio para YouTube» en Crear contenido → Momentos y clips → Grabaciones: elige dónde empieza y acaba el episodio viendo la imagen de ese momento, qué pistas de audio entran y el título. Sirve para emitir en Twitch y subir el vídeo a YouTube.
