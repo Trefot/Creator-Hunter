@@ -1,13 +1,11 @@
 {
-  "version": "0.2.47",
+  "version": "0.2.48",
   "notes": [
-    "Nuevo «Episodio para YouTube» en Crear contenido → Momentos y clips → Grabaciones: elige dónde empieza y acaba el episodio viendo la imagen de ese momento, qué pistas de audio entran y el título. Sirve para emitir en Twitch y subir el vídeo a YouTube.",
-    "Deja fuera la pista de la música para evitar reclamaciones de copyright. La imagen no se vuelve a codificar, así que incluso un directo de varias horas sale en pocos minutos y con la misma calidad.",
-    "Prepara la descripción con capítulos a partir de tus marcas dentro del tramo elegido, la guarda en un .txt junto al vídeo y abre YouTube Studio para que solo arrastres el archivo. Nexus no sube nada por ti."
+    "Corregido: al pulsar la X o «Cancelar trabajos de Nexus y cerrar», Nexus no se cerraba y mostraba «window|close not allowed by ACL». Faltaba el permiso para cerrar su propia ventana desde 0.2.44."
   ],
-  "date": "2026-11-19",
+  "date": "2026-11-20",
   "installer": "TrophyHunter-setup.exe",
-  "source_commit": "d418a8a088fb66439401b40866854053cf62594f",
-  "sha256": "1e4cb94364c8aa76cc9ff85f058676e09be97c888e6508a10bc6e0c2f05c9e1f",
-  "size": 43128503
+  "source_commit": "bd68597fa24ee067612bf767fc7d1500a08a5ddf",
+  "sha256": "cd7ee67c44b329e0c9504cca169a6bbc16b1f9d45e71965a4f5f56864ebfd436",
+  "size": 43121364
 }
