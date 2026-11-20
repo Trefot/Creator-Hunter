@@ -284,6 +284,7 @@ fn poll(app: &AppHandle, client: &mut Client) -> Result<(), String> {
         )
     };
     let pool = pool(app)?;
+    let stream_was_off = sid.is_none();
     for (kind, current, elapsed, old) in [
         ("recording", &mut rid, record_ms, old_record),
         ("stream", &mut sid, stream_ms, old_stream),
@@ -321,6 +322,12 @@ fn poll(app: &AppHandle, client: &mut Client) -> Result<(), String> {
             *current = Some(fresh);
         }
     }
+    // Momentos: sin grabación ni Replay Buffer, una marca del directo no tiene vídeo del que sacar el clip.
+    // Al empezar a emitir, Nexus enciende el búfer (si está habilitado en Ajustes → Salida de OBS).
+    let mut replay_on = replay["outputActive"] == true;
+    if stream_was_off && sid.is_some() && !replay_on && record_ms.is_none() {
+        replay_on = client.request("StartReplayBuffer").is_ok();
+    }
     let last_record = {
         let i = state.inner.lock().map_err(|e| e.to_string())?;
         i.record_id.clone().or(i.last_record_id.clone())
@@ -341,9 +348,10 @@ fn poll(app: &AppHandle, client: &mut Client) -> Result<(), String> {
     }
     i.record_id = rid;
     i.stream_id = sid;
-    i.view.replay_active = replay["outputActive"]
+    replay["outputActive"]
         .as_bool()
         .ok_or("OBS no devolvió el estado del Replay Buffer.")?;
+    i.view.replay_active = replay_on;
     i.view.connected = true;
     i.view.recording = record_ms.is_some();
     i.view.streaming = stream_ms.is_some();
@@ -429,6 +437,14 @@ pub fn mark(app: &AppHandle, title: Option<String>) -> Result<Value, String> {
     let session = session.ok_or(
         "No hay grabación ni directo activos. Si la grabación está en pausa, reanúdala en OBS.",
     )?;
+    // En directo sin grabación, la marca sola no tiene vídeo: se guarda el Replay Buffer como clip
+    // (que ya incluye su marca). Si las capturas por voz están armadas, ellas se encargan del clip.
+    let replay_on = state.inner.lock().map_err(|e| e.to_string())?.view.replay_active;
+    if record.is_none() && replay_on && !crate::auto_moments::armed(app) {
+        drop(_guard);
+        drop(client);
+        return save_replay(app, title.or(Some("Momento".into())));
+    }
     let marker = id();
     let pool = pool(app)?;
     tauri::async_runtime::block_on(obs_store::insert_marker(

@@ -102,6 +102,16 @@ async fn send_youtube(app: &AppHandle, text: &str) -> Result<(), String> {
     }
 }
 
+/// Respuesta breve en el chat de la plataforma de origen (peticiones de música, avisos).
+pub(crate) async fn say(app: &AppHandle, platform: &str, text: &str) -> Result<(), String> {
+    let text = crate::chat_commands_core::fit(text, platform);
+    match platform {
+        "twitch" => send_twitch(&text).await,
+        "youtube" => send_youtube(app, &text).await,
+        _ => Err("Plataforma no válida.".into()),
+    }
+}
+
 /// Llamado con cada mensaje del chat. Ignora en silencio lo que no es un comando.
 pub async fn receive(app: &AppHandle, platform: &str, name: &str, text: &str) {
     if !text.trim_start().starts_with('!') {

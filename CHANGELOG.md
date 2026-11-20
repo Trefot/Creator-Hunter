@@ -2,6 +2,14 @@
 
 ## [Sin publicar]
 
+## [0.2.49] · 2026-11-19 · Directo que funciona: momentos, alertas, chat y música
+
+- Momentos con vídeo en directo: al empezar a emitir, Nexus enciende el búfer de repetición de OBS y cada marca guarda el clip de los últimos segundos. Antes, sin grabar, la marca quedaba sin vídeo. Requiere el búfer habilitado en OBS (Ajustes → Salida).
+- Alertas con una sola fuente: nueva URL única para OBS que muestra las alertas de Twitch, YouTube y TikTok, como Streamlabs. En Alertas aparece la lista de últimos eventos recibidos para comprobar en directo que llegan follows, subs, bits y raids; son los mismos que suma el resumen.
+- Chat combinado: un solo overlay con Twitch y YouTube juntos y un panel de chat para meter dentro de OBS (Docks → Paneles personalizados del navegador), con historial y hora.
+- Peticiones de música: «!sr nombre de la canción» ya busca en Spotify, la añade sola a tu cola y responde en el chat. Puedes activar «Revisar cada petición» si prefieres aprobarlas.
+- Con OBS cerrado, Conexiones dice «OBS cerrado» en lugar de «Necesita revisión».
+
 ## [0.2.48] · 2026-11-19 · Nexus vuelve a cerrarse
 
 - Corregido: al pulsar la X o «Cancelar trabajos de Nexus y cerrar», Nexus no se cerraba y mostraba «window|close not allowed by ACL». Faltaba el permiso para cerrar su propia ventana desde 0.2.44.

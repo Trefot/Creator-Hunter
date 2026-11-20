@@ -24,6 +24,21 @@ pub(crate) async fn log_event(app: &AppHandle, platform: &str, kind: &str, name:
     .await;
 }
 
+/// Últimos eventos guardados (los mismos que suma el resumen), para comprobar en directo que llegan.
+#[tauri::command]
+pub async fn stream_events_recent(app: AppHandle) -> Result<Vec<Value>, String> {
+    let pool = crate::backup::pool(&app).await?;
+    Ok(sqlx::query("SELECT platform, kind, name, amount, created_at FROM stream_event WHERE workspace_id = $1 ORDER BY created_at DESC LIMIT 20")
+        .bind(WORKSPACE)
+        .fetch_all(&pool)
+        .await
+        .map_err(err)?
+        .iter()
+        .map(|r| json!({"platform":r.get::<String,_>("platform"),"kind":r.get::<String,_>("kind"),"name":r.get::<String,_>("name"),
+                        "amount":r.get::<Option<String>,_>("amount"),"created_at":r.get::<String,_>("created_at")}))
+        .collect())
+}
+
 fn err(e: sqlx::Error) -> String {
     e.to_string()
 }

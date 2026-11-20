@@ -23,7 +23,7 @@ impl Client {
     pub fn connect(port: u16, password: &str) -> Result<Self, String> {
         let addr = SocketAddr::from(([127, 0, 0, 1], port));
         let stream = TcpStream::connect_timeout(&addr, Duration::from_secs(2)).map_err(|_| {
-            "No se pudo conectar con OBS. Activa su servidor WebSocket y comprueba el puerto."
+            "OBS está cerrado. Nexus se conectará solo al abrirlo. Si ya está abierto, activa su servidor WebSocket y comprueba el puerto."
                 .to_string()
         })?;
         stream
@@ -168,10 +168,12 @@ impl Client {
         self.request_data(kind, None)
     }
     pub fn request_data(&mut self, kind: &str, data: Option<Value>) -> Result<Value, String> {
-        // Lista cerrada: lectura y configuración explícita; nunca iniciar/parar emisiones.
+        // Lista cerrada: lectura y configuración explícita; nunca iniciar/parar emisiones ni grabaciones.
+        // StartReplayBuffer es la única salida que se enciende: así cada momento del directo tiene vídeo.
         if !matches!(
             kind,
-            "GetRecordStatus"
+            "StartReplayBuffer"
+                | "GetRecordStatus"
                 | "GetStreamStatus"
                 | "GetReplayBufferStatus"
                 | "GetInputList"

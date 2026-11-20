@@ -442,6 +442,9 @@ pub(crate) fn capture_from_deck(app: &AppHandle) -> Result<Value, String> {
     )
 }
 /// El marcado tradicional sigue funcionando aunque la captura esté apagada o falle.
+pub(crate) fn armed(app: &AppHandle) -> bool {
+    app.state::<AutoMomentsState>().inner.lock().map(|i| i.armed).unwrap_or(false)
+}
 pub(crate) fn on_mark(app: &AppHandle) {
     if !app.state::<AutoMomentsState>().inner.lock().unwrap().armed {
         return;

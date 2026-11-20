@@ -184,12 +184,13 @@ fn handle_request(app: &AppHandle, key: &str, request: Request) {
             if ["ended","failed"].contains(action)&&generation.is_none(){return respond_json(request,400,json!({"error":"Falta generación."}));}
             match crate::music::player_action(app,action,generation){Ok(())=>respond_json(request,200,json!({"ok":true})),Err(e)=>respond_json(request,400,json!({"error":e}))}
         }
-        ["chat", p] if *p=="twitch" || *p=="youtube" => {
+        // `all` combina Twitch y YouTube en un solo overlay; `?panel=1` es la versión para un panel de OBS.
+        ["chat", p] if *p=="twitch" || *p=="youtube" || *p=="all" => {
             let response=Response::from_string(include_str!("../overlay/chat.html")).with_header(header("Content-Type","text/html; charset=utf-8")).with_header(header("Cache-Control","no-store"));let _=request.respond(response);
         }
-        ["api","chat",p] if *p=="twitch" || *p=="youtube" => {
+        ["api","chat",p] if *p=="twitch" || *p=="youtube" || *p=="all" => {
             if query("key").as_deref()!=Some(key){return respond_json(request,403,json!({"error":"Clave local no válida."}));}
-            respond_json(request,200,crate::streaming::snapshot(app,Some(p)));
+            respond_json(request,200,crate::streaming::snapshot(app,if *p=="all" {None} else {Some(p)}));
         }
         ["api","alert-audio",id] => {
             if query("key").as_deref()!=Some(key){return respond_json(request,403,json!({"error":"Clave local no válida."}));}
@@ -203,7 +204,8 @@ fn handle_request(app: &AppHandle, key: &str, request: Request) {
         ["assets","alert-mascot.png"] => {
             let response=Response::from_data(include_bytes!("../../src/assets/nexus-mark.png").to_vec()).with_header(header("Content-Type","image/png")).with_header(header("Cache-Control","public, max-age=86400"));let _=request.respond(response);
         }
-        ["alerts", platform] if *platform=="twitch" || *platform=="youtube" || *platform=="tiktok" => {
+        // `all`: una sola fuente de OBS para las alertas de todas las plataformas.
+        ["alerts", platform] if *platform=="twitch" || *platform=="youtube" || *platform=="tiktok" || *platform=="all" => {
             let response=Response::from_string(include_str!("../overlay/alerts.html").replace("/*NEXUS_ALERT_STYLE*/",include_str!("../overlay/alerts.css").replace("__NEXUS_ALERT_FONT__","/assets/alerts/inter-latin.woff2").as_str()).replace("__NEXUS_ALERT_VERSION__",env!("CARGO_PKG_VERSION"))).with_header(header("Content-Type","text/html; charset=utf-8")).with_header(header("Cache-Control","no-store"));let _=request.respond(response);
         }
         ["api","alerts",platform,action] => {
