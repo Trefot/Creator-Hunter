@@ -412,6 +412,92 @@ pub async fn receive(app: &AppHandle, platform: &str, user: &str, name: &str, te
     if crate::social_alerts::load(app, "music-requests").await.ok() != Some(json!(true)) {
         return;
     }
+    request_song(app, platform, user, name, input, privileged).await;
+}
+
+const REWARD_TITLE: &str = "Pedir canción";
+
+/// Crea (o recupera) la recompensa de puntos «Pedir canción» con texto obligatorio.
+#[tauri::command]
+pub async fn music_reward_create(app: AppHandle, cost: u32) -> Result<Value, String> {
+    if !(1..=100000).contains(&cost) {
+        return Err("Coste entre 1 y 100000 puntos.".into());
+    }
+    let (client, _, user) = crate::social_alerts::twitch_token().await?;
+    let existing = crate::engagement::twitch_request(
+        reqwest::Method::GET,
+        "channel_points/custom_rewards",
+        &[("broadcaster_id", user.as_str()), ("only_manageable_rewards", "true")],
+        None,
+    )
+    .await?;
+    let found = existing["data"].as_array().and_then(|a| a.iter().find(|v| v["title"] == REWARD_TITLE)).cloned();
+    let reward = match found {
+        Some(r) => r,
+        None => crate::engagement::twitch_request(
+            reqwest::Method::POST,
+            "channel_points/custom_rewards",
+            &[("broadcaster_id", &user)],
+            Some(json!({"title":REWARD_TITLE,"cost":cost,"is_user_input_required":true,
+                "prompt":"Escribe el nombre de la canción y el artista. Si no se puede añadir, te devolvemos los puntos.",
+                "background_color":"#9146FF","should_redemptions_skip_request_queue":false})),
+        )
+        .await?["data"][0]
+            .clone(),
+    };
+    let id = reward["id"].as_str().ok_or("Twitch no confirmó la recompensa; revisa tus recompensas antes de repetir.")?;
+    let saved = json!({"id":id,"channel":user,"client":client,"cost":reward["cost"]});
+    crate::social_alerts::save(&app, "music-reward", &saved).await?;
+    Ok(saved)
+}
+
+/// Canje de «Pedir canción»: se añade a la cola y se completa; si no se puede, se devuelven los puntos.
+pub async fn reward(app: &AppHandle, event: &Value) {
+    let Ok(cfg) = crate::social_alerts::load(app, "music-reward").await else { return };
+    let (Some(reward), Some(id)) = (cfg["id"].as_str(), event["id"].as_str()) else { return };
+    if event["reward"]["id"] != reward || event["broadcaster_user_id"] != cfg["channel"] {
+        return;
+    }
+    // Un canje se procesa una sola vez aunque Twitch lo reenvíe.
+    let Ok(pool) = crate::backup::pool(app).await else { return };
+    let claimed = sqlx::query("INSERT OR IGNORE INTO alert_cursor(id,content) VALUES(?,?)")
+        .bind(format!("music-redeem/{id}"))
+        .bind(json!({"status":"pending"}).to_string())
+        .execute(&pool)
+        .await;
+    if !claimed.is_ok_and(|r| r.rows_affected() == 1) {
+        return;
+    }
+    let input: String = event["user_input"].as_str().unwrap_or("").trim().chars().take(200).collect();
+    let user = event["user_id"].as_str().unwrap_or("");
+    let name = event["user_name"].as_str().unwrap_or("Alguien");
+    let outcome = if input.is_empty() {
+        let _ = crate::chat_commands::say(app, "twitch", &format!("🎵 @{name} escribe el nombre de la canción al canjear. Te devolví los puntos.")).await;
+        Outcome::Refused
+    } else {
+        request_song(app, "twitch", user, name, &input, true).await
+    };
+    let status = match outcome {
+        Outcome::Queued => "FULFILLED",
+        Outcome::Refused => "CANCELED",
+        Outcome::Pending => return, // Revisión manual: queda en la cola de canjes de Twitch.
+    };
+    let channel = cfg["channel"].as_str().unwrap_or("");
+    let _ = crate::engagement::twitch_request(
+        reqwest::Method::PATCH,
+        "channel_points/custom_rewards/redemptions",
+        &[("broadcaster_id", channel), ("reward_id", reward), ("id", id)],
+        Some(json!({"status":status})),
+    )
+    .await;
+}
+
+/// Resultado de una petición, para resolver el canje de puntos que la originó.
+#[derive(PartialEq)]
+enum Outcome { Queued, Pending, Refused }
+
+/// Busca la canción (enlace, biblioteca local o Spotify), la añade a la cola y responde en el chat.
+async fn request_song(app: &AppHandle, platform: &str, user: &str, name: &str, input: &str, privileged: bool) -> Outcome {
     let local = library(app).await.ok().and_then(|list| {
         list.as_array()?.iter().find(|t| {
             t["id"] == input || t["title"].as_str().is_some_and(|s| s.eq_ignore_ascii_case(input))
@@ -431,53 +517,60 @@ pub async fn receive(app: &AppHandle, platform: &str, user: &str, name: &str, te
             }
             Ok(_) => {
                 let _ = crate::chat_commands::say(app, platform, &format!("🎵 @{name} no encontré «{input}» en Spotify.")).await;
-                return;
+                return Outcome::Refused;
             }
-            Err(_) => return,
+            Err(e) => {
+                let _ = crate::chat_commands::say(app, platform, &format!("🎵 @{name} no pude buscar en Spotify. {e}")).await;
+                return Outcome::Refused;
+            }
         }
     };
-    let state = app.state::<MusicState>();
-    let mut p = state.player.lock().unwrap();
-    p.recent
-        .retain(|(_, t)| t.elapsed() < Duration::from_secs(60));
-    let identity = format!("{platform}:{user}");
-    // Antes se ignoraban en silencio; ahora el chat sabe por qué no entró.
-    let refusal = if p.requests.len() >= 20 {
-        Some("hay demasiadas peticiones pendientes, prueba en un rato.".to_string())
-    } else if let Some((_, t)) = p.recent.iter().find(|(u, _)| u == &identity && !privileged) {
-        Some(format!("espera {} s para pedir otra canción.", 60u64.saturating_sub(t.elapsed().as_secs()).max(1)))
-    } else if p.requests.iter().any(|r| r["track"] == item["track"]) {
-        Some("esa canción ya está pedida.".to_string())
-    } else {
-        None
+    // El candado se suelta antes de cualquier espera (respuestas en el chat).
+    let accepted: Result<(String, String), String> = {
+        let state = app.state::<MusicState>();
+        let mut p = state.player.lock().unwrap();
+        p.recent.retain(|(_, t)| t.elapsed() < Duration::from_secs(60));
+        let identity = format!("{platform}:{user}");
+        if p.requests.len() >= 20 {
+            Err("hay demasiadas peticiones pendientes, prueba en un rato.".to_string())
+        } else if let Some((_, t)) = p.recent.iter().find(|(u, _)| u == &identity && !privileged) {
+            Err(format!("espera {} s para pedir otra canción.", 60u64.saturating_sub(t.elapsed().as_secs()).max(1)))
+        } else if p.requests.iter().any(|r| r["track"] == item["track"]) {
+            Err("esa canción ya está pedida.".to_string())
+        } else {
+            p.recent.push((identity, Instant::now()));
+            let mut r = item;
+            r["id"] = json!(nonce());
+            r["user"] = json!(name.chars().take(100).collect::<String>());
+            r["platform"] = json!(platform);
+            let pair = (r["id"].as_str().unwrap_or("").to_string(), r["title"].as_str().unwrap_or("").to_string());
+            p.requests.push(r);
+            Ok(pair)
+        }
     };
-    if let Some(reason) = refusal {
-        drop(p);
-        let _ = crate::chat_commands::say(app, platform, &format!("🎵 @{name} {reason}")).await;
-        return;
-    }
-    p.recent.push((identity, Instant::now()));
-    let mut r = item;
-    r["id"] = json!(nonce());
-    r["user"] = json!(name.chars().take(100).collect::<String>());
-    r["platform"] = json!(platform);
-    let (id, title) = (r["id"].as_str().unwrap_or("").to_string(), r["title"].as_str().unwrap_or("").to_string());
-    p.requests.push(r);
-    drop(p);
+    let (id, title) = match accepted {
+        Ok(pair) => pair,
+        Err(reason) => {
+            let _ = crate::chat_commands::say(app, platform, &format!("🎵 @{name} {reason}")).await;
+            return Outcome::Refused;
+        }
+    };
     // Aprobación automática salvo que el creador elija revisar cada petición.
     if crate::social_alerts::load(app, "music-manual").await.ok() == Some(json!(true)) {
         let _ = crate::chat_commands::say(app, platform, &format!("🎵 @{name} pedido «{title}». Lo reviso enseguida.")).await;
-        return;
+        return Outcome::Pending;
     }
-    let reply = match music_request_resolve(app.clone(), id, true).await {
-        Ok(()) => format!("🎵 @{name} añadida a la cola: {title}"),
+    let (reply, outcome) = match music_request_resolve(app.clone(), id, true).await {
+        Ok(()) => (format!("🎵 @{name} añadida a la cola: {title}"), Outcome::Queued),
         Err(e) => {
             app.state::<MusicState>().player.lock().unwrap().message = e.clone();
-            format!("🎵 @{name} no pude añadir «{title}». {e}")
+            (format!("🎵 @{name} no pude añadir «{title}». {e}"), Outcome::Refused)
         }
     };
     let _ = crate::chat_commands::say(app, platform, &reply).await;
+    outcome
 }
+
 #[tauri::command]
 pub async fn music_request_resolve(app: AppHandle, id: String, accept: bool) -> Result<(), String> {
     let request = {
@@ -590,6 +683,7 @@ pub async fn state(app: &AppHandle, viewer: Option<&str>) -> Result<Value, Strin
     let list = library(app).await?;
     let enabled = crate::social_alerts::load(app, "music-requests").await? == true;
     let manual = crate::social_alerts::load(app, "music-manual").await? == true;
+    let reward = crate::social_alerts::load(app, "music-reward").await?;
     let volume = crate::social_alerts::load(app, "music-volume")
         .await?
         .as_u64()
@@ -625,7 +719,7 @@ pub async fn state(app: &AppHandle, viewer: Option<&str>) -> Result<Value, Strin
         false
     };
     Ok(
-        json!({"volume":volume,"duck":duck,"ducking":ducking,"effective_volume":effective_volume,"library":list,"requests_enabled":enabled,"requests_manual":manual,"requests":if viewer.is_none(){p.requests.clone()}else{vec![]},"queue":p.queue,"track":p.track,"playing":p.playing,"generation":p.generation,"audio_owner":owner,"audio_connected":p.lease.is_some_and(|t|t.elapsed()<Duration::from_secs(5)),"message":p.message,"spotify":spotify,"spotify_connected":entry().and_then(|e|e.get_password().map_err(|e|e.to_string())).is_ok(),"spotify_error":spotify_error,"app_version":app.package_info().version.to_string()}),
+        json!({"volume":volume,"duck":duck,"ducking":ducking,"effective_volume":effective_volume,"library":list,"requests_enabled":enabled,"requests_manual":manual,"reward":reward,"requests":if viewer.is_none(){p.requests.clone()}else{vec![]},"queue":p.queue,"track":p.track,"playing":p.playing,"generation":p.generation,"audio_owner":owner,"audio_connected":p.lease.is_some_and(|t|t.elapsed()<Duration::from_secs(5)),"message":p.message,"spotify":spotify,"spotify_connected":entry().and_then(|e|e.get_password().map_err(|e|e.to_string())).is_ok(),"spotify_error":spotify_error,"app_version":app.package_info().version.to_string()}),
     )
 }
 #[tauri::command]

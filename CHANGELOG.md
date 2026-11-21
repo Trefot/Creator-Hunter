@@ -2,6 +2,11 @@
 
 ## [Sin publicar]
 
+## [0.2.53] · 2026-11-20 · Pedir canciones con puntos del canal
+
+- Nueva recompensa de Twitch «Pedir canción» (50 puntos por defecto), creada desde Música con un botón. El espectador escribe la canción al canjearla; Nexus la busca en Spotify, la añade a tu cola, responde en el chat y completa el canje.
+- Si la canción no se encuentra o no se puede añadir, el canje se cancela y Twitch devuelve los puntos automáticamente. Cada canje se procesa una sola vez.
+
 ## [0.2.52] · 2026-11-20 · !sr completo
 
 - Corregido «Respuesta no válida de Spotify»: la canción sí entraba en la cola, pero Nexus lo tomaba como error. Ahora responde «añadida a la cola».

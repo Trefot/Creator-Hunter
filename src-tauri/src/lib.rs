@@ -375,6 +375,7 @@ pub fn run() {
             music::music_remove,
             music::music_requests_enable,
             music::music_manual,
+            music::music_reward_create,
             music::music_request_resolve,
             music::music_play,
             music::music_volume,
