@@ -2,6 +2,10 @@
 
 ## [Sin publicar]
 
+## [0.2.50] · 2026-11-20 · Peticiones de música con motivo claro
+
+- Si una petición !sr no se puede añadir a la cola de Spotify, el chat y el panel de Música muestran el motivo exacto que da Spotify (por ejemplo, sin dispositivo activo) en lugar de un aviso genérico.
+
 ## [0.2.49] · 2026-11-19 · Directo que funciona: momentos, alertas, chat y música
 
 - Momentos con vídeo en directo: al empezar a emitir, Nexus enciende el búfer de repetición de OBS y cada marca guarda el clip de los últimos segundos. Antes, sin grabar, la marca quedaba sin vídeo. Requiere el búfer habilitado en OBS (Ajustes → Salida).

@@ -229,10 +229,17 @@ async fn api(
         return Ok(Value::Null);
     }
     if !r.status().is_success() {
-        return Err(format!(
-            "Spotify respondió {}. Comprueba Premium, dispositivo activo y permisos; no se reintenta automáticamente.",
-            r.status()
-        ));
+        let code = r.status();
+        let body: Value = r.json().await.unwrap_or(Value::Null);
+        let reason = body["error"]["reason"].as_str().unwrap_or("");
+        return Err(match reason {
+            "PREMIUM_REQUIRED" => "Spotify exige una cuenta Premium para añadir canciones a la cola.".into(),
+            "NO_ACTIVE_DEVICE" => "Spotify no tiene un dispositivo activo: abre Spotify en el PC y dale a reproducir.".into(),
+            _ => format!(
+                "Spotify respondió {code}{}. Comprueba Premium, dispositivo activo y permisos.",
+                body["error"]["message"].as_str().map(|m| format!(" ({m})")).unwrap_or_default()
+            ),
+        });
     }
     r.json()
         .await
@@ -450,7 +457,10 @@ pub async fn receive(app: &AppHandle, platform: &str, user: &str, name: &str, te
     }
     let reply = match music_request_resolve(app.clone(), id, true).await {
         Ok(()) => format!("🎵 @{name} añadida a la cola: {title}"),
-        Err(_) => format!("🎵 @{name} no pude añadir «{title}»: Spotify debe estar reproduciendo."),
+        Err(e) => {
+            app.state::<MusicState>().player.lock().unwrap().message = e.clone();
+            format!("🎵 @{name} no pude añadir «{title}». {e}")
+        }
     };
     let _ = crate::chat_commands::say(app, platform, &reply).await;
 }
