@@ -1,12 +1,11 @@
 {
-  "version": "0.2.53",
+  "version": "0.2.54",
   "notes": [
-    "Nueva recompensa de Twitch «Pedir canción» (50 puntos por defecto), creada desde Música con un botón. El espectador escribe la canción al canjearla; Nexus la busca en Spotify, la añade a tu cola, responde en el chat y completa el canje.",
-    "Si la canción no se encuentra o no se puede añadir, el canje se cancela y Twitch devuelve los puntos automáticamente. Cada canje se procesa una sola vez."
+    "La voz de «Nexus · Leer mi mensaje» se reproduce desde la fuente «Alertas Nexus» de OBS, así la oye tu público sin añadir capturas de audio. Si esa fuente no está abierta en OBS, la voz sigue sonando por tus altavoces como antes."
   ],
   "date": "2026-11-21",
   "installer": "TrophyHunter-setup.exe",
-  "source_commit": "dc40eba78f209b0da03ce6bd9e0afc5fd5191178",
-  "sha256": "9935794ae9e7d18823223031791038dee4969adc628dfcd472a6265402bda04f",
-  "size": 43575900
+  "source_commit": "85616ac3dab7971441c32453eb2ee48922da9266",
+  "sha256": "ca56ee95207457187ad6d4ce379aec6a41aabdfb2afef7b39648edbb885f5261",
+  "size": 43580388
 }
