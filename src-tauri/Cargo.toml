@@ -40,8 +40,9 @@ tungstenite = { version = "0.28", default-features = false, features = ["handsha
 
 # Read the optimization guideline for more details: https://tauri.app/concept/size/#cargo-configuration
 [profile.release]
-codegen-units = 1
-lto = true
+# LTO ligero y compilación en paralelo: publicar tarda unos 4 minutos menos con un ejecutable prácticamente igual.
+codegen-units = 16
+lto = "thin"
 opt-level = 3
 panic = "abort"
 strip = true

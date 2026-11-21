@@ -24,8 +24,6 @@ jobs:
   build:
     needs: interface
     runs-on: windows-latest
-    permissions:
-      contents: write
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -41,10 +39,19 @@ jobs:
             src-tauri -> target
             tests/data-safety -> target
             tests/auto-moments -> target
+      # El lector solo se recompila cuando cambia su código (ahorra casi un minuto por versión).
+      - name: Recuperar lector local de cofres
+        id: reader-cache
+        uses: actions/cache@v4
+        with:
+          path: src-tauri/resources/fortnite-reader
+          key: fortnite-reader-${{ hashFiles('tools/fortnite-reader/**') }}
       - uses: actions/setup-dotnet@v4
+        if: steps.reader-cache.outputs.cache-hit != 'true'
         with:
           dotnet-version: '10.0.x'
       - name: Compilar lector local de cofres
+        if: steps.reader-cache.outputs.cache-hit != 'true'
         run: dotnet publish tools/fortnite-reader/NexusFortniteReader.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -o src-tauri/resources/fortnite-reader
       - name: Probar arranque del lector local
         shell: pwsh
@@ -56,9 +63,6 @@ jobs:
       - run: npm ci
       - run: npm run release:check
       - run: npm test
-      - run: cargo test --locked --manifest-path tests/data-safety/Cargo.toml
-      - run: cargo test --locked --manifest-path tests/auto-moments/Cargo.toml
-      - run: cargo test --locked --manifest-path src-tauri/Cargo.toml
       - run: npm run tauri -- build --bundles nsis
       - run: npm run release:prepare
       - name: Comprobar actualización y accesos de Windows
@@ -67,6 +71,45 @@ jobs:
       - name: Comprobar integridad del instalador
         shell: bash
         run: cd .release && sha256sum --check SHA256SUMS.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: nexus-release
+          path: .release
+          retention-days: 3
+  # Pruebas de Rust en paralelo con la compilación: publicar no espera a hacerlas en fila.
+  rust-tests:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: nexus-windows-tests
+          cache-on-failure: true
+          workspaces: |
+            src-tauri -> target
+            tests/data-safety -> target
+            tests/auto-moments -> target
+      - name: Recurso del lector para compilar las pruebas
+        shell: pwsh
+        run: New-Item -ItemType Directory -Force src-tauri/resources/fortnite-reader | Out-Null; New-Item -ItemType File -Force src-tauri/resources/fortnite-reader/NexusFortniteReader.exe | Out-Null
+      - run: cargo test --locked --manifest-path tests/data-safety/Cargo.toml
+      - run: cargo test --locked --manifest-path tests/auto-moments/Cargo.toml
+      - run: cargo test --locked --manifest-path src-tauri/Cargo.toml
+  publish:
+    needs: [build, rust-tests]
+    runs-on: windows-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - uses: actions/download-artifact@v4
+        with:
+          name: nexus-release
+          path: .release
       - uses: actions/checkout@v4
         with:
           ref: releases
