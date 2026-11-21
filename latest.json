@@ -1,15 +1,13 @@
 {
-  "version": "0.2.55",
+  "version": "0.2.56",
   "notes": [
-    "Nueva tarjeta «Hoy» arriba en Inicio: antes del directo comprueba OBS, Twitch, YouTube, la fuente «Alertas Nexus» y «Pedir canción»; en directo muestra el tiempo en emisión y el botón «Marcar momento»; al terminar te lleva al resumen, los momentos y el episodio. Cada punto abre directamente donde se arregla.",
-    "El calendario muestra solo tus directos, vídeos y Shorts publicados en su día; al pulsarlos se abren.",
-    "Se quita la pestaña Cabina del directo: la pantalla de En directo abre en Chat.",
-    "Meta (Facebook/Instagram): si escribes el App ID y la clave secreta de tu app, Nexus cambia el token corto por uno de 60 días y, con página, por uno de página que no caduca. La clave secreta no se guarda.",
-    "Para desarrollo: script scripts/cambio-rapido.ps1 para probar compilaciones locales sin publicar."
+    "«Hoy» ya no está en Inicio: es la primera pantalla de En directo. Inicio queda solo para tus redes.",
+    "En directo tiene solo cuatro pestañas: Hoy, Chat, Sonido y Momentos y resúmenes. Estado, Alertas, Overlays, Contadores, Categoría, OBS y Comandos quedan dentro de «Ajustes del directo», cerrado hasta que lo abras.",
+    "El menú lateral pasa de diez entradas a cinco: Inicio, En directo, Crear contenido, Juegos y Ajustes. El calendario está dentro de Crear contenido; Conexiones, Perfiles, Metas, Ingresos y Copias, dentro de Ajustes."
   ],
   "date": "2026-11-21",
   "installer": "TrophyHunter-setup.exe",
-  "source_commit": "a98905a814bbd9525e44414046f56408cb14567f",
-  "sha256": "c1dfe094f38dfe754ff05efe530b0c25b99eb62953fbbf45129ff029c5b7ba0a",
-  "size": 43582144
+  "source_commit": "0189bfabd935ef56e97790d8ad64a64df1d2c673",
+  "sha256": "f26f9cc8cd7cbcf13165ac12f4b741dcdc53e93d2fba89dce3661e7dfabd0a4b",
+  "size": 43579664
 }
