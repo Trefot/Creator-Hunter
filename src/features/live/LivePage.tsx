@@ -452,7 +452,7 @@ export function LivePage({initialTab='hoy',navigationRevision=0,onNavigate}:{onN
 
       <SectionTabs tabs={liveTabs.filter(t=>['hoy','chat','sound','moments'].includes(t.id))} value={tab} onChange={setTab} label="Tu directo"/>
       <details className="live-settings" open={CONFIG_TABS.includes(tab)}><summary>Ajustes del directo</summary><SectionTabs tabs={liveTabs.filter(t=>CONFIG_TABS.includes(t.id))} value={tab} onChange={setTab} label="Ajustes del directo"/>{CONFIG_TABS.includes(tab)&&<StreamDeckGuide base={base} keyValue={info?.key??""}/>}</details>
-      <div hidden={tab!=='hoy'} role="tabpanel" aria-label="Hoy"><TodayAssistant onNavigate={(s,next)=>s==='live'?setTab(asTab(next??'hoy')):onNavigate?.(s,next)}/></div>
+      <div hidden={tab!=='hoy'} role="tabpanel" aria-label="Hoy"><TodayAssistant active={tab==='hoy'} onNavigate={(s,next)=>s==='live'?setTab(asTab(next??'hoy')):onNavigate?.(s,next)}/></div>
       {tab==='setup'&&<div className="card"><h2>Conecta tu estudio</h2><p>Las cuentas y sus pasos de conexión están reunidos en un solo lugar.</p><button onClick={()=>onNavigate?.('connections')}>Abrir Conexiones</button></div>}
       <div hidden={!['chat','category','overlays'].includes(tab)}>
        <StreamingPanel view={tab==='category'?'category':tab==='overlays'?'overlays':'chat'}/>

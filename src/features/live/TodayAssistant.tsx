@@ -14,24 +14,26 @@ type Tone = "ok" | "warn" | "todo";
 function clock(ms: number) { const s = Math.floor(ms / 1000), h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60); return h ? `${h} h ${m} min` : `${m} min`; }
 
 /** «Hoy»: un solo sitio que lleva de la mano antes, durante y después del directo (fase 2). */
-export function TodayAssistant({ onNavigate }: { onNavigate: Go }) {
+export function TodayAssistant({ onNavigate, active = true }: { onNavigate: Go; active?: boolean }) {
   const [obs, setObs] = useState<Obs | null>(null), [social, setSocial] = useState<Social | null>(null), [music, setMusic] = useState<Music | null>(null);
   const [alerts, setAlerts] = useState<Alerts | null>(null), [recap, setRecap] = useState<Recap | null>(null), [notice, setNotice] = useState(""), [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    let stop = false, timer: ReturnType<typeof setTimeout>;
+    if (!active) return;
+    let stop = false, first = true, timer: ReturnType<typeof setTimeout>;
     async function load() {
+      // Música cambia poco: se consulta solo al abrir Hoy, no en cada vuelta.
       const [o, s, m, a, r] = await Promise.all([
-        invoke<Obs>("obs_status").catch(() => null), invoke<Social>("social_status").catch(() => null), invoke<Music>("music_status").catch(() => null),
+        invoke<Obs>("obs_status").catch(() => null), invoke<Social>("social_status").catch(() => null), first ? invoke<Music>("music_status").catch(() => null) : Promise.resolve(undefined),
         invoke<Alerts>("alerts_status").catch(() => null), invoke<Recap[]>("stream_recaps").catch(() => []),
       ]);
       if (stop) return;
-      setObs(o); setSocial(s); setMusic(m); setAlerts(a); setRecap(r[0] ?? null);
+      setObs(o); setSocial(s); if (m !== undefined) setMusic(m); setAlerts(a); setRecap(r[0] ?? null); first = false;
       timer = setTimeout(load, 4000);
     }
     void load();
     return () => { stop = true; clearTimeout(timer); };
-  }, []);
+  }, [active]);
 
   async function mark() {
     setBusy(true); setNotice("");
