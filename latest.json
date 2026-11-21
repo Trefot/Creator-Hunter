@@ -1,11 +1,11 @@
 {
-  "version": "0.2.50",
+  "version": "0.2.51",
   "notes": [
-    "Si una petición !sr no se puede añadir a la cola de Spotify, el chat y el panel de Música muestran el motivo exacto que da Spotify (por ejemplo, sin dispositivo activo) en lugar de un aviso genérico."
+    "Corregido el error 411 de Spotify: las peticiones !sr y los botones de reproducir y siguiente ya llegan a Spotify. Nexus no indicaba el tamaño de la petición vacía y Spotify la rechazaba."
   ],
   "date": "2026-11-21",
   "installer": "TrophyHunter-setup.exe",
-  "source_commit": "e8427f53503464820de944efef58adbc4bc2d823",
-  "sha256": "3494fc7646b84617835073f2ab9dc2d9c66dd2f59b1a9a47af6d166dc5679e42",
-  "size": 43131279
+  "source_commit": "5d49d7b6af5bf8726b464a8b9c61d8a2db1d258b",
+  "sha256": "0459c90a8a7e627b6da475ca866092fe9b31d80d9af63e626f07dd941810b3ca",
+  "size": 43605287
 }
