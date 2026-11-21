@@ -1,15 +1,11 @@
 {
-  "version": "0.2.49",
+  "version": "0.2.50",
   "notes": [
-    "Momentos con vídeo en directo: al empezar a emitir, Nexus enciende el búfer de repetición de OBS y cada marca guarda el clip de los últimos segundos. Antes, sin grabar, la marca quedaba sin vídeo. Requiere el búfer habilitado en OBS (Ajustes → Salida).",
-    "Alertas con una sola fuente: nueva URL única para OBS que muestra las alertas de Twitch, YouTube y TikTok, como Streamlabs. En Alertas aparece la lista de últimos eventos recibidos para comprobar en directo que llegan follows, subs, bits y raids; son los mismos que suma el resumen.",
-    "Chat combinado: un solo overlay con Twitch y YouTube juntos y un panel de chat para meter dentro de OBS (Docks → Paneles personalizados del navegador), con historial y hora.",
-    "Peticiones de música: «!sr nombre de la canción» ya busca en Spotify, la añade sola a tu cola y responde en el chat. Puedes activar «Revisar cada petición» si prefieres aprobarlas.",
-    "Con OBS cerrado, Conexiones dice «OBS cerrado» en lugar de «Necesita revisión»."
+    "Si una petición !sr no se puede añadir a la cola de Spotify, el chat y el panel de Música muestran el motivo exacto que da Spotify (por ejemplo, sin dispositivo activo) en lugar de un aviso genérico."
   ],
-  "date": "2026-11-20",
+  "date": "2026-11-21",
   "installer": "TrophyHunter-setup.exe",
-  "source_commit": "bbff78dd8cd9b60ba5dc8645ccec413ab31a2074",
-  "sha256": "91b26261841a645441c1ac9a1edd3d03e3a9c58dff4263679dac538c3741101b",
-  "size": 43131538
+  "source_commit": "e8427f53503464820de944efef58adbc4bc2d823",
+  "sha256": "3494fc7646b84617835073f2ab9dc2d9c66dd2f59b1a9a47af6d166dc5679e42",
+  "size": 43131279
 }
