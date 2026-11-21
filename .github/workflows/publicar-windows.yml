@@ -75,6 +75,9 @@ jobs:
         with:
           name: nexus-release
           path: .release
+          # .release empieza por punto: sin esto upload-artifact lo ignora y la publicación no encuentra nada.
+          include-hidden-files: true
+          if-no-files-found: error
           retention-days: 3
   # Pruebas de Rust en paralelo con la compilación: publicar no espera a hacerlas en fila.
   rust-tests:
