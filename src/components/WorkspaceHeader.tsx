@@ -7,7 +7,7 @@ const destinations:{label:string;hint:string;section:Section;tab?:string}[]=[
  {label:'Inicio',hint:'Tus redes sociales, crecimiento y metas',section:'dashboard'},
  {label:'Mis proyectos',hint:'Crear contenido, edición y publicación',section:'projects',tab:'projects'},
  {label:'Ideas',hint:'Capturar y desarrollar ideas',section:'ideas'},
- {label:'En directo',hint:'Cabina, OBS y controles',section:'live',tab:'cabina'},
+ {label:'En directo',hint:'Chat, sonido, momentos y resúmenes',section:'live',tab:'chat'},
  {label:'Chat',hint:'Twitch y YouTube',section:'live',tab:'chat'},
  {label:'Voz y música',hint:'TTS, Spotify y peticiones',section:'live',tab:'sound'},
  {label:'Alertas',hint:'Diseños y eventos por plataforma',section:'live',tab:'alerts'},

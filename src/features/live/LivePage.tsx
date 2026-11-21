@@ -28,14 +28,12 @@ import { StreamingPanel } from "./StreamingPanel";
 import { ObsPanel } from "./ObsPanel";
 
 import {SectionTabs} from "../../components/SectionTabs";
-import {LiveCockpit} from "./LiveCockpit";
 import {RecapHistory} from "./StreamRecap";
 import {ConnectionsStatus} from "./ConnectionsStatus";
-import {GoLivePanel} from "./GoLivePanel";
 import {ChatCommandsPanel} from "./ChatCommandsPanel";
-const liveTabs=[{id:'setup',label:'Conectar servicios'},{id:'cabina',label:'Cabina'},{id:'estado',label:'Estado'},{id:'chat',label:'Chat'},{id:'commands',label:'Comandos'},{id:'sound',label:'Sonido'},{id:'alerts',label:'Alertas'},{id:'overlays',label:'Overlays'},{id:'counters',label:'Contadores'},{id:'category',label:'Categoría'},{id:'obs',label:'OBS'},{id:'connections',label:'Conexiones'},{id:'moments',label:'Momentos'},{id:'recaps',label:'Resúmenes'}] as const;
+const liveTabs=[{id:'setup',label:'Conectar servicios'},{id:'estado',label:'Estado'},{id:'chat',label:'Chat'},{id:'commands',label:'Comandos'},{id:'sound',label:'Sonido'},{id:'alerts',label:'Alertas'},{id:'overlays',label:'Overlays'},{id:'counters',label:'Contadores'},{id:'category',label:'Categoría'},{id:'obs',label:'OBS'},{id:'connections',label:'Conexiones'},{id:'moments',label:'Momentos'},{id:'recaps',label:'Resúmenes'}] as const;
 type LiveTab=typeof liveTabs[number]['id'];
-const asTab=(value:string):LiveTab=>liveTabs.find(t=>t.id===value)?.id??'cabina';
+const asTab=(value:string):LiveTab=>liveTabs.find(t=>t.id===value)?.id??'chat';
 const t = es.live;
 
 export const COUNTER_ICONS = ["💀", "⚔️", "📦", "🏆", "👑", "❤️", "⭐", "🎯", "🔥", "💎", "👥", "🎮"];
@@ -391,7 +389,7 @@ function CounterForm({
 }
 
 /** Live Studio · fase 1: contadores para el stream, con overlay de OBS y botones del Stream Deck. */
-export function LivePage({initialTab='cabina',navigationRevision=0,onNavigate}:{onNavigate?:(section:Section,tab?:string)=>void;onOpenProject:(id:string)=>void;initialTab?:string;navigationRevision?:number}) {
+export function LivePage({initialTab='chat',navigationRevision=0,onNavigate}:{onNavigate?:(section:Section,tab?:string)=>void;onOpenProject:(id:string)=>void;initialTab?:string;navigationRevision?:number}) {
  const [tab,setTab]=useState<LiveTab>(asTab(initialTab));
  useEffect(()=>setTab(asTab(initialTab)),[initialTab,navigationRevision]);
   const [counters, setCounters] = useState<Counter[] | null>(null);
@@ -450,12 +448,11 @@ export function LivePage({initialTab='cabina',navigationRevision=0,onNavigate}:{
       </header>
 
       <button className="ghost small-button" onClick={()=>onNavigate?.("connections")}>¿Cómo conecto mis servicios?</button>
-      <SectionTabs tabs={liveTabs.filter(t=>['cabina','chat','sound','moments','recaps'].includes(t.id))} value={tab} onChange={setTab} label="Durante el directo"/>
-      <details open={['setup','estado','alerts','overlays','category','obs','connections','commands','counters'].includes(tab)}><summary>Configurar y revisar</summary><SectionTabs tabs={liveTabs.filter(t=>!['cabina','chat','sound','moments','recaps','setup','connections'].includes(t.id))} value={tab} onChange={setTab} label="Configuración del estudio"/></details>
+      <SectionTabs tabs={liveTabs.filter(t=>['chat','sound','moments','recaps'].includes(t.id))} value={tab} onChange={setTab} label="Durante el directo"/>
+      <details open={['setup','estado','alerts','overlays','category','obs','connections','commands','counters'].includes(tab)}><summary>Configurar y revisar</summary><SectionTabs tabs={liveTabs.filter(t=>!['chat','sound','moments','recaps','setup','connections'].includes(t.id))} value={tab} onChange={setTab} label="Configuración del estudio"/></details>
       <StreamDeckGuide base={base} keyValue={info?.key??""}/>
       {tab==='setup'&&<div className="card"><h2>Conecta tu estudio</h2><p>Las cuentas y sus pasos de conexión están reunidos en un solo lugar.</p><button onClick={()=>onNavigate?.('connections')}>Abrir Conexiones</button></div>}
-      <div className={tab==='cabina'?'live-cabina-grid':''} hidden={!['cabina','chat','category','overlays'].includes(tab)}>
-       <div hidden={tab!=='cabina'}><GoLivePanel onNavigate={value=>setTab(asTab(value))}/><LiveCockpit active={tab==='cabina'} onNavigate={value=>setTab(asTab(value))}/></div>
+      <div hidden={!['chat','category','overlays'].includes(tab)}>
        <StreamingPanel view={tab==='category'?'category':tab==='overlays'?'overlays':'chat'}/>
       </div>
       <div hidden={tab!=='sound'} role="tabpanel" aria-label="Sonido"><TtsPanel active={tab==='sound'} base={base} keyValue={info?.key??""}/><MusicPanel active={tab==='sound'} base={base} keyValue={info?.key??""}/></div>

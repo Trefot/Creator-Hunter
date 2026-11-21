@@ -133,10 +133,31 @@ pub async fn metrics_connect_meta(
     facebook_profile: String,
     instagram_profile: Option<String>,
     page_id: Option<String>,
+    app_id: Option<String>,
+    app_secret: Option<String>,
 ) -> Result<Value, String> {
     let state = app.state::<MetricsState>();
     let _gate = state.operation.lock().await;
     let token = checked_token(&token)?;
+    // Acceso que no caduca: el token corto se cambia por uno de 60 días y, con él, Meta entrega
+    // un token de página permanente. El secreto de la app solo se usa aquí y no se guarda.
+    let exchanged = match (app_id.as_deref().map(str::trim).filter(|s| !s.is_empty()), app_secret.as_deref().map(str::trim).filter(|s| !s.is_empty())) {
+        (Some(client_id), Some(secret)) => {
+            let v = api(
+                client()?
+                    .get("https://graph.facebook.com/v27.0/oauth/access_token")
+                    .query(&[("grant_type", "fb_exchange_token"), ("client_id", client_id), ("client_secret", secret), ("fb_exchange_token", token)]),
+                "Meta",
+            )
+            .await
+            .map_err(|e| format!("Meta no aceptó el cambio a un acceso permanente. Revisa el ID y el secreto de la app ({e})."))?;
+            Some(v["access_token"].as_str().ok_or("Meta no devolvió el acceso de larga duración.")?.to_string())
+        }
+        (None, None) => None,
+        _ => return Err("Para el acceso permanente indica el ID y el secreto de la app, o deja ambos vacíos.".into()),
+    };
+    let long_lived = exchanged.is_some();
+    let token = match &exchanged { Some(t) => checked_token(t)?, None => token };
     let pool = crate::backup::pool(&app).await?;
     crate::metrics_core::profile(&pool, &facebook_profile, "facebook").await?;
     if let Some(id) = instagram_profile.as_ref().filter(|s| !s.is_empty()) {
@@ -149,10 +170,16 @@ pub async fn metrics_connect_meta(
         .map(str::trim)
         .filter(|id| !id.is_empty());
     let (id, authorized_token) = if let Some(id) = requested {
-        (
-            crate::metrics_core::meta_page_id(id)?.to_string(),
-            token.to_string(),
+        let id = crate::metrics_core::meta_page_id(id)?.to_string();
+        // Con permiso sobre la página, su token de página es el que no caduca.
+        let page_token = api(
+            client()?.get(format!("https://graph.facebook.com/v27.0/{id}")).bearer_auth(token).query(&[("fields", "access_token")]),
+            "Meta",
         )
+        .await
+        .ok()
+        .and_then(|v| v["access_token"].as_str().map(String::from));
+        (id, page_token.unwrap_or_else(|| token.to_string()))
     } else {
         let pages = api(
             client()?
@@ -209,7 +236,7 @@ pub async fn metrics_connect_meta(
         .set_password(&json!({"token":authorized_token,"page_id":id,"instagram_id":ig}).to_string())
         .map_err(|_| "Windows no pudo guardar la autorización.".to_string())?;
     save_cfg(&app,"meta",&json!({"configured":true,"auto":true,"facebook_profile":facebook_profile,"instagram_profile":instagram_profile,"name":page["name"]})).await?;
-    Ok(json!({"configured":true,"name":page["name"]}))
+    Ok(json!({"configured":true,"name":page["name"],"long_lived":long_lived}))
 }
 #[tauri::command]
 pub async fn metrics_connect_tiktok(

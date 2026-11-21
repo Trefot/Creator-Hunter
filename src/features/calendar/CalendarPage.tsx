@@ -7,6 +7,8 @@ import { es } from "../../i18n/es";
 import { formatDate, todayIso } from "../../i18n/format";
 import { currentStep } from "../projects/status";
 import { addDays, mondayOf, weekDays } from "./week";
+import { CalendarPost, postsBetween } from "../../db/contentPerformance";
+import { openUrl } from "@tauri-apps/plugin-opener";
 
 const t = es.calendar;
 const tp = es.projects;
@@ -30,6 +32,7 @@ export function CalendarPage({ onOpenProject }: Props) {
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [overdue,setOverdue]=useState<Adaptation[]>([]),[revision,setRevision]=useState(0);
   const [error, setError] = useState("");
+  const [posts, setPosts] = useState<CalendarPost[]>([]);
 
   useEffect(() => {
     setItems(null);
@@ -41,9 +44,16 @@ export function CalendarPage({ onOpenProject }: Props) {
         setProfiles(p);
       })
       .catch((err) => setError(String(err)));
+    // Lo que ya salió en tus redes (directos, vídeos, Shorts) aparece solo en su día, en hora local.
+    const from = new Date(addDays(monday, -1) + "T00:00:00").toISOString(), to = new Date(addDays(monday, 8) + "T00:00:00").toISOString();
+    postsBetween(from, to).then(setPosts).catch((err) => setError(String(err)));
   }, [monday,revision]);
 
   const days = weekDays(monday);
+  const localDay = (iso: string) => { const d = new Date(iso); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; };
+  const localTime = (iso: string) => new Date(iso).toLocaleTimeString(es.locale, { hour: "2-digit", minute: "2-digit" });
+  const formatNames: Record<string, string> = { live: "Directo", video: "Vídeo", short: "Short", reel: "Reel", post: "Publicación", clip: "Clip" };
+  const plannedUrls = new Set((items ?? []).map((a) => a.published_url).filter(Boolean));
 
   function Item({ a, showTime }: { a: Adaptation; showTime: boolean }) {
     const profile = profiles.find((p) => p.id === a.profile_id);
@@ -101,7 +111,15 @@ export function CalendarPage({ onOpenProject }: Props) {
             return (
               <div key={day} onDragOver={e=>e.preventDefault()} onDrop={e=>{e.preventDefault();const id=e.dataTransfer.getData("text/plain"),a=items.find(a=>a.id===id);if(a&&!a.published_at)void markScheduled(a.id,day+"T"+(a.scheduled_at?.slice(11,16)??"18:00"),a.published_url).then(()=>setRevision(v=>v+1)).catch(e=>setError(String(e)))}} className={`day-column${day === today ? " day-today" : ""}`}>
                 <div className="day-header">{dayLabel(day)}</div>
-                {dayItems.length === 0 ? (
+                {posts.filter((p) => localDay(p.published_at) === day && !plannedUrls.has(p.url)).map((p) => (
+                  <button key={p.id} className="cal-item cal-item-done" title="Publicado en tus redes" onClick={() => void openUrl(p.url).catch((e) => setError(String(e)))}>
+                    {p.thumbnail && <img className="cal-thumb" src={p.thumbnail} alt="" />}
+                    <span className="cal-item-top"><strong>{localTime(p.published_at)}</strong><PlatformBadge platform={p.platform as Profile["platform"]} /></span>
+                    <span className="cal-item-title">{p.title}</span>
+                    <span className="muted small">{formatNames[p.format] ?? "Publicado"} · publicado</span>
+                  </button>
+                ))}
+                {dayItems.length === 0 && !posts.some((p) => localDay(p.published_at) === day && !plannedUrls.has(p.url)) ? (
                   <span className="muted small day-empty">{t.nothing}</span>
                 ) : (
                   dayItems.map((a) => <Item key={a.id} a={a} showTime />)

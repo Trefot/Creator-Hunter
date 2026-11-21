@@ -2,6 +2,14 @@
 
 ## [Sin publicar]
 
+## [0.2.55] · 2026-11-21 · Hoy: tu directo en una pantalla
+
+- Nueva tarjeta «Hoy» arriba en Inicio: antes del directo comprueba OBS, Twitch, YouTube, la fuente «Alertas Nexus» y «Pedir canción»; en directo muestra el tiempo en emisión y el botón «Marcar momento»; al terminar te lleva al resumen, los momentos y el episodio. Cada punto abre directamente donde se arregla.
+- El calendario muestra solo tus directos, vídeos y Shorts publicados en su día; al pulsarlos se abren.
+- Se quita la pestaña Cabina del directo: la pantalla de En directo abre en Chat.
+- Meta (Facebook/Instagram): si escribes el App ID y la clave secreta de tu app, Nexus cambia el token corto por uno de 60 días y, con página, por uno de página que no caduca. La clave secreta no se guarda.
+- Para desarrollo: script scripts/cambio-rapido.ps1 para probar compilaciones locales sin publicar.
+
 ## [0.2.54] · 2026-11-21 · La voz TTS entra en el directo
 
 - La voz de «Nexus · Leer mi mensaje» se reproduce desde la fuente «Alertas Nexus» de OBS, así la oye tu público sin añadir capturas de audio. Si esa fuente no está abierta en OBS, la voz sigue sonando por tus altavoces como antes.

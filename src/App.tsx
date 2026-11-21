@@ -41,7 +41,7 @@ function App() {
   useEffect(()=>startAutomaticBackup(),[]);
   useEffect(()=>startContentSync(()=>{}),[]);
   const [focus,setFocus]=useState(()=>{try{return localStorage.getItem("nexus-focus")==="true"}catch{return false}});
-  const [liveTab,setLiveTab]=useState({value:"cabina",revision:0});
+  const [liveTab,setLiveTab]=useState({value:"chat",revision:0});
   const [contentTab,setContentTab]=useState<"projects"|"ideas"|"moments"|"performance">("moments");
   useEffect(()=>startSocialSync(()=>setDataVersion(v=>v+1)),[]);
   const [section, setSection] = useState<Section>("dashboard");
@@ -94,7 +94,7 @@ function App() {
 
   function select(next: Section,tab?:string) {
     if(next==="projects")setContentTab(tab==="projects"?"projects":tab==="ideas"?"ideas":tab==="performance"?"performance":"moments");
-    if(next==="live")setLiveTab(v=>({value:tab??"cabina",revision:v.revision+1}));
+    if(next==="live")setLiveTab(v=>({value:tab??"chat",revision:v.revision+1}));
     setProjectToOpen(null);
     setGameToOpen(null);
     setSection(next);

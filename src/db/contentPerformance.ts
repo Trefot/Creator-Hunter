@@ -69,6 +69,11 @@ export async function contentHistory() {
       SELECT post_id,observed_at,views,likes,comments,shares FROM candidates WHERE rn=1 ORDER BY observed_at`,[WORKSPACE_ID]);
 }
 export async function contentPostHistory(id:string){const rows=await(await getDb()).select<Observation[]>(`SELECT o.post_id,o.observed_at,o.views,o.likes,o.comments,o.shares FROM content_observation o JOIN content_post p ON p.id=o.post_id WHERE p.id=$1 AND p.workspace_id=$2 ORDER BY o.observed_at DESC LIMIT 180`,[id,WORKSPACE_ID]);return rows.reverse()}
+/** Publicaciones detectadas en las redes (vídeos, Shorts, directos…) entre dos fechas, para el calendario. */
+export interface CalendarPost { id: string; platform: string; title: string; url: string; thumbnail: string | null; published_at: string; format: string }
+export async function postsBetween(fromIso: string, toIso: string) {
+    return (await getDb()).select<CalendarPost[]>(`SELECT id,platform,title,url,thumbnail,published_at,format FROM content_post WHERE workspace_id=$1 AND published_at>=$2 AND published_at<$3 ORDER BY published_at`, [WORKSPACE_ID, fromIso, toIso]);
+}
 export async function contentSeries() { return (await getDb()).select<Series[]>('SELECT id,title FROM content_series WHERE workspace_id=$1 ORDER BY title', [WORKSPACE_ID]); }
 export async function addSeries(title: string) { const text = title.trim(); if (!text || text.length > 120)
     throw Error('Escribe un nombre de serie de hasta 120 caracteres.'); const result = await (await getDb()).execute('INSERT INTO content_series(id,workspace_id,title) SELECT $1,$2,$3 WHERE NOT EXISTS(SELECT 1 FROM content_series WHERE workspace_id=$2 AND lower(title)=lower($3))', [newId(), WORKSPACE_ID, text]); if (result.rowsAffected === 0)

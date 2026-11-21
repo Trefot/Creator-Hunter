@@ -1,6 +1,7 @@
 import {latestViews,LatestViews} from '../../db/results';
 import {goalStartDate} from '../goals/progress';
 import {Milestones} from "./Milestones";
+import {TodayAssistant} from "./TodayAssistant";
 import {HistoryChart} from './HistoryChart';
 import {useEffect,useRef,useState} from 'react';
 import {RefreshCw,Plus,X,ArrowUpRight,Target} from 'lucide-react';
@@ -47,6 +48,7 @@ export function DashboardPage({onNavigate,onOpenProject,dataVersion=0}:{onNaviga
  const current=(goal?.metric==='views'?publicationViews.filter(v=>v.profile_id===selected&&v.published_at&&v.published_at.slice(0,10)>=goalStartDate(goal)).reduce((n,v)=>n+v.views,0):goal?.metric==='watch_hours'?hours?.watch_hours:progress?.latest?.followers)??null,ratio=goal&&current!==null?Math.min(100,current/goal.target_value*100):0;
  return <section className="page page-wide social-home">
   <header className="page-header social-home-header"><div><span className="nexus-eyebrow">TU COMUNIDAD · TU PROGRESO</span><h1>Mira cómo crece lo que creas.</h1><p className="muted">Tus redes primero. Cada avance cuenta.</p></div><img src={nexus} alt="" /></header>
+  <TodayAssistant onNavigate={onNavigate}/>
   <div className="social-toolbar"><div><h2>Tus redes sociales</h2><p className="small muted">Cada cifra conserva su fecha y su origen.</p></div><div><label>Comparar<select aria-label="Período de las métricas" value={days} onChange={e=>setDays(Number(e.target.value))}><option value={28}>Últimos 28 días</option><option value={7}>Últimos 7 días</option></select></label><button className="ghost small-button" disabled={busy} onClick={()=>void refresh()}><RefreshCw size={14}/>{busy?'Consultando…':'Actualizar métricas'}</button><button className="small-button" disabled={!profile} onClick={()=>setEditing('record')}><Plus size={14}/>Registrar cifras</button></div></div>
   {error&&<div className="card social-error" role="alert"><p>{error}</p><button className="ghost small-button" onClick={()=>onNavigate('connections')}>Revisar conexiones</button><button className="ghost small-button" onClick={()=>setRevision(r=>r+1)}>Volver a cargar</button></div>}
   {notice&&<p role="status" className="muted small">{notice}</p>}
