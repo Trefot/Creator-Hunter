@@ -2,6 +2,12 @@
 
 ## [Sin publicar]
 
+## [0.2.56] · 2026-11-21 · Menos apartados
+
+- «Hoy» ya no está en Inicio: es la primera pantalla de En directo. Inicio queda solo para tus redes.
+- En directo tiene solo cuatro pestañas: Hoy, Chat, Sonido y Momentos y resúmenes. Estado, Alertas, Overlays, Contadores, Categoría, OBS y Comandos quedan dentro de «Ajustes del directo», cerrado hasta que lo abras.
+- El menú lateral pasa de diez entradas a cinco: Inicio, En directo, Crear contenido, Juegos y Ajustes. El calendario está dentro de Crear contenido; Conexiones, Perfiles, Metas, Ingresos y Copias, dentro de Ajustes.
+
 ## [0.2.55] · 2026-11-21 · Hoy: tu directo en una pantalla
 
 - Nueva tarjeta «Hoy» arriba en Inicio: antes del directo comprueba OBS, Twitch, YouTube, la fuente «Alertas Nexus» y «Pedir canción»; en directo muestra el tiempo en emisión y el botón «Marcar momento»; al terminar te lleva al resumen, los momentos y el episodio. Cada punto abre directamente donde se arregla.

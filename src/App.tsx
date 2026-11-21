@@ -41,8 +41,8 @@ function App() {
   useEffect(()=>startAutomaticBackup(),[]);
   useEffect(()=>startContentSync(()=>{}),[]);
   const [focus,setFocus]=useState(()=>{try{return localStorage.getItem("nexus-focus")==="true"}catch{return false}});
-  const [liveTab,setLiveTab]=useState({value:"chat",revision:0});
-  const [contentTab,setContentTab]=useState<"projects"|"ideas"|"moments"|"performance">("moments");
+  const [liveTab,setLiveTab]=useState({value:"hoy",revision:0});
+  const [contentTab,setContentTab]=useState<"projects"|"ideas"|"moments"|"performance"|"calendar">("moments");
   useEffect(()=>startSocialSync(()=>setDataVersion(v=>v+1)),[]);
   const [section, setSection] = useState<Section>("dashboard");
   /** Proyecto que Proyectos debe abrir al entrar (por ejemplo, desde el calendario). */
@@ -93,8 +93,10 @@ function App() {
   useEffect(()=>{const open=()=>select("projects","moments");window.addEventListener("nexus-open-content",open);return()=>window.removeEventListener("nexus-open-content",open)},[]);
 
   function select(next: Section,tab?:string) {
-    if(next==="projects")setContentTab(tab==="projects"?"projects":tab==="ideas"?"ideas":tab==="performance"?"performance":"moments");
-    if(next==="live")setLiveTab(v=>({value:tab??"chat",revision:v.revision+1}));
+    // El calendario vive ahora dentro de Crear contenido.
+    if(next==="calendar"){next="projects";tab="calendar";}
+    if(next==="projects")setContentTab(tab==="projects"?"projects":tab==="ideas"?"ideas":tab==="performance"?"performance":tab==="calendar"?"calendar":"moments");
+    if(next==="live")setLiveTab(v=>({value:tab??"hoy",revision:v.revision+1}));
     setProjectToOpen(null);
     setGameToOpen(null);
     setSection(next);

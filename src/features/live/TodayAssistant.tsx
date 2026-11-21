@@ -61,8 +61,8 @@ export function TodayAssistant({ onNavigate }: { onNavigate: Go }) {
         {live && <span className="setup-badge ok"><Radio size={14} /> EN DIRECTO</span>}
       </header>
 
-      {!live && !recapToday && <ul className="status-list" style={{ marginTop: 10 }}>{before.map((s) => (
-        <li key={s.text} className="status-item"><button className="ghost" style={{ display: "flex", gap: 10, alignItems: "center", width: "100%", textAlign: "left" }} onClick={s.go}>
+      {!live && !recapToday && <ul style={{ listStyle: "none", padding: 0, margin: "10px 0 0", display: "grid", gap: 6 }}>{before.map((s) => (
+        <li key={s.text}><button className="ghost" style={{ display: "flex", gap: 12, alignItems: "center", justifyContent: "flex-start", width: "100%", textAlign: "left", padding: "10px 14px" }} onClick={s.go}>
           {s.tone === "ok" ? <CheckCircle2 size={18} color="#3ecf8e" /> : s.tone === "warn" ? <AlertTriangle size={18} color="#f5b14c" /> : <Circle size={18} />}
           <span><strong>{s.text}</strong><br /><span className="muted small">{s.hint}</span></span></button></li>))}</ul>}
 
