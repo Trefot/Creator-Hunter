@@ -203,14 +203,18 @@ async fn api(
         return Err("Spotify solicitó esperar antes de otra consulta.".into());
     }
     let t = token().await?;
-    let r = reqwest::Client::builder()
+    let mut request = reqwest::Client::builder()
         .timeout(Duration::from_secs(15))
         .build()
         .map_err(|_| "No se pudo iniciar HTTP.")?
-        .request(method, format!("https://api.spotify.com/v1/{path}"))
+        .request(method.clone(), format!("https://api.spotify.com/v1/{path}"))
         .bearer_auth(t)
-        .query(query)
-        .body("")
+        .query(query);
+    // Spotify exige Content-Length en POST/PUT aunque el cuerpo esté vacío (si no, responde 411).
+    if method != reqwest::Method::GET {
+        request = request.header(reqwest::header::CONTENT_LENGTH, "0").body(Vec::<u8>::new());
+    }
+    let r = request
         .send()
         .await
         .map_err(|_| "Spotify no confirmó la operación. Comprueba la cola antes de repetir.")?;

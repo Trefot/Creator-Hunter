@@ -2,6 +2,10 @@
 
 ## [Sin publicar]
 
+## [0.2.51] · 2026-11-20 · !sr añade de verdad a Spotify
+
+- Corregido el error 411 de Spotify: las peticiones !sr y los botones de reproducir y siguiente ya llegan a Spotify. Nexus no indicaba el tamaño de la petición vacía y Spotify la rechazaba.
+
 ## [0.2.50] · 2026-11-20 · Peticiones de música con motivo claro
 
 - Si una petición !sr no se puede añadir a la cola de Spotify, el chat y el panel de Música muestran el motivo exacto que da Spotify (por ejemplo, sin dispositivo activo) en lugar de un aviso genérico.
