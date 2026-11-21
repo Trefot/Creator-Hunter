@@ -2,6 +2,10 @@
 
 ## [Sin publicar]
 
+## [0.2.54] · 2026-11-21 · La voz TTS entra en el directo
+
+- La voz de «Nexus · Leer mi mensaje» se reproduce desde la fuente «Alertas Nexus» de OBS, así la oye tu público sin añadir capturas de audio. Si esa fuente no está abierta en OBS, la voz sigue sonando por tus altavoces como antes.
+
 ## [0.2.53] · 2026-11-20 · Pedir canciones con puntos del canal
 
 - Nueva recompensa de Twitch «Pedir canción» (50 puntos por defecto), creada desde Música con un botón. El espectador escribe la canción al canjearla; Nexus la busca en Spotify, la añade a tu cola, responde en el chat y completa el canje.

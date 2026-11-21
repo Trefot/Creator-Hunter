@@ -55,6 +55,10 @@ struct Inner {
     recent: VecDeque<(String, Instant)>,
     message: String,
     paused: bool,
+    /// Voz lista para la fuente «Alertas Nexus» de OBS: (id, archivo WAV).
+    clip: Option<(String, std::path::PathBuf)>,
+    /// Última vez que la fuente de alertas de OBS pidió la voz.
+    overlay_seen: Option<Instant>,
 }
 #[derive(Default)]
 pub struct EngagementState {
@@ -112,6 +116,66 @@ Remove-Event -SourceIdentifier NexusSpeechDone
 $s.Dispose()
 if($bad){exit 1}
 "#;
+/// Genera la voz en un WAV para reproducirla desde la fuente de OBS (así la oye el público).
+const SAY_FILE: &str = r#"$ErrorActionPreference='Stop'
+[Console]::InputEncoding=[Text.Encoding]::UTF8
+Add-Type -AssemblyName System.Speech
+$d=[Console]::In.ReadToEnd()|ConvertFrom-Json
+$s=New-Object System.Speech.Synthesis.SpeechSynthesizer
+if($d.voice){$s.SelectVoice([string]$d.voice)}
+$s.Rate=[int]$d.rate
+$s.Volume=[int]$d.volume
+$s.SetOutputToWaveFile([string]$d.path)
+$s.Speak([string]$d.text)
+$s.Dispose()
+"#;
+fn synthesize(text: &str, c: &SpeechConfig, path: &std::path::Path) -> Result<Duration, String> {
+    let mut child = powershell(SAY_FILE)
+        .stdin(Stdio::piped())
+        .stdout(Stdio::null())
+        .stderr(Stdio::null())
+        .spawn()
+        .map_err(|_| "No se pudo iniciar la voz local de Windows.".to_string())?;
+    let data = json!({"text":text,"voice":c.voice,"rate":c.rate,"volume":c.volume,"path":path}).to_string();
+    child.stdin.take().ok_or("No se pudo enviar el texto a la voz.")?.write_all(data.as_bytes()).map_err(|_| "No se pudo enviar el texto a la voz.")?;
+    let start = Instant::now();
+    loop {
+        match child.try_wait() {
+            Ok(Some(status)) if status.success() => break,
+            Ok(Some(_)) => return Err("Windows no pudo generar la voz.".into()),
+            Ok(None) if start.elapsed() > Duration::from_secs(30) => { let _ = child.kill(); return Err("La voz tardó demasiado en generarse.".into()); }
+            Ok(None) => std::thread::sleep(Duration::from_millis(50)),
+            Err(_) => return Err("No se pudo comprobar la voz.".into()),
+        }
+    }
+    wav_duration(&std::fs::read(path).map_err(|_| "No se encontró el audio de la voz.")?).ok_or("Audio de voz no válido.".into())
+}
+/// Duración de un WAV PCM a partir de su cabecera (bytes por segundo y tamaño de datos).
+fn wav_duration(bytes: &[u8]) -> Option<Duration> {
+    if bytes.len() < 44 || &bytes[0..4] != b"RIFF" { return None; }
+    let rate = u32::from_le_bytes(bytes[28..32].try_into().ok()?) as f64;
+    let mut i = 12;
+    while i + 8 <= bytes.len() {
+        let size = u32::from_le_bytes(bytes[i + 4..i + 8].try_into().ok()?) as usize;
+        if &bytes[i..i + 4] == b"data" && rate > 0. { return Some(Duration::from_secs_f64(size.min(bytes.len() - i - 8) as f64 / rate)); }
+        i += 8 + size + (size & 1);
+    }
+    None
+}
+/// Lo que consulta la fuente de alertas de OBS cada medio segundo.
+pub fn clip_state(app: &AppHandle) -> Value {
+    let state = app.state::<EngagementState>();
+    let mut i = state.inner.lock().unwrap();
+    i.overlay_seen = Some(Instant::now());
+    json!({"id": i.clip.as_ref().map(|c| c.0.clone())})
+}
+pub fn clip_bytes(app: &AppHandle, id: &str) -> Option<Vec<u8>> {
+    let path = app.state::<EngagementState>().inner.lock().unwrap().clip.as_ref().filter(|c| c.0 == id)?.1.clone();
+    std::fs::read(path).ok()
+}
+fn overlay_listening(app: &AppHandle) -> bool {
+    app.state::<EngagementState>().inner.lock().unwrap().overlay_seen.is_some_and(|t| t.elapsed() < Duration::from_secs(5))
+}
 fn speak(text: &str, c: &SpeechConfig) -> Result<Child, String> {
     let mut child = powershell(SAY)
         .stdin(Stdio::piped())
@@ -436,13 +500,29 @@ pub fn start(app: AppHandle) {
             let Some(s) = next else {
                 continue;
             };
-            let result=speak(&s.text,&c).and_then(|mut child|{
+            let result = if overlay_listening(&app) {
+                let path = std::env::temp_dir().join(format!("nexus-tts-{}.wav", s.id.chars().filter(|c| c.is_ascii_alphanumeric()).collect::<String>()));
+                synthesize(&s.text, &c, &path).and_then(|length| {
+                    let state = app.state::<EngagementState>();
+                    if state.generation.load(Ordering::SeqCst) != generation { return Err("Voz cancelada.".into()); }
+                    state.inner.lock().unwrap().clip = Some((format!("{}-{generation}", s.id), path.clone()));
+                    let until = Instant::now() + length + Duration::from_millis(700);
+                    let mut outcome = Ok(());
+                    while Instant::now() < until {
+                        if state.generation.load(Ordering::SeqCst) != generation { outcome = Err("Voz detenida.".into()); break; }
+                        std::thread::sleep(Duration::from_millis(100));
+                    }
+                    state.inner.lock().unwrap().clip = None;
+                    let _ = std::fs::remove_file(&path);
+                    outcome
+                })
+            } else { speak(&s.text,&c).and_then(|mut child|{
   let state=app.state::<EngagementState>();{let mut i=state.inner.lock().unwrap();if state.generation.load(Ordering::SeqCst)!=generation{let _=child.kill();let _=child.wait();return Err("Voz cancelada.".into());}i.child=Some(child);}
   let start=Instant::now();loop{std::thread::sleep(Duration::from_millis(100));let mut i=state.inner.lock().unwrap();let Some(child)=i.child.as_mut()else{return Err("Voz detenida.".into());};
    if start.elapsed()>Duration::from_secs(60){let _=child.kill();let _=child.wait();i.child=None;return Err("La voz superó el tiempo máximo.".into());}
    match child.try_wait(){Ok(Some(status))=>{i.child=None;return if status.success()&&state.generation.load(Ordering::SeqCst)==generation{Ok(())}else{Err("La voz no se completó. Revisa la salida de audio y el canje en Twitch.".into())};},Ok(None)=>{},Err(_)=>{let _=child.kill();let _=child.wait();i.child=None;return Err("No se pudo comprobar la voz.".into());}}
   }
- });
+ }) };
             let message = match result {
                 Ok(()) => match tauri::async_runtime::block_on(settle(&app, &s, "FULFILLED")) {
                     Ok(()) => "Mensaje leído. Comprueba la salida de audio en OBS.".into(),
@@ -494,3 +574,22 @@ pub fn reset_after_restore(app: &AppHandle) {
 }
 
 pub(crate) fn speaking(app:&AppHandle)->bool {app.state::<EngagementState>().inner.lock().map(|i|i.current.is_some()).unwrap_or(false)}
+
+#[cfg(test)]
+mod wav_tests {
+    use super::wav_duration;
+    #[test]
+    fn reads_duration_from_a_pcm_header() {
+        let mut w = b"RIFF\0\0\0\0WAVEfmt ".to_vec();
+        w.extend(16u32.to_le_bytes());
+        w.extend([1, 0, 1, 0]);
+        w.extend(22050u32.to_le_bytes());
+        w.extend(44100u32.to_le_bytes());
+        w.extend([2, 0, 16, 0]);
+        w.extend(b"data");
+        w.extend(88200u32.to_le_bytes());
+        w.extend(vec![0u8; 88200]);
+        assert_eq!(wav_duration(&w).unwrap().as_secs(), 2);
+        assert!(wav_duration(b"nope").is_none());
+    }
+}

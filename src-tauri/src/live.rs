@@ -166,6 +166,15 @@ fn handle_request(app: &AppHandle, key: &str, request: Request) {
         ["music"] | ["now-playing"] => {
             let response=Response::from_string(include_str!("../overlay/music.html")).with_header(header("Content-Type","text/html; charset=utf-8")).with_header(header("Cache-Control","no-store"));let _=request.respond(response);
         }
+        // Voz TTS para la fuente «Alertas Nexus» de OBS (así entra en el directo sin capturas extra).
+        ["api","tts","clip"] => {
+            if query("key").as_deref()!=Some(key){return respond_json(request,403,json!({"error":"Clave local no válida."}));}
+            respond_json(request,200,crate::engagement::clip_state(app));
+        }
+        ["api","tts","audio",id] => {
+            if query("key").as_deref()!=Some(key){return respond_json(request,403,json!({"error":"Clave local no válida."}));}
+            match crate::engagement::clip_bytes(app,id){Some(b)=>{let _=request.respond(Response::from_data(b).with_header(header("Content-Type","audio/wav")).with_header(header("Cache-Control","no-store")));},None=>respond_json(request,404,json!({"error":"La voz ya terminó."}))}
+        }
         ["api","tts",action] => {
             if query("key").as_deref()!=Some(key){return respond_json(request,403,json!({"error":"Clave local no válida."}));}
             match crate::engagement::control(app,action){Ok(())=>respond_json(request,200,json!({"ok":true})),Err(e)=>respond_json(request,400,json!({"error":e}))}
