@@ -1,13 +1,12 @@
 {
-  "version": "0.2.52",
+  "version": "0.2.53",
   "notes": [
-    "Corregido «Respuesta no válida de Spotify»: la canción sí entraba en la cola, pero Nexus lo tomaba como error. Ahora responde «añadida a la cola».",
-    "Tú y tus moderadores podéis pedir canciones sin esperar; el minuto entre peticiones queda para los espectadores.",
-    "Si una petición no entra, el chat dice por qué: hay que esperar, la canción ya está pedida o hay demasiadas pendientes."
+    "Nueva recompensa de Twitch «Pedir canción» (50 puntos por defecto), creada desde Música con un botón. El espectador escribe la canción al canjearla; Nexus la busca en Spotify, la añade a tu cola, responde en el chat y completa el canje.",
+    "Si la canción no se encuentra o no se puede añadir, el canje se cancela y Twitch devuelve los puntos automáticamente. Cada canje se procesa una sola vez."
   ],
   "date": "2026-11-21",
   "installer": "TrophyHunter-setup.exe",
-  "source_commit": "90851700c1210b810d46ef1521234688e1d02e3b",
-  "sha256": "d7c75035b9efff88dce7d97059d1b9e44d274231326b86a3a5f9e84a936b1cc1",
-  "size": 43595054
+  "source_commit": "dc40eba78f209b0da03ce6bd9e0afc5fd5191178",
+  "sha256": "9935794ae9e7d18823223031791038dee4969adc628dfcd472a6265402bda04f",
+  "size": 43575900
 }
