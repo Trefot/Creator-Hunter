@@ -2,6 +2,12 @@
 
 ## [Sin publicar]
 
+## [0.2.52] · 2026-11-20 · !sr completo
+
+- Corregido «Respuesta no válida de Spotify»: la canción sí entraba en la cola, pero Nexus lo tomaba como error. Ahora responde «añadida a la cola».
+- Tú y tus moderadores podéis pedir canciones sin esperar; el minuto entre peticiones queda para los espectadores.
+- Si una petición no entra, el chat dice por qué: hay que esperar, la canción ya está pedida o hay demasiadas pendientes.
+
 ## [0.2.51] · 2026-11-20 · !sr añade de verdad a Spotify
 
 - Corregido el error 411 de Spotify: las peticiones !sr y los botones de reproducir y siguiente ya llegan a Spotify. Nexus no indicaba el tamaño de la petición vacía y Spotify la rechazaba.

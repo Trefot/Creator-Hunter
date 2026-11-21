@@ -245,9 +245,9 @@ async fn api(
             ),
         });
     }
-    r.json()
-        .await
-        .map_err(|_| "Respuesta no válida de Spotify.".into())
+    // Algunas operaciones (añadir a la cola) responden 200 sin cuerpo JSON: eso también es éxito.
+    let bytes = r.bytes().await.map_err(|_| "Respuesta incompleta de Spotify.")?;
+    Ok(serde_json::from_slice(&bytes).unwrap_or(Value::Null))
 }
 #[tauri::command]
 pub async fn spotify_refresh(app: AppHandle) -> Result<Value, String> {
@@ -401,7 +401,8 @@ pub async fn music_requests_enable(app: AppHandle, enabled: bool) -> Result<(), 
 pub async fn music_manual(app: AppHandle, enabled: bool) -> Result<(), String> {
     crate::social_alerts::save(&app, "music-manual", &json!(enabled)).await
 }
-pub async fn receive(app: &AppHandle, platform: &str, user: &str, name: &str, text: &str) {
+/// `privileged`: creador o moderador; no tienen la espera de un minuto entre peticiones.
+pub async fn receive(app: &AppHandle, platform: &str, user: &str, name: &str, text: &str, privileged: bool) {
     let Some(input) = text.strip_prefix("!sr ").map(str::trim) else {
         return;
     };
@@ -440,10 +441,19 @@ pub async fn receive(app: &AppHandle, platform: &str, user: &str, name: &str, te
     p.recent
         .retain(|(_, t)| t.elapsed() < Duration::from_secs(60));
     let identity = format!("{platform}:{user}");
-    if p.requests.len() >= 20
-        || p.recent.iter().any(|(u, _)| u == &identity)
-        || p.requests.iter().any(|r| r["track"] == item["track"])
-    {
+    // Antes se ignoraban en silencio; ahora el chat sabe por qué no entró.
+    let refusal = if p.requests.len() >= 20 {
+        Some("hay demasiadas peticiones pendientes, prueba en un rato.".to_string())
+    } else if let Some((_, t)) = p.recent.iter().find(|(u, _)| u == &identity && !privileged) {
+        Some(format!("espera {} s para pedir otra canción.", 60u64.saturating_sub(t.elapsed().as_secs()).max(1)))
+    } else if p.requests.iter().any(|r| r["track"] == item["track"]) {
+        Some("esa canción ya está pedida.".to_string())
+    } else {
+        None
+    };
+    if let Some(reason) = refusal {
+        drop(p);
+        let _ = crate::chat_commands::say(app, platform, &format!("🎵 @{name} {reason}")).await;
         return;
     }
     p.recent.push((identity, Instant::now()));

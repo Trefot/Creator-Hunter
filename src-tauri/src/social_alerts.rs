@@ -343,7 +343,7 @@ impl YouTubeReader {
                 continue;
             }
             if !self.page.is_empty() {
-                if let Some(m)=crate::stream_core::youtube_message(item){crate::music::receive(app,"youtube",&m.user_id,&m.name,&m.text).await;crate::chat_commands::receive(app,"youtube",&m.name,&m.text).await;}
+                if let Some(m)=crate::stream_core::youtube_message(item){crate::music::receive(app,"youtube",&m.user_id,&m.name,&m.text,m.broadcaster||m.moderator).await;crate::chat_commands::receive(app,"youtube",&m.name,&m.text).await;}
                 crate::streaming::receive(app, "youtube", item["snippet"]["type"].as_str().unwrap_or(""), item).await;
                 if let Some(e) = crate::social_events::youtube(item) {
                     deliver(app, "youtube", e).await?;
@@ -706,7 +706,7 @@ fn twitch_session(app: &AppHandle) -> Result<(), String> {
                 let event=&v["payload"]["event"];
                 if kind=="channel.channel_points_custom_reward_redemption.update" {crate::engagement::cancel(app,event);}
                 if kind=="channel.channel_points_custom_reward_redemption.add" {tauri::async_runtime::block_on(crate::engagement::receive(app,event));}
-                if kind=="channel.chat.message" {if let Some(m)=crate::stream_core::twitch_message(event){tauri::async_runtime::block_on(crate::music::receive(app,"twitch",&m.user_id,&m.name,&m.text));let (a,n,t)=(app.clone(),m.name.clone(),m.text.clone());tauri::async_runtime::spawn(async move{crate::chat_commands::receive(&a,"twitch",&n,&t).await;});}}
+                if kind=="channel.chat.message" {if let Some(m)=crate::stream_core::twitch_message(event){tauri::async_runtime::block_on(crate::music::receive(app,"twitch",&m.user_id,&m.name,&m.text,m.broadcaster||m.moderator));let (a,n,t)=(app.clone(),m.name.clone(),m.text.clone());tauri::async_runtime::spawn(async move{crate::chat_commands::receive(&a,"twitch",&n,&t).await;});}}
                 tauri::async_runtime::block_on(crate::streaming::receive(app, "twitch", v["payload"]["subscription"]["type"].as_str().unwrap_or(""), &v["payload"]["event"]));
                 let social_event = crate::social_events::twitch(
                     v["payload"]["subscription"]["type"].as_str().unwrap_or(""),
