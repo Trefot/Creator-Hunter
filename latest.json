@@ -1,13 +1,15 @@
 {
-  "version": "0.2.56",
+  "version": "0.2.57",
   "notes": [
-    "«Hoy» ya no está en Inicio: es la primera pantalla de En directo. Inicio queda solo para tus redes.",
-    "En directo tiene solo cuatro pestañas: Hoy, Chat, Sonido y Momentos y resúmenes. Estado, Alertas, Overlays, Contadores, Categoría, OBS y Comandos quedan dentro de «Ajustes del directo», cerrado hasta que lo abras.",
-    "El menú lateral pasa de diez entradas a cinco: Inicio, En directo, Crear contenido, Juegos y Ajustes. El calendario está dentro de Crear contenido; Conexiones, Perfiles, Metas, Ingresos y Copias, dentro de Ajustes."
+    "Biblioteca nueva: arriba «Jugando ahora» con «Retomar mi partida»; debajo tus juegos en En curso, En pausa y Terminados. «Añadir juego» reúne el formulario, PlayStation y Steam/Epic en un solo panel.",
+    "Cada juego tiene su modo: 🏆 Platino (Hoy, Trofeos y Guía), 🎮 Partida (Hoy y Notas) o 🎬 Serie (Hoy, Episodios y momentos, y Notas). Se cambia en «Editar juego», junto con la portada, la prioridad, sincronizar PSN y borrar.",
+    "La detección de juegos y los ejecutables de PC pasan a Ajustes → Conexiones → Juegos detectados.",
+    "El overlay de objetivos pasa a En directo → Ajustes del directo → Objetivos de juego.",
+    "La colección de platinos está en Terminados → «Mi colección de platinos». No se borra ningún dato."
   ],
-  "date": "2026-11-21",
+  "date": "2026-11-24",
   "installer": "TrophyHunter-setup.exe",
-  "source_commit": "0189bfabd935ef56e97790d8ad64a64df1d2c673",
-  "sha256": "f26f9cc8cd7cbcf13165ac12f4b741dcdc53e93d2fba89dce3661e7dfabd0a4b",
-  "size": 43579664
+  "source_commit": "02040811d5dac8ca10f9da774b50c47cd0a2b1da",
+  "sha256": "d3ec98c5e16098b620cf811e342d4729ec1de366acbcbd5ea8289befc31c1a58",
+  "size": 43570928
 }
