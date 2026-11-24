@@ -2,6 +2,14 @@
 
 ## [Sin publicar]
 
+## [0.2.57] · 2026-11-24 · Juegos más simple
+
+- Biblioteca nueva: arriba «Jugando ahora» con «Retomar mi partida»; debajo tus juegos en En curso, En pausa y Terminados. «Añadir juego» reúne el formulario, PlayStation y Steam/Epic en un solo panel.
+- Cada juego tiene su modo: 🏆 Platino (Hoy, Trofeos y Guía), 🎮 Partida (Hoy y Notas) o 🎬 Serie (Hoy, Episodios y momentos, y Notas). Se cambia en «Editar juego», junto con la portada, la prioridad, sincronizar PSN y borrar.
+- La detección de juegos y los ejecutables de PC pasan a Ajustes → Conexiones → Juegos detectados.
+- El overlay de objetivos pasa a En directo → Ajustes del directo → Objetivos de juego.
+- La colección de platinos está en Terminados → «Mi colección de platinos». No se borra ningún dato.
+
 ## [0.2.56] · 2026-11-21 · Menos apartados
 
 - «Hoy» ya no está en Inicio: es la primera pantalla de En directo. Inicio queda solo para tus redes.

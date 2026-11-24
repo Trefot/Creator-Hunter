@@ -23,4 +23,5 @@ if ($Restaurar) {
     Copy-Item $nuevo $destino -Force
     "Nexus actualizado con la compilación local ($((Get-Item $destino).LastWriteTime))."
 }
-Start-Process $destino
+# No se abre desde aquí: si lo lanza otra app (p. ej. un asistente), Windows le da una carpeta de datos aparte.
+"Ábrelo tú desde el menú Inicio."

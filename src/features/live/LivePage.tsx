@@ -32,11 +32,12 @@ import {RecapHistory} from "./StreamRecap";
 import {ConnectionsStatus} from "./ConnectionsStatus";
 import {ChatCommandsPanel} from "./ChatCommandsPanel";
 import {TodayAssistant} from "./TodayAssistant";
-const liveTabs=[{id:'hoy',label:'Hoy'},{id:'setup',label:'Conectar servicios'},{id:'estado',label:'Estado'},{id:'chat',label:'Chat'},{id:'commands',label:'Comandos'},{id:'sound',label:'Sonido'},{id:'alerts',label:'Alertas'},{id:'overlays',label:'Overlays'},{id:'counters',label:'Contadores'},{id:'category',label:'Categoría'},{id:'obs',label:'OBS'},{id:'connections',label:'Conexiones'},{id:'moments',label:'Momentos y resúmenes'},{id:'recaps',label:'Resúmenes'}] as const;
+import {LiveGameTargets} from "../games/LiveGameTargets";
+const liveTabs=[{id:'hoy',label:'Hoy'},{id:'setup',label:'Conectar servicios'},{id:'estado',label:'Estado'},{id:'chat',label:'Chat'},{id:'commands',label:'Comandos'},{id:'sound',label:'Sonido'},{id:'alerts',label:'Alertas'},{id:'overlays',label:'Overlays'},{id:'counters',label:'Contadores'},{id:'games',label:'Objetivos de juego'},{id:'category',label:'Categoría'},{id:'obs',label:'OBS'},{id:'connections',label:'Conexiones'},{id:'moments',label:'Momentos y resúmenes'},{id:'recaps',label:'Resúmenes'}] as const;
 type LiveTab=typeof liveTabs[number]['id'];
 // «Resúmenes» vive ahora dentro de «Momentos y resúmenes».
 const asTab=(value:string):LiveTab=>value==='recaps'?'moments':liveTabs.find(t=>t.id===value)?.id??'hoy';
-const CONFIG_TABS:string[]=['estado','alerts','overlays','counters','category','obs','commands'];
+const CONFIG_TABS:string[]=['estado','alerts','overlays','counters','games','category','obs','commands'];
 const t = es.live;
 
 export const COUNTER_ICONS = ["💀", "⚔️", "📦", "🏆", "👑", "❤️", "⭐", "🎯", "🔥", "💎", "👥", "🎮"];
@@ -459,6 +460,7 @@ export function LivePage({initialTab='hoy',navigationRevision=0,onNavigate}:{onN
       </div>
       <div hidden={tab!=='sound'} role="tabpanel" aria-label="Sonido"><TtsPanel active={tab==='sound'} base={base} keyValue={info?.key??""}/><MusicPanel active={tab==='sound'} base={base} keyValue={info?.key??""}/></div>
       <div hidden={tab!=='estado'} role="tabpanel" aria-label="Estado"><ConnectionsStatus active={tab==='estado'} onNavigate={value=>setTab(asTab(value))}/></div>
+      <div hidden={tab!=='games'} role="tabpanel" aria-label="Objetivos de juego"><LiveGameTargets active={tab==='games'}/></div>
       <div hidden={tab!=='commands'} role="tabpanel" aria-label="Comandos"><ChatCommandsPanel active={tab==='commands'}/></div>
       <div hidden={tab!=='moments'} role="tabpanel" aria-label="Momentos"><div className="card"><h2>De la jugada al Short</h2><p>Pulsa MOMENTO después de la jugada. Revisa tus capturas, ajusta el recorte y exporta desde Crear contenido.</p><button onClick={()=>onNavigate?.('projects','moments')}>Abrir mis capturas y Shorts</button></div><RecapHistory active={tab==='moments'}/></div>
       <div hidden={tab!=='alerts'} role="tabpanel" aria-label="Alertas"><AlertsPanel active={tab==='alerts'} showConnections={false}/></div>

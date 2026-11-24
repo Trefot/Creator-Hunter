@@ -1,6 +1,7 @@
 import {ObsPanel} from '../live/ObsPanel';
 import {MusicPanel} from '../live/MusicPanel';
 import {PsnConnect} from '../games/PsnConnect';
+import {GameDetectionSettings} from '../games/GameDetectionSettings';
 import {useEffect,useState} from 'react';
 import {invoke} from '@tauri-apps/api/core';
 import {PlugZap,RefreshCw} from 'lucide-react';
@@ -12,9 +13,9 @@ import {SocialAlerts} from '../live/SocialAlerts';
 import {DiscordPanel} from '../live/DiscordPanel';
 import {serviceState,ServiceId,ServiceState} from './services';
 import './setup.css';
-type Service='youtube'|'twitch'|'meta'|'tiktok'|'obs'|'spotify'|'discord'|'psn';
+type Service='youtube'|'twitch'|'meta'|'tiktok'|'obs'|'spotify'|'discord'|'psn'|'games';
 const checks={obs:'obs_status',twitch:'twitch_scopes',youtube:'youtube_status',spotify:'music_status',discord:'discord_status',psn:'psn_status'} as const;
-const services:{id:Service;name:string;purpose:string}[]=[{id:'youtube',name:'YouTube',purpose:'Canal, métricas y vídeos'},{id:'twitch',name:'Twitch',purpose:'Directos, chat y seguidores'},{id:'meta',name:'Instagram + Facebook',purpose:'Tus dos cuentas vinculadas'},{id:'tiktok',name:'TikTok',purpose:'Seguidores de tu cuenta'},{id:'obs',name:'OBS',purpose:'Grabación, escenas y captura'},{id:'spotify',name:'Spotify',purpose:'Música y peticiones'},{id:'discord',name:'Discord',purpose:'Avisos a tu comunidad'},{id:'psn',name:'PlayStation',purpose:'Biblioteca y trofeos'}];
+const services:{id:Service;name:string;purpose:string}[]=[{id:'youtube',name:'YouTube',purpose:'Canal, métricas y vídeos'},{id:'twitch',name:'Twitch',purpose:'Directos, chat y seguidores'},{id:'meta',name:'Instagram + Facebook',purpose:'Tus dos cuentas vinculadas'},{id:'tiktok',name:'TikTok',purpose:'Seguidores de tu cuenta'},{id:'obs',name:'OBS',purpose:'Grabación, escenas y captura'},{id:'spotify',name:'Spotify',purpose:'Música y peticiones'},{id:'discord',name:'Discord',purpose:'Avisos a tu comunidad'},{id:'psn',name:'PlayStation',purpose:'Biblioteca y trofeos'},{id:'games',name:'Juegos detectados',purpose:'Detección en PC y PSN'}];
 export function ConnectionsHub({onNavigate}:{onNavigate:(s:Section,tab?:string)=>void}){
  const [publications,setPublications]=useState(false);
  const [tikKey,setTikKey]=useState(''),[tikSecret,setTikSecret]=useState('');
@@ -56,6 +57,7 @@ export function ConnectionsHub({onNavigate}:{onNavigate:(s:Section,tab?:string)=
  {selected==='discord'&&<><p>Guarda el webhook de directos y el de vídeos por separado. Las pruebas solo se envían cuando pulsas su botón.</p><DiscordPanel/></>}
  {selected==='obs'&&<><ObsPanel markUrl={null} clipUrl={null}/><ol><li>En OBS, abre Herramientas → Configuración del servidor WebSocket.</li><li>Activa el servidor y conserva la autenticación.</li><li>Abre la configuración de OBS en Nexus e introduce el puerto y la contraseña.</li></ol><button onClick={()=>onNavigate('live','obs')}>Configurar y comprobar OBS</button></>}
  {selected==='spotify'&&<><MusicPanel base="" keyValue=""/><p>Con tu cuenta Premium, abre Sonido → Spotify y completa la autorización. Después podrás ver la canción y gestionar las peticiones.</p><button onClick={()=>onNavigate('live','sound')}>Configurar Spotify</button></>}
+ {selected==='games'&&<GameDetectionSettings/>}
  {selected==='psn'&&<><PsnConnect connected={serviceStates.psn?.tone==='ok'} onChange={refresh} onImport={()=>onNavigate('games')}/><p>Conecta PlayStation aquí y abre Juegos para importar tu biblioteca y trofeos. Los juegos de PC se pueden añadir por separado.</p><button onClick={()=>onNavigate('games')}>Conectar PlayStation en Juegos</button></>}
  </article></div></section>
 }
